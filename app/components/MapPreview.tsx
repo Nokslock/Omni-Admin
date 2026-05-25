@@ -122,6 +122,17 @@ export function MapPreview() {
           ))}
         </svg>
 
+        {/* Scan sweep */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+          <div
+            className="absolute inset-x-0 h-32 animate-scan"
+            style={{
+              background:
+                "linear-gradient(to bottom, transparent, color-mix(in oklab, var(--ok) 18%, transparent), transparent)",
+            }}
+          />
+        </div>
+
         {/* Zoom controls */}
         <div className="absolute right-3 top-3 flex flex-col overflow-hidden rounded-md border border-border-strong bg-bg-card shadow-sm">
           <button className="flex h-7 w-7 items-center justify-center text-fg-muted hover:text-fg" aria-label="Zoom in">+</button>

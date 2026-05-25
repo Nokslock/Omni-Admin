@@ -1,4 +1,5 @@
 import { MapPreview } from "./MapPreview";
+import { Reveal } from "./Reveal";
 
 export function Hero() {
   return (
@@ -9,52 +10,62 @@ export function Hero() {
 
       <div className="relative mx-auto max-w-6xl px-5 pt-20 pb-16 sm:pt-28">
         <div className="flex flex-col items-center text-center">
-          <LivePill />
-          <h1 className="mt-7 max-w-4xl text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl">
-            Immediate community safety alerts.{" "}
-            <span className="text-fg-muted">Seconds save lives.</span>
-          </h1>
-          <p className="mt-6 max-w-xl text-pretty text-base text-fg-muted sm:text-lg">
-            Spot, report, and monitor critical incidents in your area in real time. Powering a safer
-            community together — from Apapa to Lekki.
-          </p>
+          <Reveal>
+            <LivePill />
+          </Reveal>
+          <Reveal delay={80}>
+            <h1 className="mt-7 max-w-4xl text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl">
+              Immediate community safety alerts.{" "}
+              <span className="text-fg-muted">Seconds save lives.</span>
+            </h1>
+          </Reveal>
+          <Reveal delay={180}>
+            <p className="mt-6 max-w-xl text-pretty text-base text-fg-muted sm:text-lg">
+              Spot, report, and monitor critical incidents in your area in real time. Powering a safer
+              community together — from Apapa to Lekki.
+            </p>
+          </Reveal>
 
-          <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row">
-            <a
-              href="#ios"
-              className="group inline-flex h-12 items-center gap-3 rounded-lg bg-fg pl-4 pr-5 text-bg transition-transform hover:-translate-y-0.5"
-            >
-              <AppleIcon />
-              <span className="flex flex-col items-start leading-tight">
-                <span className="text-[10px] uppercase tracking-wider opacity-70">Download on the</span>
-                <span className="text-sm font-semibold">App Store</span>
-              </span>
-            </a>
-            <a
-              href="#android"
-              className="group inline-flex h-12 items-center gap-3 rounded-lg bg-fg pl-4 pr-5 text-bg transition-transform hover:-translate-y-0.5"
-            >
-              <PlayIcon />
-              <span className="flex flex-col items-start leading-tight">
-                <span className="text-[10px] uppercase tracking-wider opacity-70">Get it on</span>
-                <span className="text-sm font-semibold">Google Play</span>
-              </span>
-            </a>
-          </div>
+          <Reveal delay={260}>
+            <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row">
+              <a
+                href="#ios"
+                className="group inline-flex h-12 items-center gap-3 rounded-lg bg-fg pl-4 pr-5 text-bg transition-transform hover:-translate-y-0.5"
+              >
+                <AppleIcon />
+                <span className="flex flex-col items-start leading-tight">
+                  <span className="text-[10px] uppercase tracking-wider opacity-70">Download on the</span>
+                  <span className="text-sm font-semibold">App Store</span>
+                </span>
+              </a>
+              <a
+                href="#android"
+                className="group inline-flex h-12 items-center gap-3 rounded-lg bg-fg pl-4 pr-5 text-bg transition-transform hover:-translate-y-0.5"
+              >
+                <PlayIcon />
+                <span className="flex flex-col items-start leading-tight">
+                  <span className="text-[10px] uppercase tracking-wider opacity-70">Get it on</span>
+                  <span className="text-sm font-semibold">Google Play</span>
+                </span>
+              </a>
+            </div>
+          </Reveal>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-fg-muted">
-            <TrustItem label="Free forever" />
-            <span className="text-fg-subtle">·</span>
-            <TrustItem label="No ads" />
-            <span className="text-fg-subtle">·</span>
-            <TrustItem label="NDPR compliant" />
-          </div>
+          <Reveal delay={340}>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-fg-muted">
+              <TrustItem label="Free forever" />
+              <span className="text-fg-subtle">·</span>
+              <TrustItem label="No ads" />
+              <span className="text-fg-subtle">·</span>
+              <TrustItem label="NDPR compliant" />
+            </div>
+          </Reveal>
         </div>
 
-        <div className="relative mx-auto mt-16 max-w-5xl">
+        <Reveal delay={400} className="relative mx-auto mt-16 max-w-5xl">
           <div className="pointer-events-none absolute -inset-x-8 -inset-y-6 bg-gradient-to-b from-transparent via-transparent to-bg" aria-hidden />
           <MapPreview />
-        </div>
+        </Reveal>
       </div>
     </section>
   );

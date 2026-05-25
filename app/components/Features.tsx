@@ -1,3 +1,5 @@
+import { Reveal } from "./Reveal";
+
 const features = [
   {
     accent: "var(--info)",
@@ -26,18 +28,20 @@ export function Features() {
   return (
     <section id="how" className="border-b border-border py-24">
       <div className="mx-auto max-w-6xl px-5">
-        <div className="mx-auto max-w-2xl text-center">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-fg-muted">How Omni Works</p>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-5xl">
             Built for the moments when every second counts.
           </h2>
-        </div>
+        </Reveal>
 
         <div className="mt-16 grid gap-5 md:grid-cols-3">
-          {features.map((f) => (
-            <article
+          {features.map((f, idx) => (
+            <Reveal
               key={f.title}
-              className="group relative overflow-hidden rounded-xl border border-border bg-bg-card p-6 transition-colors hover:border-border-strong"
+              as="article"
+              delay={idx * 100}
+              className="group relative overflow-hidden rounded-xl border border-border bg-bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-border-strong hover:bg-bg-card/80"
             >
               <span
                 className="absolute inset-x-0 top-0 h-px"
@@ -57,7 +61,7 @@ export function Features() {
               </div>
               <h3 className="mt-8 text-lg font-semibold tracking-tight">{f.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-fg-muted">{f.body}</p>
-            </article>
+            </Reveal>
           ))}
         </div>
       </div>

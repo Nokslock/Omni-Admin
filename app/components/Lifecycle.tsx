@@ -1,3 +1,5 @@
+import { Reveal } from "./Reveal";
+
 const steps = [
   {
     n: "01",
@@ -43,12 +45,12 @@ export function Lifecycle() {
             <div className="absolute left-0 right-0 top-5 hidden h-px border-t border-dashed border-border-strong md:block" aria-hidden />
 
             <ol className="relative grid gap-10 md:grid-cols-4 md:gap-6">
-              {steps.map((s) => (
-                <li key={s.n} className="relative">
+              {steps.map((s, idx) => (
+                <Reveal as="li" key={s.n} delay={idx * 120} className="relative">
                   <HexNode n={s.n} />
                   <h3 className="mt-5 text-sm font-semibold tracking-tight">{s.title}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">{s.body}</p>
-                </li>
+                </Reveal>
               ))}
             </ol>
           </div>
