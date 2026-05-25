@@ -2,8 +2,8 @@ import { ThemeToggle } from "./ThemeToggle";
 
 const links = [
   { href: "#how", label: "How it works" },
+  { href: "#app", label: "The app" },
   { href: "#coverage", label: "Coverage" },
-  { href: "#about", label: "About" },
 ];
 
 export function Nav() {
@@ -24,7 +24,7 @@ export function Nav() {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <a
-            href="#signin"
+            href="/admin/login"
             className="inline-flex h-9 items-center rounded-md bg-fg px-3.5 text-sm font-medium text-bg hover:opacity-90 transition-opacity"
           >
             Sign In

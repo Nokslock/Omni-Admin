@@ -31,22 +31,22 @@
 }
 
 :root {
-  --bg: #ffffff;
-  --bg-elev: #fafafa;
+  --bg: #f6f7f9;
+  --bg-elev: #f1f2f5;
   --bg-card: #ffffff;
-  --border: rgba(0, 0, 0, 0.08);
-  --border-strong: rgba(0, 0, 0, 0.16);
+  --border: rgba(15, 23, 42, 0.12);
+  --border-strong: rgba(15, 23, 42, 0.22);
   --fg: #0a0a0a;
-  --fg-muted: #525252;
-  --fg-subtle: #a3a3a3;
-  --accent: #fafafa;
+  --fg-muted: #4b5563;
+  --fg-subtle: #94a3b8;
+  --accent: #ffffff;
   --accent-fg: #0a0a0a;
   --danger: #ef4444;
   --warn: #f59e0b;
-  --ok: #22c55e;
-  --info: #3b82f6;
-  --grid: rgba(0, 0, 0, 0.04);
-  --grid-strong: rgba(0, 0, 0, 0.08);
+  --ok: #16a34a;
+  --info: #2563eb;
+  --grid: rgba(15, 23, 42, 0.05);
+  --grid-strong: rgba(15, 23, 42, 0.09);
 }
 
 .dark {
@@ -64,6 +64,11 @@
   --grid-strong: rgba(255, 255, 255, 0.07);
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
+
 html,
 body {
   background: var(--bg);
@@ -71,6 +76,14 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+section[id] {
+  scroll-margin-top: 72px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
 }
 
 @keyframes pulse-dot {
@@ -108,6 +121,15 @@ body {
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.login-card {
+  animation: card-in 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 .reveal {

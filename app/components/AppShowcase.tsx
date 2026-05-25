@@ -2,7 +2,7 @@ import { Reveal } from "./Reveal";
 
 export function AppShowcase() {
   return (
-    <section className="relative overflow-hidden border-b border-border py-28">
+    <section id="app" className="relative overflow-hidden border-b border-border py-28">
       <div className="absolute inset-0 bg-grid opacity-30" aria-hidden />
       <div
         className="absolute inset-x-0 top-1/3 mx-auto h-[420px] w-[80%] max-w-3xl rounded-full blur-3xl opacity-30"
