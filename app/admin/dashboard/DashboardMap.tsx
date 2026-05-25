@@ -24,7 +24,7 @@ export function DashboardMap({ incidents, selectedId, onSelect }: Props) {
   const selected = incidents.find((i) => i.id === selectedId) ?? null;
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#0b1421] dark:bg-[#0b1421]">
+    <div className="relative h-full w-full overflow-hidden" style={{ background: "var(--map-bg)" }}>
       <svg
         viewBox="0 0 2000 1200"
         preserveAspectRatio="xMidYMid slice"
@@ -33,40 +33,40 @@ export function DashboardMap({ incidents, selectedId, onSelect }: Props) {
       >
         <defs>
           <pattern id="dash-grid" width="60" height="60" patternUnits="userSpaceOnUse">
-            <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#1e3a52" strokeWidth="0.6" />
+            <path d="M 60 0 L 0 0 0 60" fill="none" style={{ stroke: "var(--map-grid)" }} strokeWidth="0.6" />
           </pattern>
           <pattern id="dash-grid-strong" width="240" height="240" patternUnits="userSpaceOnUse">
-            <path d="M 240 0 L 0 0 0 240" fill="none" stroke="#2a4a66" strokeWidth="0.8" />
+            <path d="M 240 0 L 0 0 0 240" fill="none" style={{ stroke: "var(--map-grid-strong)" }} strokeWidth="0.8" />
           </pattern>
           <radialGradient id="dash-vignette" cx="50%" cy="50%" r="80%">
             <stop offset="70%" stopColor="transparent" />
-            <stop offset="100%" stopColor="#070d16" stopOpacity="0.6" />
+            <stop offset="100%" style={{ stopColor: "var(--map-vignette)" }} stopOpacity="0.6" />
           </radialGradient>
         </defs>
 
-        <rect width="2000" height="1200" fill="#0b1421" />
+        <rect width="2000" height="1200" style={{ fill: "var(--map-bg)" }} />
         <rect width="2000" height="1200" fill="url(#dash-grid)" />
         <rect width="2000" height="1200" fill="url(#dash-grid-strong)" />
 
         {/* Lagoon */}
         <path
           d="M 0 880 C 300 850, 600 900, 900 875 C 1200 855, 1500 920, 1800 905 C 1900 900, 2000 905, 2000 905 L 2000 1100 C 1700 1110, 1400 1080, 1100 1095 C 800 1110, 500 1075, 200 1090 L 0 1095 Z"
-          fill="#1a3a5c"
+          style={{ fill: "var(--map-water)" }}
           fillOpacity="0.55"
         />
         <path
           d="M 0 880 C 300 850, 600 900, 900 875 C 1200 855, 1500 920, 1800 905 C 1900 900, 2000 905, 2000 905"
           fill="none"
-          stroke="#3b6892"
+          style={{ stroke: "var(--map-water-stroke)" }}
           strokeOpacity="0.6"
           strokeWidth="1.2"
         />
 
         {/* Ocean (bottom) */}
-        <rect y="1100" width="2000" height="100" fill="#0f2840" fillOpacity="0.6" />
+        <rect y="1100" width="2000" height="100" style={{ fill: "var(--map-ocean)" }} fillOpacity="0.6" />
 
         {/* Streets — main roads */}
-        <g stroke="#2d4f72" strokeWidth="2.2" fill="none" strokeLinecap="round">
+        <g style={{ stroke: "var(--map-road-strong)" }} strokeWidth="2.2" fill="none" strokeLinecap="round">
           <path d="M 0 280 L 2000 305" />
           <path d="M 0 460 L 2000 480" />
           <path d="M 0 640 L 2000 660" />
@@ -79,7 +79,7 @@ export function DashboardMap({ incidents, selectedId, onSelect }: Props) {
         </g>
 
         {/* Smaller streets */}
-        <g stroke="#22405c" strokeWidth="1" fill="none">
+        <g style={{ stroke: "var(--map-road)" }} strokeWidth="1" fill="none">
           <path d="M 0 120 L 2000 140" />
           <path d="M 0 380 L 2000 400" />
           <path d="M 0 560 L 2000 580" />
@@ -92,7 +92,7 @@ export function DashboardMap({ incidents, selectedId, onSelect }: Props) {
 
         {/* District labels */}
         <g
-          fill="#5a7c9f"
+          style={{ fill: "var(--map-label)" }}
           fontFamily="var(--font-geist-mono), monospace"
           fontSize="22"
           letterSpacing="5"
@@ -111,7 +111,7 @@ export function DashboardMap({ incidents, selectedId, onSelect }: Props) {
 
         {/* Highway labels */}
         <g
-          fill="#6b8aae"
+          style={{ fill: "var(--map-label-strong)" }}
           fontFamily="var(--font-geist-sans), sans-serif"
           fontSize="14"
           fontStyle="italic"

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "../../components/ThemeToggle";
 
 const tabs = [
   { href: "/admin/dashboard", label: "Dashboard", icon: <DashboardIcon /> },
@@ -66,6 +67,8 @@ export function AdminNav() {
           </span>
           <span className="text-[11px] font-semibold uppercase tracking-wider text-ok">Live</span>
         </div>
+
+        <ThemeToggle />
 
         <button
           aria-label="Notifications"

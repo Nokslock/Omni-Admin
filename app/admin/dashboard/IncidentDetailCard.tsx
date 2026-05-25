@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { type Incident, statusMeta, typeColor } from "../_lib/incidents";
 import { TypeIcon } from "../_lib/icons";
 
@@ -72,13 +73,16 @@ export function IncidentDetailCard({
         </dl>
 
         <div className="mt-5 flex items-center gap-2">
-          <button className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md bg-fg text-sm font-medium text-bg hover:opacity-90 transition-opacity">
+          <Link
+            href={`/admin/incidents/${incident.id}`}
+            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md bg-fg text-sm font-medium text-bg hover:opacity-90 transition-opacity"
+          >
             Full Details
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <line x1="5" y1="12" x2="19" y2="12" />
               <polyline points="12 5 19 12 12 19" />
             </svg>
-          </button>
+          </Link>
           <button
             aria-label={`Call ${incident.reporter}`}
             className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-fg-muted hover:text-fg hover:border-border-strong transition-colors"

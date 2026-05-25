@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   incidents as allIncidents,
@@ -188,9 +189,13 @@ function IncidentRow({ incident }: { incident: Incident }) {
 
   return (
     <tr className="border-b border-border transition-colors hover:bg-bg-elev/40">
-      <td className="whitespace-nowrap px-6 py-4 font-mono text-xs text-fg-muted">{incident.id}</td>
+      <td className="whitespace-nowrap px-6 py-4 font-mono text-xs text-fg-muted">
+        <Link href={`/admin/incidents/${incident.id}`} className="hover:text-fg">
+          {incident.id}
+        </Link>
+      </td>
       <td className="py-4 pr-6">
-        <div className="flex items-center gap-3">
+        <Link href={`/admin/incidents/${incident.id}`} className="flex items-center gap-3 hover:[&_.title]:underline">
           <span
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
             style={{ background: `color-mix(in oklab, ${color} 14%, transparent)`, color }}
@@ -198,10 +203,10 @@ function IncidentRow({ incident }: { incident: Incident }) {
             <TypeIcon type={incident.type} size={16} />
           </span>
           <div className="leading-tight">
-            <div className="font-medium text-fg">{incident.title}</div>
+            <div className="title font-medium text-fg">{incident.title}</div>
             <div className="text-[11px] text-fg-muted">{incident.typeLabel}</div>
           </div>
-        </div>
+        </Link>
       </td>
       <td className="py-4 pr-6">
         <span
