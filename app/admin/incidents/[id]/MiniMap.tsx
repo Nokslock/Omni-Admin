@@ -2,26 +2,28 @@ import { type Incident, typeColor } from "../../_lib/incidents";
 
 export function MiniMap({ incident }: { incident: Incident }) {
   const color = typeColor[incident.type];
-  // Center the pin in the SVG viewBox
   return (
-    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-border bg-[#0b1421]">
+    <div
+      className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-border"
+      style={{ background: "var(--map-bg)" }}
+    >
       <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full">
         <defs>
           <pattern id="mini-grid" width="24" height="24" patternUnits="userSpaceOnUse">
-            <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#1e3a52" strokeWidth="0.5" />
+            <path d="M 24 0 L 0 0 0 24" fill="none" style={{ stroke: "var(--map-grid)" }} strokeWidth="0.5" />
           </pattern>
         </defs>
-        <rect width="400" height="300" fill="#0b1421" />
+        <rect width="400" height="300" style={{ fill: "var(--map-bg)" }} />
         <rect width="400" height="300" fill="url(#mini-grid)" />
 
         {/* Curved roads */}
-        <g stroke="#2d4f72" strokeWidth="1.5" fill="none" strokeLinecap="round">
+        <g style={{ stroke: "var(--map-road-strong)" }} strokeWidth="1.5" fill="none" strokeLinecap="round">
           <path d="M 0 100 C 100 90, 200 110, 400 105" />
           <path d="M 0 200 C 100 195, 250 215, 400 205" />
           <path d="M 120 0 L 130 300" />
           <path d="M 260 0 L 280 300" />
         </g>
-        <g stroke="#22405c" strokeWidth="0.8" fill="none">
+        <g style={{ stroke: "var(--map-road)" }} strokeWidth="0.8" fill="none">
           <path d="M 0 50 L 400 60" />
           <path d="M 0 250 L 400 255" />
           <path d="M 60 0 L 70 300" />
@@ -33,7 +35,7 @@ export function MiniMap({ incident }: { incident: Incident }) {
           x="200"
           y="40"
           textAnchor="middle"
-          fill="#5a7c9f"
+          style={{ fill: "var(--map-label)" }}
           fontFamily="var(--font-geist-mono), monospace"
           fontSize="9"
           letterSpacing="2"
@@ -60,7 +62,6 @@ export function MiniMap({ incident }: { incident: Incident }) {
         </g>
       </svg>
 
-      {/* Overlay coords */}
       <div className="absolute bottom-2 left-2 rounded-md border border-border bg-bg-card/80 px-2 py-1 font-mono text-[10px] text-fg-muted backdrop-blur">
         {incident.coords.lat.toFixed(4)}°N · {incident.coords.lng.toFixed(4)}°E
       </div>

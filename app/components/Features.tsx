@@ -10,7 +10,7 @@ const features = [
   },
   {
     accent: "var(--danger)",
-    tag: "PUSH · SMS",
+    tag: "PUSH",
     title: "Real-time Alerts",
     body: "Receive immediate push notifications when verified incidents occur near you. Tune your radius — 500m or 5km.",
     icon: <BellIcon />,

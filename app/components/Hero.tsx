@@ -106,8 +106,23 @@ function AppleIcon() {
 
 function PlayIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M3 2.5v19c0 .7.8 1.1 1.4.7l15-9.5c.6-.4.6-1.3 0-1.7l-15-9.5C3.8 1.4 3 1.8 3 2.5z" fill="currentColor" />
+    <svg width="22" height="22" viewBox="0 0 512 512" aria-hidden>
+      <path
+        d="M11.6 9.4C5.6 15.7 2 25.4 2 38v436c0 12.6 3.6 22.3 9.6 28.6l1.5 1.5L257.6 259v-6L13.1 8z"
+        fill="#00D2BD"
+      />
+      <path
+        d="M339 340l-81.4-81.4v-5.2L339 172l1.8 1L437 226c27.5 15.6 27.5 41.2 0 56.8l-96.2 53-1.8 1.2z"
+        fill="#FFCC02"
+      />
+      <path
+        d="M340.8 339L256 254 11.6 498.6c9 9.6 24 10.8 41 1.2l288.2-160.8"
+        fill="#FF3D44"
+      />
+      <path
+        d="M340.8 173L52.6 9.6c-17-9.6-32-8.4-41 1.2L256 254"
+        fill="#00C16C"
+      />
     </svg>
   );
 }

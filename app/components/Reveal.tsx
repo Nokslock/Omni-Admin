@@ -23,7 +23,7 @@ export function Reveal({
   as = "div",
   className = "",
   y = 28,
-  fadeOut = true,
+  fadeOut = false,
 }: Props) {
   const ref = useRef<HTMLElement | null>(null);
 
@@ -40,7 +40,7 @@ export function Reveal({
     const ctx = gsap.context(() => {
       gsap.set(el, { opacity: 0, y });
 
-      // Entrance — plays once per enter into the start zone
+      // Entrance — plays once on enter; never reverses on scroll-back-up.
       gsap.to(el, {
         opacity: 1,
         y: 0,
@@ -50,11 +50,13 @@ export function Reveal({
         scrollTrigger: {
           trigger: el,
           start: "top 88%",
-          toggleActions: "play none none reverse",
+          toggleActions: "play none none none",
+          once: true,
         },
       });
 
-      // Exit when scrolled past the bottom of the element
+      // Optional exit when the element fully scrolls past the top — reverses
+      // when the user scrolls back so the element re-appears.
       if (fadeOut) {
         gsap.to(el, {
           opacity: 0,
