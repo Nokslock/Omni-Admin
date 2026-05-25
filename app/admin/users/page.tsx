@@ -1,0 +1,19 @@
+import type { Metadata } from "next";
+import { AdminNav } from "../_components/AdminNav";
+import { UsersTable } from "./UsersTable";
+
+export const metadata: Metadata = {
+  title: "Users — Omni Admin",
+  description: "Browse and manage verified mobile reporters.",
+};
+
+export default function UsersPage() {
+  return (
+    <div className="flex h-dvh flex-col bg-bg text-fg">
+      <AdminNav />
+      <main className="flex min-h-0 flex-1 flex-col">
+        <UsersTable />
+      </main>
+    </div>
+  );
+}

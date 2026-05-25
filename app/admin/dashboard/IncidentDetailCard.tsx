@@ -1,5 +1,5 @@
-import { type Incident, statusMeta, typeColor } from "./data";
-import { TypeIcon } from "./icons";
+import { type Incident, statusMeta, typeColor } from "../_lib/incidents";
+import { TypeIcon } from "../_lib/icons";
 
 export function IncidentDetailCard({
   incident,

@@ -1,15 +1,19 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const tabs = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: <DashboardIcon />, active: true },
+  { href: "/admin/dashboard", label: "Dashboard", icon: <DashboardIcon /> },
   { href: "/admin/incidents", label: "Incidents", icon: <IncidentsIcon /> },
   { href: "/admin/users", label: "Users", icon: <UsersIcon /> },
 ];
 
 export function AdminNav() {
+  const pathname = usePathname();
+
   return (
-    <header className="flex h-16 items-center border-b border-border bg-bg-card px-5">
-      {/* Left: brand */}
+    <header className="sticky top-0 z-50 flex h-16 items-center border-b border-border bg-bg-card/95 px-5 backdrop-blur">
       <Link href="/admin/dashboard" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
         <LogoMark />
         <span>Omni</span>
@@ -18,25 +22,26 @@ export function AdminNav() {
 
       <span className="mx-5 h-6 w-px bg-border" aria-hidden />
 
-      {/* Tabs */}
       <nav className="flex items-center gap-1">
-        {tabs.map((t) => (
-          <Link
-            key={t.href}
-            href={t.href}
-            className={`inline-flex h-10 items-center gap-2 rounded-md px-3.5 text-sm font-medium transition-colors ${
-              t.active
-                ? "bg-bg-elev text-fg shadow-[inset_0_0_0_1px_var(--border)]"
-                : "text-fg-muted hover:text-fg hover:bg-bg-elev/50"
-            }`}
-          >
-            {t.icon}
-            {t.label}
-          </Link>
-        ))}
+        {tabs.map((t) => {
+          const active = pathname?.startsWith(t.href);
+          return (
+            <Link
+              key={t.href}
+              href={t.href}
+              className={`inline-flex h-10 items-center gap-2 rounded-md px-3.5 text-sm font-medium transition-colors ${
+                active
+                  ? "bg-bg-elev text-fg shadow-[inset_0_0_0_1px_var(--border)]"
+                  : "text-fg-muted hover:text-fg hover:bg-bg-elev/50"
+              }`}
+            >
+              {t.icon}
+              {t.label}
+            </Link>
+          );
+        })}
       </nav>
 
-      {/* Center: search (flex-1 so right group sticks to the edge) */}
       <div className="mx-6 flex flex-1 justify-center">
         <div className="relative w-full max-w-xl">
           <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-fg-subtle">
@@ -53,7 +58,6 @@ export function AdminNav() {
         </div>
       </div>
 
-      {/* Right cluster */}
       <div className="flex items-center gap-3">
         <div className="inline-flex h-8 items-center gap-2 rounded-md border border-ok/30 bg-ok/10 px-2.5">
           <span className="relative inline-flex h-1.5 w-1.5">

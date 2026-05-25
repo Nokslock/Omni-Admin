@@ -7,7 +7,7 @@ const stats = [
 
 export function StatsRow() {
   return (
-    <div className="flex items-center gap-6 border-b border-border bg-bg-card px-5 py-5">
+    <div className="sticky top-16 z-40 flex items-center gap-6 border-b border-border bg-bg-card/95 px-5 py-5 backdrop-blur">
       <div className="grid flex-1 grid-cols-2 gap-x-10 gap-y-4 lg:grid-cols-4">
         {stats.map((s) => (
           <div key={s.label} className="flex items-start gap-3">

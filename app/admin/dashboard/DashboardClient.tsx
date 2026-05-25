@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { incidents } from "./data";
+import { incidents } from "../_lib/incidents";
 import { IncidentFeed } from "./IncidentFeed";
 import { DashboardMap } from "./DashboardMap";
 

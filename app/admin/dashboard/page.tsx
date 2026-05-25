@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AdminNav } from "./AdminNav";
+import { AdminNav } from "../_components/AdminNav";
 import { StatsRow } from "./StatsRow";
 import { DashboardClient } from "./DashboardClient";
 

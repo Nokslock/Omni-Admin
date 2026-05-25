@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { IncidentCard } from "./IncidentCard";
-import type { Incident, Severity } from "./data";
+import type { Incident, Severity } from "../_lib/incidents";
 
 type Filter = "all" | "critical" | "high" | "medium" | "resolved";
 
@@ -36,7 +36,7 @@ export function IncidentFeed({ incidents, selectedId, onSelect }: Props) {
   }, [filter, incidents]);
 
   return (
-    <aside className="flex h-full flex-col border-r border-border bg-bg-card">
+    <aside className="flex h-full min-h-0 flex-col border-r border-border bg-bg-card">
       <div className="border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-baseline gap-2">

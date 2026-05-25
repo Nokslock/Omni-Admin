@@ -1,4 +1,4 @@
-import type { IncidentType } from "./data";
+import type { IncidentType } from "./incidents";
 
 const props = {
   width: 16,

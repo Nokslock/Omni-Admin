@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { type Incident, typeColor } from "./data";
+import { type Incident, typeColor } from "../_lib/incidents";
 import { IncidentDetailCard } from "./IncidentDetailCard";
-import { TypeIcon } from "./icons";
+import { TypeIcon } from "../_lib/icons";
 
 type View = "map" | "satellite" | "heatmap";
 
