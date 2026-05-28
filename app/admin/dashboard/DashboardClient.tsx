@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { incidents } from "../_lib/incidents";
+import type { Incident } from "../_lib/incidents";
 import { IncidentFeed } from "./IncidentFeed";
 import { DashboardMap } from "./DashboardMap";
 
-export function DashboardClient() {
+export function DashboardClient({ incidents }: { incidents: Incident[] }) {
   const [selectedId, setSelectedId] = useState<string | null>("INC-7F2B");
 
   function handleSelect(id: string) {

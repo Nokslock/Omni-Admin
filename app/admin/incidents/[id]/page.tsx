@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { AdminNav } from "../../_components/AdminNav";
-import { incidents, statusMeta, typeColor, severityMeta, type Incident } from "../../_lib/incidents";
+import { statusMeta, typeColor, severityMeta, type Incident } from "../../_lib/incidents";
+import { getIncidentById, getIncidents } from "../../_lib/incidents.data";
 import { TypeIcon } from "../../_lib/icons";
 import { NotesPanel } from "./NotesPanel";
 import { MiniMap } from "./MiniMap";
@@ -11,15 +13,16 @@ type RouteParams = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: RouteParams): Promise<Metadata> {
   const { id } = await params;
-  const inc = incidents.find((i) => i.id === id);
+  const inc = await getIncidentById(id);
   return {
     title: inc ? `${inc.id} — ${inc.title}` : "Incident — Omni Admin",
   };
 }
 
 export default async function IncidentDetailPage({ params }: RouteParams) {
+  await connection();
   const { id } = await params;
-  const incident = incidents.find((i) => i.id === id);
+  const incident = await getIncidentById(id);
   if (!incident) notFound();
 
   const color = typeColor[incident.type];
@@ -28,7 +31,7 @@ export default async function IncidentDetailPage({ params }: RouteParams) {
   const reporterInitials = incident.reporter.split(" ").map((p) => p[0]).slice(0, 2).join("");
 
   // Nearby incidents (within mapXY radius, exclude self)
-  const nearby = incidents
+  const nearby = (await getIncidents())
     .filter((i) => i.id !== incident.id)
     .map((i) => {
       const dx = i.mapXY.x - incident.mapXY.x;

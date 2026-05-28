@@ -20,17 +20,22 @@ export async function signInAdmin(
     return { error: "Invalid email or password." };
   }
 
-  // Role lives in public.users (RLS-locked), so read it with the service role.
+  // Role/status live in public.users (RLS-locked), so read them with the service role.
   const admin = createAdminClient();
   const { data: profile } = await admin
     .from("users")
-    .select("role")
+    .select("role, status")
     .eq("auth_id", data.user.id)
     .maybeSingle();
 
   if (profile?.role !== "admin") {
     await supabase.auth.signOut();
     return { error: "This account doesn't have admin access." };
+  }
+
+  if (profile.status === "suspended") {
+    await supabase.auth.signOut();
+    return { error: "This account has been suspended." };
   }
 
   return { ok: true };

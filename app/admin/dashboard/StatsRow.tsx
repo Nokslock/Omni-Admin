@@ -1,11 +1,16 @@
-const stats = [
-  { value: 4, label: "Active", color: "var(--danger)", pulse: true },
-  { value: 4, label: "Investigating", color: "var(--warn)" },
-  { value: 3, label: "Resolved (24h)", color: "var(--ok)" },
-  { value: 1, label: "False alarm", color: "var(--info)" },
-];
+import type { Incident } from "../_lib/incidents";
 
-export function StatsRow() {
+export function StatsRow({ incidents }: { incidents: Incident[] }) {
+  const count = (s: Incident["status"]) =>
+    incidents.filter((i) => i.status === s).length;
+
+  const stats = [
+    { value: count("active"), label: "Active", color: "var(--danger)", pulse: true },
+    { value: count("investigating"), label: "Investigating", color: "var(--warn)" },
+    { value: count("resolved"), label: "Resolved (24h)", color: "var(--ok)" },
+    { value: count("false_alarm"), label: "False alarm", color: "var(--info)" },
+  ];
+
   return (
     <div className="sticky top-16 z-40 flex items-center gap-6 border-b border-border bg-bg-card/95 px-5 py-5 backdrop-blur">
       <div className="grid flex-1 grid-cols-2 gap-x-10 gap-y-4 lg:grid-cols-4">

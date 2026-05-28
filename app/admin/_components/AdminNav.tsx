@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "../../components/ThemeToggle";
-import { useAdmin } from "./AdminProvider";
+import { ProfileMenu } from "./ProfileMenu";
 
 const tabs = [
   { href: "/admin/dashboard", label: "Dashboard", icon: <DashboardIcon /> },
@@ -13,7 +13,6 @@ const tabs = [
 
 export function AdminNav() {
   const pathname = usePathname();
-  const admin = useAdmin();
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center border-b border-border bg-bg-card/95 px-5 backdrop-blur">
@@ -80,20 +79,7 @@ export function AdminNav() {
           <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-danger" />
         </button>
 
-        <button className="inline-flex h-10 items-center gap-2.5 rounded-md border border-border py-1 pl-1 pr-2.5 text-left hover:border-border-strong transition-colors">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-info text-[11px] font-semibold text-white">
-            {admin?.initials || "—"}
-          </span>
-          <span className="leading-tight">
-            <span className="block text-xs font-semibold">{admin?.name || "Account"}</span>
-            <span className="block max-w-[150px] truncate text-[10px] text-fg-muted">
-              {admin?.email || ""}
-            </span>
-          </span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1 text-fg-muted" aria-hidden>
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
+        <ProfileMenu />
       </div>
     </header>
   );

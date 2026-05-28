@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
-  incidents as allIncidents,
   type Incident,
   type IncidentStatus,
   type IncidentType,
@@ -14,6 +13,7 @@ import {
 } from "../_lib/incidents";
 import { TypeIcon } from "../_lib/icons";
 import { FilterDropdown } from "../_components/FilterDropdown";
+import { NewIncidentModal } from "./NewIncidentModal";
 
 const statusOptions = [
   { value: "all", label: "All statuses" },
@@ -52,7 +52,7 @@ const timeOptions = [
   { value: "all", label: "All time" },
 ];
 
-export function IncidentsTable() {
+export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [type, setType] = useState("all");
@@ -61,7 +61,7 @@ export function IncidentsTable() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return allIncidents.filter((i) => {
+    return incidents.filter((i) => {
       if (q) {
         const hay = `${i.id} ${i.title} ${i.typeLabel} ${i.location} ${i.reporter}`.toLowerCase();
         if (!hay.includes(q)) return false;
@@ -71,7 +71,7 @@ export function IncidentsTable() {
       if (severity !== "all" && i.severity !== (severity as Severity)) return false;
       return true;
     });
-  }, [query, status, type, severity]);
+  }, [incidents, query, status, type, severity]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -85,7 +85,7 @@ export function IncidentsTable() {
           </nav>
           <h1 className="text-3xl font-semibold tracking-tight">Incident Management</h1>
           <p className="mt-1 text-sm text-fg-muted">
-            Showing <span className="font-semibold text-fg">{filtered.length}</span> of {allIncidents.length} incidents
+            Showing <span className="font-semibold text-fg">{filtered.length}</span> of {incidents.length} incidents
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -93,10 +93,7 @@ export function IncidentsTable() {
             <DownloadIcon />
             Export CSV
           </button>
-          <button className="inline-flex h-10 items-center gap-2 rounded-lg bg-fg px-4 text-sm font-medium text-bg hover:opacity-90 transition-opacity">
-            <PlusIcon />
-            New incident
-          </button>
+          <NewIncidentModal />
         </div>
       </div>
 
@@ -285,14 +282,6 @@ function DownloadIcon() {
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-  );
-}
-function PlusIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
     </svg>
   );
 }

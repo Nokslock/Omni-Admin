@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   type User,
   type UserStatus,
@@ -10,6 +11,8 @@ import {
   reliabilityColor,
 } from "../_lib/users";
 import { FilterDropdown } from "../_components/FilterDropdown";
+import { AddAdminModal } from "./AddAdminModal";
+import { setUserStatus } from "./actions";
 
 const statusOptions = [
   { value: "all", label: "All" },
@@ -47,13 +50,6 @@ const sortOptions: { value: SortKey; label: string }[] = [
   { value: "name", label: "Name (A–Z)" },
 ];
 
-const stats = [
-  { label: "Total verified", value: "4,218", trend: "+128 wk", trendDir: "up" as const },
-  { label: "Active (24h)", value: "1,802", trend: "42.7%", trendDir: "up" as const },
-  { label: "Suspended", value: "17", trend: "+3 wk", trendDir: "down" as const },
-  { label: "Avg reliability", value: "87.4%", trend: "+1.2%", trendDir: "up" as const },
-];
-
 export function UsersTable({ users }: { users: User[] }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
@@ -87,6 +83,22 @@ export function UsersTable({ users }: { users: User[] }) {
     return list;
   }, [users, query, status, role, reliability, sort]);
 
+  const stats = useMemo<{ label: string; value: string; sub?: string }[]>(() => {
+    const total = users.length;
+    const verified = users.filter((u) => u.verified).length;
+    const suspended = users.filter((u) => u.status === "suspended").length;
+    const avgReliability = total
+      ? Math.round((users.reduce((sum, u) => sum + u.reliability, 0) / total) * 10) / 10
+      : 0;
+    const pct = (n: number) => (total ? `${Math.round((n / total) * 100)}%` : "0%");
+    return [
+      { label: "Total reporters", value: total.toLocaleString() },
+      { label: "Verified", value: verified.toLocaleString(), sub: pct(verified) },
+      { label: "Suspended", value: suspended.toLocaleString(), sub: pct(suspended) },
+      { label: "Avg reliability", value: `${avgReliability}%` },
+    ];
+  }, [users]);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Page header */}
@@ -112,6 +124,7 @@ export function UsersTable({ users }: { users: User[] }) {
               <MailIcon />
               Broadcast
             </button>
+            <AddAdminModal />
           </div>
         </div>
 
@@ -122,13 +135,9 @@ export function UsersTable({ users }: { users: User[] }) {
               <div className="text-xs text-fg-muted">{s.label}</div>
               <div className="mt-2.5 flex items-baseline gap-2">
                 <span className="text-2xl font-semibold tracking-tight">{s.value}</span>
-                <span
-                  className={`inline-flex items-center gap-0.5 font-mono text-[11px] ${
-                    s.trendDir === "up" ? "text-ok" : "text-danger"
-                  }`}
-                >
-                  {s.trendDir === "up" ? "↑" : "↓"} {s.trend}
-                </span>
+                {s.sub && (
+                  <span className="font-mono text-[11px] text-fg-muted">{s.sub} of total</span>
+                )}
               </div>
             </div>
           ))}
@@ -211,11 +220,24 @@ export function UsersTable({ users }: { users: User[] }) {
 }
 
 function UserRow({ user }: { user: User }) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
   const meta = userStatusMeta[user.status];
   const role = roleMeta[user.role];
   const reliColor = reliabilityColor(user.reliability);
   const initials = user.name.split(" ").map((p) => p[0]).slice(0, 2).join("");
   const isSuspended = user.status === "suspended";
+
+  async function toggleStatus() {
+    setPending(true);
+    const res = await setUserStatus(user.id, isSuspended ? "clear" : "suspended");
+    setPending(false);
+    if ("ok" in res) {
+      router.refresh();
+    } else {
+      alert(res.error);
+    }
+  }
 
   return (
     <tr className="border-b border-border transition-colors hover:bg-bg-elev/40">
@@ -294,9 +316,15 @@ function UserRow({ user }: { user: User }) {
             View activity
           </button>
           <button
-            className="inline-flex h-8 items-center rounded-md border border-danger/40 px-3 text-xs font-medium text-danger hover:bg-danger/10 transition-colors"
+            onClick={toggleStatus}
+            disabled={pending}
+            className={`inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium transition-colors disabled:opacity-50 ${
+              isSuspended
+                ? "border-ok/40 text-ok hover:bg-ok/10"
+                : "border-danger/40 text-danger hover:bg-danger/10"
+            }`}
           >
-            {isSuspended ? "Reinstate" : "Suspend"}
+            {pending ? "…" : isSuspended ? "Reinstate" : "Suspend"}
           </button>
         </div>
       </td>
