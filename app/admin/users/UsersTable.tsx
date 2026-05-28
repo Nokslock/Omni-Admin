@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from "react";
 import {
-  users as allUsers,
   type User,
   type UserStatus,
+  type UserRole,
   userStatusMeta,
+  roleMeta,
   reliabilityColor,
 } from "../_lib/users";
 import { FilterDropdown } from "../_components/FilterDropdown";
@@ -15,6 +16,12 @@ const statusOptions = [
   { value: "clear", label: "Clear" },
   { value: "investigation", label: "Under Investigation" },
   { value: "suspended", label: "Suspended" },
+];
+
+const roleOptions = [
+  { value: "all", label: "All roles" },
+  { value: "admin", label: "Admins" },
+  { value: "user", label: "Users" },
 ];
 
 const reliabilityOptions = [
@@ -47,21 +54,23 @@ const stats = [
   { label: "Avg reliability", value: "87.4%", trend: "+1.2%", trendDir: "up" as const },
 ];
 
-export function UsersTable() {
+export function UsersTable({ users }: { users: User[] }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
+  const [role, setRole] = useState("all");
   const [reliability, setReliability] = useState("any");
   const [joined, setJoined] = useState("any");
   const [sort, setSort] = useState<SortKey>("reports");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let list = allUsers.filter((u) => {
+    let list = users.filter((u) => {
       if (q) {
         const hay = `${u.name} ${u.email} ${u.phone}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       if (status !== "all" && u.status !== (status as UserStatus)) return false;
+      if (role !== "all" && u.role !== (role as UserRole)) return false;
       if (reliability === "high" && u.reliability < 80) return false;
       if (reliability === "medium" && (u.reliability < 60 || u.reliability >= 80)) return false;
       if (reliability === "low" && u.reliability >= 60) return false;
@@ -76,7 +85,7 @@ export function UsersTable() {
       }
     });
     return list;
-  }, [query, status, reliability, sort]);
+  }, [users, query, status, role, reliability, sort]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -91,7 +100,7 @@ export function UsersTable() {
             </nav>
             <h1 className="text-3xl font-semibold tracking-tight">User Directory</h1>
             <p className="mt-1 text-sm text-fg-muted">
-              Mobile reporters · <span className="font-semibold text-fg">{filtered.length}</span> of {allUsers.length} shown
+              Mobile reporters · <span className="font-semibold text-fg">{filtered.length}</span> of {users.length} shown
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -142,6 +151,7 @@ export function UsersTable() {
         </div>
         <span className="hidden h-6 w-px bg-border md:block" aria-hidden />
         <FilterDropdown label="Status" value={status} options={statusOptions} onChange={setStatus} />
+        <FilterDropdown label="Role" value={role} options={roleOptions} onChange={setRole} />
         <FilterDropdown label="Reliability" value={reliability} options={reliabilityOptions} onChange={setReliability} />
         <FilterDropdown label="Joined" value={joined} options={joinedOptions} onChange={setJoined} />
         <div className="ml-auto">
@@ -183,7 +193,7 @@ export function UsersTable() {
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-border bg-bg px-6 py-3 text-xs text-fg-muted">
-        <span>{filtered.length} of {allUsers.length} users</span>
+        <span>{filtered.length} of {users.length} users</span>
         <div className="flex items-center gap-3">
           <button aria-label="Previous page" className="inline-flex h-7 w-7 items-center justify-center rounded border border-border text-fg-muted hover:text-fg disabled:opacity-40" disabled>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="15 18 9 12 15 6" /></svg>
@@ -202,6 +212,7 @@ export function UsersTable() {
 
 function UserRow({ user }: { user: User }) {
   const meta = userStatusMeta[user.status];
+  const role = roleMeta[user.role];
   const reliColor = reliabilityColor(user.reliability);
   const initials = user.name.split(" ").map((p) => p[0]).slice(0, 2).join("");
   const isSuspended = user.status === "suspended";
@@ -225,6 +236,17 @@ function UserRow({ user }: { user: User }) {
                   <path d="m9 12 2 2 4-4" />
                 </svg>
               )}
+              <span
+                className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                style={{
+                  color: role.color,
+                  borderColor: `color-mix(in oklab, ${role.color} 28%, transparent)`,
+                  background: `color-mix(in oklab, ${role.color} 12%, transparent)`,
+                  borderWidth: 1,
+                }}
+              >
+                {role.label}
+              </span>
             </div>
             <div className="text-[11px] text-fg-muted">{user.email}</div>
           </div>

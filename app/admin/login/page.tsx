@@ -7,7 +7,15 @@ export const metadata: Metadata = {
   description: "Sign in to the Omni admin portal.",
 };
 
-export default function AdminLoginPage() {
+export default async function AdminLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+  const initialError =
+    error === "not_admin" ? "This account doesn't have admin access." : null;
+
   return (
     <div className="relative flex min-h-dvh flex-col bg-bg text-fg">
       <div className="pointer-events-none absolute inset-0 bg-grid opacity-50" aria-hidden />
@@ -48,7 +56,7 @@ export default function AdminLoginPage() {
           </div>
 
           <div className="mt-7">
-            <LoginForm />
+            <LoginForm initialError={initialError} />
           </div>
 
           <div className="mt-6 flex items-start gap-2.5 rounded-lg border border-border bg-bg-elev/50 px-3.5 py-3 text-[11px] leading-relaxed text-fg-muted">

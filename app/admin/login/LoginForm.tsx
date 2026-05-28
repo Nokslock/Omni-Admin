@@ -1,20 +1,32 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signInAdmin } from "./actions";
 
-export function LoginForm() {
+export function LoginForm({ initialError = null }: { initialError?: string | null }) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(initialError);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    // TODO: wire to Supabase auth
-    await new Promise((r) => setTimeout(r, 900));
-    setSubmitting(false);
+    setError(null);
+
+    const result = await signInAdmin(email, password);
+
+    if ("error" in result) {
+      setError(result.error);
+      setSubmitting(false);
+      return;
+    }
+
+    router.replace("/admin/dashboard");
   }
 
   return (
@@ -101,6 +113,15 @@ export function LoginForm() {
         </span>
         Remember this device for 7 days
       </label>
+
+      {error && (
+        <p
+          role="alert"
+          className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2.5 text-xs font-medium text-danger"
+        >
+          {error}
+        </p>
+      )}
 
       <button
         type="submit"
