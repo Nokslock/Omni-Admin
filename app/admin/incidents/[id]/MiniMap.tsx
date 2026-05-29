@@ -3,19 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import { type Incident, typeColor } from "../../_lib/incidents";
+import { currentMapStyle, observeMapTheme } from "../../_lib/mapTheme";
 
 const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-const DARK_STYLE: google.maps.MapTypeStyle[] = [
-  { elementType: "geometry", stylers: [{ color: "#0f1115" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#0f1115" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#8a93a3" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#222730" }] },
-  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#2d333d" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a1622" }] },
-  { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
-  { featureType: "transit", stylers: [{ visibility: "off" }] },
-];
 
 export function MiniMap({ incident }: { incident: Incident }) {
   const { lat, lng } = incident.coords;
@@ -28,6 +18,7 @@ export function MiniMap({ incident }: { incident: Incident }) {
   useEffect(() => {
     if (!apiKey) return;
     let cancelled = false;
+    let stopThemeObserver: (() => void) | undefined;
     setOptions({ key: apiKey, v: "weekly" });
 
     importLibrary("maps")
@@ -40,7 +31,7 @@ export function MiniMap({ incident }: { incident: Incident }) {
           gestureHandling: "none",
           keyboardShortcuts: false,
           clickableIcons: false,
-          styles: DARK_STYLE,
+          styles: currentMapStyle(),
         });
         new google.maps.Marker({
           position: { lat, lng },
@@ -54,11 +45,13 @@ export function MiniMap({ incident }: { incident: Incident }) {
             scale: 8,
           },
         });
+        stopThemeObserver = observeMapTheme((styles) => map.setOptions({ styles }));
       })
       .catch(() => setError("Failed to load map"));
 
     return () => {
       cancelled = true;
+      stopThemeObserver?.();
     };
   }, [lat, lng, color]);
 

@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { IncidentCard } from "./IncidentCard";
-import type { Incident, Severity } from "../_lib/incidents";
+import type { Incident, IncidentType, Severity } from "../_lib/incidents";
 
 type Filter = "all" | "critical" | "high" | "medium" | "resolved";
+type SortKey = "newest" | "oldest" | "severity";
 
 const filters: { id: Filter; label: string }[] = [
   { id: "all", label: "All" },
@@ -20,6 +21,31 @@ const sevMatch: Record<Exclude<Filter, "all" | "resolved">, Severity> = {
   medium: "medium",
 };
 
+const typeFilters: { id: IncidentType | "all"; label: string }[] = [
+  { id: "all", label: "All types" },
+  { id: "fire", label: "Fire" },
+  { id: "armed", label: "Armed Incident" },
+  { id: "crash", label: "Car Crash" },
+  { id: "medical", label: "Medical" },
+  { id: "flood", label: "Flooding" },
+  { id: "traffic", label: "Traffic" },
+  { id: "other", label: "Other" },
+];
+
+const sortOptions: { id: SortKey; label: string }[] = [
+  { id: "newest", label: "Newest first" },
+  { id: "oldest", label: "Oldest first" },
+  { id: "severity", label: "Severity (high → low)" },
+];
+
+const severityRank: Record<Severity, number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  info: 3,
+  resolved: 4,
+};
+
 type Props = {
   incidents: Incident[];
   selectedId: string | null;
@@ -28,12 +54,52 @@ type Props = {
 
 export function IncidentFeed({ incidents, selectedId, onSelect }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
+  const [typeFilter, setTypeFilter] = useState<IncidentType | "all">("all");
+  const [sort, setSort] = useState<SortKey>("newest");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const actionsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!filterOpen && !menuOpen) return;
+    function onDown(e: MouseEvent) {
+      if (actionsRef.current && !actionsRef.current.contains(e.target as Node)) {
+        setFilterOpen(false);
+        setMenuOpen(false);
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setFilterOpen(false);
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [filterOpen, menuOpen]);
 
   const filtered = useMemo(() => {
-    if (filter === "all") return incidents.filter((i) => i.status !== "resolved" && i.status !== "false_alarm");
-    if (filter === "resolved") return incidents.filter((i) => i.status === "resolved" || i.status === "false_alarm");
-    return incidents.filter((i) => i.severity === sevMatch[filter]);
-  }, [filter, incidents]);
+    let list: Incident[];
+    if (filter === "resolved") {
+      list = incidents.filter((i) => i.status === "resolved" || i.status === "false_alarm");
+    } else {
+      const active = incidents.filter((i) => i.status !== "resolved" && i.status !== "false_alarm");
+      list = filter === "all" ? active : active.filter((i) => i.severity === sevMatch[filter]);
+    }
+
+    if (typeFilter !== "all") list = list.filter((i) => i.type === typeFilter);
+
+    if (sort === "oldest") list = [...list].reverse();
+    else if (sort === "severity")
+      list = [...list].sort((a, b) => severityRank[a.severity] - severityRank[b.severity]);
+    // "newest" keeps the incoming order (DB returns newest-first).
+
+    return list;
+  }, [filter, typeFilter, sort, incidents]);
 
   return (
     <aside className="flex h-full min-h-0 flex-col border-r border-border bg-bg-card">
@@ -45,13 +111,93 @@ export function IncidentFeed({ incidents, selectedId, onSelect }: Props) {
               {filtered.length}
             </span>
           </div>
-          <div className="flex items-center gap-1">
-            <button aria-label="Filter" className="inline-flex h-7 w-7 items-center justify-center rounded text-fg-muted hover:bg-bg-elev hover:text-fg">
-              <FilterIcon />
-            </button>
-            <button aria-label="More" className="inline-flex h-7 w-7 items-center justify-center rounded text-fg-muted hover:bg-bg-elev hover:text-fg">
-              <DotsIcon />
-            </button>
+          <div ref={actionsRef} className="flex items-center gap-1">
+            {/* Filter by type */}
+            <div className="relative">
+              <button
+                aria-label="Filter by type"
+                aria-haspopup="menu"
+                aria-expanded={filterOpen}
+                onClick={() => {
+                  setFilterOpen((v) => !v);
+                  setMenuOpen(false);
+                }}
+                className={`relative inline-flex h-7 w-7 items-center justify-center rounded hover:bg-bg-elev hover:text-fg ${
+                  typeFilter !== "all" ? "text-fg" : "text-fg-muted"
+                }`}
+              >
+                <FilterIcon />
+                {typeFilter !== "all" && (
+                  <span className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-info" />
+                )}
+              </button>
+              {filterOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 z-50 mt-1 w-44 overflow-hidden rounded-lg border border-border bg-bg-card py-1 shadow-xl shadow-black/40"
+                >
+                  <div className="px-3 py-1 text-[10px] uppercase tracking-wider text-fg-subtle">
+                    Type
+                  </div>
+                  {typeFilters.map((t) => (
+                    <button
+                      key={t.id}
+                      role="menuitemradio"
+                      aria-checked={typeFilter === t.id}
+                      onClick={() => {
+                        setTypeFilter(t.id);
+                        setFilterOpen(false);
+                      }}
+                      className="flex w-full items-center justify-between px-3 py-1.5 text-left text-sm text-fg hover:bg-bg-elev transition-colors"
+                    >
+                      {t.label}
+                      {typeFilter === t.id && <CheckIcon />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Sort menu */}
+            <div className="relative">
+              <button
+                aria-label="Sort"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                onClick={() => {
+                  setMenuOpen((v) => !v);
+                  setFilterOpen(false);
+                }}
+                className="inline-flex h-7 w-7 items-center justify-center rounded text-fg-muted hover:bg-bg-elev hover:text-fg"
+              >
+                <DotsIcon />
+              </button>
+              {menuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 z-50 mt-1 w-52 overflow-hidden rounded-lg border border-border bg-bg-card py-1 shadow-xl shadow-black/40"
+                >
+                  <div className="px-3 py-1 text-[10px] uppercase tracking-wider text-fg-subtle">
+                    Sort by
+                  </div>
+                  {sortOptions.map((s) => (
+                    <button
+                      key={s.id}
+                      role="menuitemradio"
+                      aria-checked={sort === s.id}
+                      onClick={() => {
+                        setSort(s.id);
+                        setMenuOpen(false);
+                      }}
+                      className="flex w-full items-center justify-between px-3 py-1.5 text-left text-sm text-fg hover:bg-bg-elev transition-colors"
+                    >
+                      {s.label}
+                      {sort === s.id && <CheckIcon />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -107,6 +253,14 @@ function FilterIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-ok" aria-hidden>
+      <polyline points="20 6 9 17 4 12" />
     </svg>
   );
 }

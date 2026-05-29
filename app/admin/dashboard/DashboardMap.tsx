@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import { type Incident, typeColor } from "../_lib/incidents";
+import { currentMapStyle, observeMapTheme } from "../_lib/mapTheme";
 import { IncidentDetailCard } from "./IncidentDetailCard";
 
 type View = "map" | "satellite";
@@ -13,20 +14,6 @@ const views: { id: View; label: string }[] = [
 ];
 
 const LAGOS = { lat: 6.5244, lng: 3.3792 };
-
-// Dark basemap style (raster map type, no Map ID required).
-const DARK_STYLE: google.maps.MapTypeStyle[] = [
-  { elementType: "geometry", stylers: [{ color: "#0f1115" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#0f1115" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#8a93a3" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#222730" }] },
-  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#1a1e25" }] },
-  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#2d333d" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a1622" }] },
-  { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
-  { featureType: "transit", stylers: [{ visibility: "off" }] },
-  { featureType: "administrative", elementType: "geometry", stylers: [{ color: "#2a2f38" }] },
-];
 
 type Props = {
   incidents: Incident[];
@@ -80,7 +67,7 @@ export function DashboardMap({ incidents, selectedId, onSelect }: Props) {
           zoom: 12,
           disableDefaultUI: true,
           gestureHandling: "greedy",
-          styles: DARK_STYLE,
+          styles: currentMapStyle(),
           clickableIcons: false,
         });
         map.addListener("idle", () => {
@@ -141,6 +128,12 @@ export function DashboardMap({ incidents, selectedId, onSelect }: Props) {
     if (!ready || !map) return;
     map.setMapTypeId(view === "satellite" ? "hybrid" : "roadmap");
   }, [ready, view]);
+
+  // Follow the light/dark theme toggle.
+  useEffect(() => {
+    if (!ready) return;
+    return observeMapTheme((styles) => mapRef.current?.setOptions({ styles }));
+  }, [ready]);
 
   function zoom(delta: number) {
     const map = mapRef.current;
