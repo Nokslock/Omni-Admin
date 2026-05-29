@@ -3,6 +3,7 @@ import { AdminNav } from "../_components/AdminNav";
 import { getCurrentAdmin } from "../_lib/admin";
 import { roleMeta } from "../_lib/users";
 import type { UserRole } from "../_lib/users";
+import { ChangePasswordModal } from "./ChangePasswordModal";
 
 export const metadata: Metadata = {
   title: "Profile — Omni Admin",
@@ -55,6 +56,14 @@ export default async function ProfilePage() {
               <Field label="Role" value={role?.label || admin?.role || "—"} />
               <Field label="Access" value="Admin portal" />
             </dl>
+
+            <div className="mt-6 flex items-center justify-between border-t border-border pt-5">
+              <div>
+                <div className="text-sm font-medium text-fg">Password</div>
+                <div className="text-xs text-fg-muted">Update the password you use to sign in.</div>
+              </div>
+              <ChangePasswordModal />
+            </div>
           </div>
         </div>
       </main>

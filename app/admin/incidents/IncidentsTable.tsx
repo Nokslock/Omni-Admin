@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   type Incident,
   type IncidentStatus,
@@ -58,6 +59,17 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
   const [type, setType] = useState("all");
   const [severity, setSeverity] = useState("all");
   const [time, setTime] = useState("24h");
+
+  const router = useRouter();
+  const [isRefreshing, startTransition] = useTransition();
+
+  // Auto-refresh the incident list every minute.
+  useEffect(() => {
+    const id = setInterval(() => {
+      startTransition(() => router.refresh());
+    }, 60_000);
+    return () => clearInterval(id);
+  }, [router]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -119,10 +131,10 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
         <div className="ml-auto inline-flex items-center gap-1.5 text-xs text-fg-muted">
           <span>Auto-refresh</span>
           <span className="relative inline-flex h-1.5 w-1.5">
-            <span className="absolute inset-0 rounded-full bg-ok animate-ping-slow" />
+            {isRefreshing && <span className="absolute inset-0 rounded-full bg-ok animate-ping-slow" />}
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-ok" />
           </span>
-          <span className="font-mono text-fg">5s</span>
+          <span className="font-mono text-fg">{isRefreshing ? "syncing…" : "1m"}</span>
         </div>
       </div>
 

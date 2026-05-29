@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/app/lib/supabase/server";
+import type { IncidentStatus, IncidentType, Severity } from "../_lib/incidents";
 
 export type NewIncidentInput = {
   title: string;
@@ -11,7 +12,7 @@ export type NewIncidentInput = {
   description: string;
   location: string;
   address: string;
-  reporterName: string;
+  reporterId: string | null; // null = anonymous
   lat: number;
   lng: number;
 };
@@ -43,7 +44,6 @@ export async function createIncident(
     input.description,
     input.location,
     input.address,
-    input.reporterName,
   ];
   if (text.some((v) => !v || !v.trim())) {
     return { error: "Please fill in all required fields." };
@@ -53,6 +53,21 @@ export async function createIncident(
   }
 
   const supabase = createAdminClient();
+
+  // Resolve the reporter (a linked user, or anonymous).
+  let reporterName = "Anonymous";
+  let reporterId: string | null = null;
+  if (input.reporterId) {
+    const { data: user } = await supabase
+      .from("users")
+      .select("name")
+      .eq("id", input.reporterId)
+      .maybeSingle();
+    if (!user) return { error: "Selected reporter was not found." };
+    reporterName = user.name;
+    reporterId = input.reporterId;
+  }
+
   const id = genId();
   const { error } = await supabase.from("incidents").insert({
     id,
@@ -61,7 +76,8 @@ export async function createIncident(
     description: input.description.trim(),
     status: input.status,
     severity: input.severity,
-    reporter_name: input.reporterName.trim(),
+    reporter_name: reporterName,
+    reporter_id: reporterId,
     reporter_phone: "",
     location: input.location.trim(),
     address: input.address.trim(),
@@ -128,4 +144,50 @@ export async function deleteIncident(id: string): Promise<IncidentActionResult> 
   revalidatePath("/admin/incidents");
   revalidatePath("/admin/dashboard");
   return { ok: true };
+}
+
+export type ReporterOption = { id: string; name: string };
+
+export async function getReporters(): Promise<ReporterOption[]> {
+  const supabase = createAdminClient();
+  const { data } = await supabase.from("users").select("id, name").order("name");
+  return (data as ReporterOption[] | null) ?? [];
+}
+
+export type ReporterIncident = {
+  id: string;
+  title: string;
+  type: IncidentType;
+  severity: Severity;
+  status: IncidentStatus;
+  reportedAt: string;
+};
+
+type ReporterIncidentRow = {
+  id: string;
+  title: string;
+  type: IncidentType;
+  severity: Severity;
+  status: IncidentStatus;
+  reported_at: string;
+};
+
+export async function getIncidentsByReporter(
+  userId: string,
+): Promise<ReporterIncident[]> {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("incidents")
+    .select("id, title, type, severity, status, reported_at")
+    .eq("reporter_id", userId)
+    .order("reported_at", { ascending: false });
+
+  return ((data as ReporterIncidentRow[] | null) ?? []).map((r) => ({
+    id: r.id,
+    title: r.title,
+    type: r.type,
+    severity: r.severity,
+    status: r.status,
+    reportedAt: r.reported_at,
+  }));
 }

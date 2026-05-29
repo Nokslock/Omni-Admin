@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { IncidentStatus } from "../_lib/incidents";
 import { updateIncidentStatus, deleteIncident } from "./actions";
+import { ConfirmDialog } from "../_components/ConfirmDialog";
 
 const statusActions: { value: IncidentStatus; label: string }[] = [
   { value: "active", label: "Mark Active" },
@@ -23,6 +24,7 @@ export function IncidentRowActions({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,12 +52,16 @@ export function IncidentRowActions({
     else router.refresh();
   }
 
-  async function remove() {
-    if (!confirm(`Delete incident ${id}? This can't be undone.`)) return;
+  function remove() {
+    setOpen(false);
+    setConfirmOpen(true);
+  }
+
+  async function confirmDelete() {
     setBusy(true);
     const res = await deleteIncident(id);
     setBusy(false);
-    setOpen(false);
+    setConfirmOpen(false);
     if ("error" in res) alert(res.error);
     else router.refresh();
   }
@@ -130,6 +136,17 @@ export function IncidentRowActions({
           </button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete incident"
+        message={`Delete incident ${id}? This can't be undone.`}
+        confirmLabel="Delete"
+        destructive
+        busy={busy}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createIncident } from "./actions";
+import { createIncident, getReporters, type ReporterOption } from "./actions";
 import { LocationAutocomplete } from "./LocationAutocomplete";
 
 const typeOptions = [
@@ -38,6 +38,7 @@ export function NewIncidentModal() {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [anonymous, setAnonymous] = useState(false);
+  const [reporters, setReporters] = useState<ReporterOption[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -46,6 +47,7 @@ export function NewIncidentModal() {
       if (e.key === "Escape") setOpen(false);
     }
     document.addEventListener("keydown", onKey);
+    getReporters().then(setReporters);
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
@@ -62,7 +64,7 @@ export function NewIncidentModal() {
       description: String(fd.get("description") ?? ""),
       location: String(fd.get("location") ?? ""),
       address: String(fd.get("address") ?? ""),
-      reporterName: anonymous ? "Anonymous" : String(fd.get("reporterName") ?? ""),
+      reporterId: anonymous ? null : String(fd.get("reporterId") ?? "") || null,
       lat: parseFloat(String(fd.get("lat") ?? "")),
       lng: parseFloat(String(fd.get("lng") ?? "")),
     });
@@ -180,8 +182,17 @@ export function NewIncidentModal() {
                 </label>
 
                 {!anonymous && (
-                  <Field label="Reporter name">
-                    <input name="reporterName" required placeholder="Adebayo Ogundimu" className={fieldClass} />
+                  <Field label="Reporter">
+                    <select name="reporterId" required defaultValue="" className={fieldClass}>
+                      <option value="" disabled>
+                        Select a reporter…
+                      </option>
+                      {reporters.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.name}
+                        </option>
+                      ))}
+                    </select>
                   </Field>
                 )}
               </div>

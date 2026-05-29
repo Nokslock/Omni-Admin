@@ -24,6 +24,7 @@ export type Incident = {
   status: IncidentStatus;
   severity: Severity;
   reporter: string;
+  reporterId: string | null;
   reporterPhone: string;
   reportedAt: string; // human-readable "3m ago"
   reportedDate: string; // "2025-11-27"

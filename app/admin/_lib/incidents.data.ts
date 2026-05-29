@@ -16,6 +16,7 @@ type IncidentRow = {
   status: IncidentStatus;
   severity: Severity;
   reporter_name: string;
+  reporter_id: string | null;
   reporter_phone: string;
   location: string;
   address: string;
@@ -46,6 +47,7 @@ function mapRow(row: IncidentRow): Incident {
     status: row.status,
     severity: row.severity,
     reporter: row.reporter_name,
+    reporterId: row.reporter_id ?? null,
     reporterPhone: row.reporter_phone,
     reportedAt: relativeTime(row.reported_at),
     reportedDate: new Date(row.reported_at).toISOString().slice(0, 10),
@@ -57,7 +59,7 @@ function mapRow(row: IncidentRow): Incident {
 }
 
 const COLUMNS =
-  "id, type, title, description, status, severity, reporter_name, reporter_phone, location, address, lat, lng, map_x, map_y, reported_at";
+  "id, type, title, description, status, severity, reporter_name, reporter_id, reporter_phone, location, address, lat, lng, map_x, map_y, reported_at";
 
 export async function getIncidents(): Promise<Incident[]> {
   const supabase = createAdminClient();

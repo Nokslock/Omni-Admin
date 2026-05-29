@@ -8,6 +8,7 @@ import {
   updateIncidentSeverity,
   deleteIncident,
 } from "../actions";
+import { ConfirmDialog } from "../../_components/ConfirmDialog";
 
 export function IncidentActions({
   id,
@@ -21,6 +22,7 @@ export function IncidentActions({
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -56,12 +58,17 @@ export function IncidentActions({
     else router.refresh();
   }
 
-  async function remove() {
-    if (!confirm(`Delete incident ${id}? This can't be undone.`)) return;
+  function remove() {
+    setOpen(false);
+    setConfirmOpen(true);
+  }
+
+  async function confirmDelete() {
     setBusy(true);
     const res = await deleteIncident(id);
     if ("error" in res) {
       setBusy(false);
+      setConfirmOpen(false);
       alert(res.error);
       return;
     }
@@ -148,6 +155,17 @@ export function IncidentActions({
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete incident"
+        message={`Delete incident ${id}? This can't be undone.`}
+        confirmLabel="Delete"
+        destructive
+        busy={busy}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   );
 }

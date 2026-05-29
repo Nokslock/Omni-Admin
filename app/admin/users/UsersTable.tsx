@@ -13,6 +13,7 @@ import {
 import { FilterDropdown } from "../_components/FilterDropdown";
 import { AddAdminModal } from "./AddAdminModal";
 import { setUserStatus } from "./actions";
+import { UserActivityPanel } from "./UserActivityPanel";
 
 const statusOptions = [
   { value: "all", label: "All" },
@@ -221,6 +222,7 @@ export function UsersTable({ users }: { users: User[] }) {
 function UserRow({ user }: { user: User }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [activityOpen, setActivityOpen] = useState(false);
   const meta = userStatusMeta[user.status];
   const role = roleMeta[user.role];
   const reliColor = reliabilityColor(user.reliability);
@@ -295,9 +297,15 @@ function UserRow({ user }: { user: User }) {
       </td>
       <td className="px-6 py-4 text-right">
         <div className="inline-flex items-center gap-2">
-          <button className="inline-flex h-8 items-center rounded-md border border-border px-3 text-xs font-medium text-fg hover:border-border-strong transition-colors">
+          <button
+            onClick={() => setActivityOpen(true)}
+            className="inline-flex h-8 items-center rounded-md border border-border px-3 text-xs font-medium text-fg hover:border-border-strong transition-colors"
+          >
             View activity
           </button>
+          {activityOpen && (
+            <UserActivityPanel user={user} onClose={() => setActivityOpen(false)} />
+          )}
           <button
             onClick={toggleStatus}
             disabled={pending}
