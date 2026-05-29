@@ -5,7 +5,6 @@ export type IncidentType =
   | "medical"
   | "flood"
   | "traffic"
-  | "power"
   | "other";
 
 export type IncidentStatus =
@@ -42,7 +41,6 @@ export const typeLabels: Record<IncidentType, string> = {
   medical: "Medical",
   flood: "Flooding",
   traffic: "Traffic",
-  power: "Power Outage",
   other: "Other",
 };
 
@@ -53,7 +51,6 @@ export const typeColor: Record<IncidentType, string> = {
   medical: "#22c55e",
   flood: "#eab308",
   traffic: "#fb923c",
-  power: "#3b82f6",
   other: "#a3a3a3",
 };
 

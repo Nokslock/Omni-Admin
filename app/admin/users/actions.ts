@@ -7,7 +7,6 @@ export type NewAdminInput = {
   name: string;
   email: string;
   password: string;
-  phone: string;
 };
 
 export type CreateAdminResult = { ok: true } | { error: string };
@@ -19,10 +18,9 @@ function genId(): string {
 export async function createAdmin(input: NewAdminInput): Promise<CreateAdminResult> {
   const name = input.name?.trim();
   const email = input.email?.trim().toLowerCase();
-  const phone = input.phone?.trim();
   const password = input.password ?? "";
 
-  if (!name || !email || !phone || !password) {
+  if (!name || !email || !password) {
     return { error: "Please fill in all fields." };
   }
   if (password.length < 6) {
@@ -49,9 +47,6 @@ export async function createAdmin(input: NewAdminInput): Promise<CreateAdminResu
     id: genId(),
     name,
     email,
-    phone,
-    phone_verified: true,
-    verified: true,
     avatar_color: "#6366f1",
     reliability: 100,
     status: "clear",

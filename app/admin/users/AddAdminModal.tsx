@@ -31,7 +31,6 @@ export function AddAdminModal() {
       name: String(fd.get("name") ?? ""),
       email: String(fd.get("email") ?? ""),
       password: String(fd.get("password") ?? ""),
-      phone: String(fd.get("phone") ?? ""),
     });
 
     if ("error" in res) {
@@ -99,9 +98,6 @@ export function AddAdminModal() {
                     placeholder="At least 6 characters"
                     className={fieldClass}
                   />
-                </Field>
-                <Field label="Phone">
-                  <input name="phone" required placeholder="+234 803 000 0000" className={fieldClass} />
                 </Field>
               </div>
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createIncident } from "./actions";
+import { LocationAutocomplete } from "./LocationAutocomplete";
 
 const typeOptions = [
   { value: "fire", label: "Fire" },
@@ -11,7 +12,6 @@ const typeOptions = [
   { value: "medical", label: "Medical" },
   { value: "flood", label: "Flooding" },
   { value: "traffic", label: "Traffic" },
-  { value: "power", label: "Power Outage" },
   { value: "other", label: "Other" },
 ];
 
@@ -37,6 +37,7 @@ export function NewIncidentModal() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [anonymous, setAnonymous] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -61,8 +62,7 @@ export function NewIncidentModal() {
       description: String(fd.get("description") ?? ""),
       location: String(fd.get("location") ?? ""),
       address: String(fd.get("address") ?? ""),
-      reporterName: String(fd.get("reporterName") ?? ""),
-      reporterPhone: String(fd.get("reporterPhone") ?? ""),
+      reporterName: anonymous ? "Anonymous" : String(fd.get("reporterName") ?? ""),
       lat: parseFloat(String(fd.get("lat") ?? "")),
       lng: parseFloat(String(fd.get("lng") ?? "")),
     });
@@ -155,32 +155,35 @@ export function NewIncidentModal() {
                   />
                 </Field>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field label="Location">
-                    <input name="location" required placeholder="Admiralty Way, Lekki" className={fieldClass} />
-                  </Field>
-                  <Field label="District / Area">
-                    <input name="address" required placeholder="Lekki Phase 1" className={fieldClass} />
-                  </Field>
-                </div>
+                <LocationAutocomplete />
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <label className="flex items-center justify-between gap-3 rounded-lg border border-border bg-bg-elev px-3.5 py-2.5">
+                  <span className="text-sm text-fg">
+                    Report anonymously
+                    <span className="block text-[11px] text-fg-muted">Hide the reporter&apos;s name.</span>
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={anonymous}
+                    onClick={() => setAnonymous((v) => !v)}
+                    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
+                      anonymous ? "bg-fg" : "border border-border-strong bg-bg-card"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-3.5 w-3.5 rounded-full transition-transform ${
+                        anonymous ? "translate-x-[18px] bg-bg" : "translate-x-[3px] bg-fg-muted"
+                      }`}
+                    />
+                  </button>
+                </label>
+
+                {!anonymous && (
                   <Field label="Reporter name">
                     <input name="reporterName" required placeholder="Adebayo Ogundimu" className={fieldClass} />
                   </Field>
-                  <Field label="Reporter phone">
-                    <input name="reporterPhone" required placeholder="+234 803 000 0000" className={fieldClass} />
-                  </Field>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field label="Latitude">
-                    <input name="lat" type="number" step="any" required placeholder="6.4488" className={fieldClass} />
-                  </Field>
-                  <Field label="Longitude">
-                    <input name="lng" type="number" step="any" required placeholder="3.3621" className={fieldClass} />
-                  </Field>
-                </div>
+                )}
               </div>
 
               {error && (

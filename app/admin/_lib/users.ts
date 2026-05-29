@@ -6,9 +6,6 @@ export type User = {
   id: string;
   name: string;
   email: string;
-  phone: string;
-  phoneVerified: boolean;
-  verified: boolean;
   avatarColor: string;
   joined: string; // formatted "12 Aug 24"
   joinedDate: string; // ISO "2024-08-12"

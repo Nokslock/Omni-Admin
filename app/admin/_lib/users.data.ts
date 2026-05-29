@@ -6,9 +6,6 @@ type UserRow = {
   id: string;
   name: string;
   email: string;
-  phone: string;
-  phone_verified: boolean;
-  verified: boolean;
   avatar_color: string;
   joined_date: string;
   reports: number;
@@ -30,9 +27,6 @@ function mapRow(row: UserRow): User {
     id: row.id,
     name: row.name,
     email: row.email,
-    phone: row.phone,
-    phoneVerified: row.phone_verified,
-    verified: row.verified,
     avatarColor: row.avatar_color,
     joined: formatJoined(row.joined_date),
     joinedDate: row.joined_date,
@@ -48,7 +42,7 @@ export async function getUsers(): Promise<User[]> {
   const { data, error } = await supabase
     .from("users")
     .select(
-      "id, name, email, phone, phone_verified, verified, avatar_color, joined_date, reports, reliability, status, role",
+      "id, name, email, avatar_color, joined_date, reports, reliability, status, role",
     )
     .order("reports", { ascending: false });
 

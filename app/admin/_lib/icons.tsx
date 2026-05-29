@@ -62,12 +62,6 @@ export function TypeIcon({ type, size = 16 }: { type: IncidentType; size?: numbe
           <circle cx="12" cy="17" r="1.5" />
         </svg>
       );
-    case "power":
-      return (
-        <svg {...props} width={size} height={size}>
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-        </svg>
-      );
     case "other":
     default:
       return (

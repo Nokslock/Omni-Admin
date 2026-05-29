@@ -62,7 +62,7 @@ export function UsersTable({ users }: { users: User[] }) {
     const q = query.trim().toLowerCase();
     let list = users.filter((u) => {
       if (q) {
-        const hay = `${u.name} ${u.email} ${u.phone}`.toLowerCase();
+        const hay = `${u.name} ${u.email}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       if (status !== "all" && u.status !== (status as UserStatus)) return false;
@@ -85,7 +85,7 @@ export function UsersTable({ users }: { users: User[] }) {
 
   const stats = useMemo<{ label: string; value: string; sub?: string }[]>(() => {
     const total = users.length;
-    const verified = users.filter((u) => u.verified).length;
+    const admins = users.filter((u) => u.role === "admin").length;
     const suspended = users.filter((u) => u.status === "suspended").length;
     const avgReliability = total
       ? Math.round((users.reduce((sum, u) => sum + u.reliability, 0) / total) * 10) / 10
@@ -93,7 +93,7 @@ export function UsersTable({ users }: { users: User[] }) {
     const pct = (n: number) => (total ? `${Math.round((n / total) * 100)}%` : "0%");
     return [
       { label: "Total reporters", value: total.toLocaleString() },
-      { label: "Verified", value: verified.toLocaleString(), sub: pct(verified) },
+      { label: "Admins", value: admins.toLocaleString(), sub: pct(admins) },
       { label: "Suspended", value: suspended.toLocaleString(), sub: pct(suspended) },
       { label: "Avg reliability", value: `${avgReliability}%` },
     ];
@@ -154,7 +154,7 @@ export function UsersTable({ users }: { users: User[] }) {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search name, email, phone…"
+            placeholder="Search name, email…"
             className="h-10 w-full rounded-lg border border-border bg-bg-card pl-9 pr-3 text-sm text-fg placeholder:text-fg-subtle focus:border-fg-muted focus:outline-none focus:ring-1 focus:ring-fg-muted/30"
           />
         </div>
@@ -179,7 +179,6 @@ export function UsersTable({ users }: { users: User[] }) {
           <thead className="sticky top-0 z-10 bg-bg">
             <tr className="text-left text-[10px] uppercase tracking-wider text-fg-subtle">
               <th className="border-b border-border px-6 py-3 font-medium">User</th>
-              <th className="border-b border-border py-3 font-medium">Phone</th>
               <th className="border-b border-border py-3 font-medium">Joined</th>
               <th className="border-b border-border py-3 font-medium">Reports · Reliability</th>
               <th className="border-b border-border py-3 font-medium">Status</th>
@@ -189,7 +188,7 @@ export function UsersTable({ users }: { users: User[] }) {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-16 text-center text-sm text-fg-muted">
+                <td colSpan={5} className="px-6 py-16 text-center text-sm text-fg-muted">
                   No users match these filters.
                 </td>
               </tr>
@@ -252,12 +251,6 @@ function UserRow({ user }: { user: User }) {
           <div className="leading-tight">
             <div className="flex items-center gap-1.5">
               <span className="font-medium text-fg">{user.name}</span>
-              {user.verified && (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-ok" aria-hidden>
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  <path d="m9 12 2 2 4-4" />
-                </svg>
-              )}
               <span
                 className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
                 style={{
@@ -272,16 +265,6 @@ function UserRow({ user }: { user: User }) {
             </div>
             <div className="text-[11px] text-fg-muted">{user.email}</div>
           </div>
-        </div>
-      </td>
-      <td className="py-4 pr-6">
-        <div className="inline-flex items-center gap-2">
-          <span className="font-mono text-fg">{user.phone}</span>
-          {user.phoneVerified && (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-ok" aria-hidden>
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          )}
         </div>
       </td>
       <td className="py-4 pr-6 text-fg">{user.joined}</td>

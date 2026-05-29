@@ -12,7 +12,6 @@ export type NewIncidentInput = {
   location: string;
   address: string;
   reporterName: string;
-  reporterPhone: string;
   lat: number;
   lng: number;
 };
@@ -45,7 +44,6 @@ export async function createIncident(
     input.location,
     input.address,
     input.reporterName,
-    input.reporterPhone,
   ];
   if (text.some((v) => !v || !v.trim())) {
     return { error: "Please fill in all required fields." };
@@ -64,7 +62,7 @@ export async function createIncident(
     status: input.status,
     severity: input.severity,
     reporter_name: input.reporterName.trim(),
-    reporter_phone: input.reporterPhone.trim(),
+    reporter_phone: "",
     location: input.location.trim(),
     address: input.address.trim(),
     lat: input.lat,
@@ -78,4 +76,56 @@ export async function createIncident(
   revalidatePath("/admin/incidents");
   revalidatePath("/admin/dashboard");
   return { ok: true, id };
+}
+
+export type IncidentActionResult = { ok: true } | { error: string };
+
+const VALID_STATUSES = ["active", "investigating", "resolved", "false_alarm"];
+
+export async function updateIncidentStatus(
+  id: string,
+  status: string,
+): Promise<IncidentActionResult> {
+  if (!VALID_STATUSES.includes(status)) {
+    return { error: "Invalid status." };
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("incidents").update({ status }).eq("id", id);
+  if (error) return { error: `Failed to update status: ${error.message}` };
+
+  revalidatePath("/admin/incidents");
+  revalidatePath("/admin/dashboard");
+  revalidatePath(`/admin/incidents/${id}`);
+  return { ok: true };
+}
+
+const VALID_SEVERITIES = ["critical", "high", "medium", "info", "resolved"];
+
+export async function updateIncidentSeverity(
+  id: string,
+  severity: string,
+): Promise<IncidentActionResult> {
+  if (!VALID_SEVERITIES.includes(severity)) {
+    return { error: "Invalid severity." };
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("incidents").update({ severity }).eq("id", id);
+  if (error) return { error: `Failed to update severity: ${error.message}` };
+
+  revalidatePath("/admin/incidents");
+  revalidatePath("/admin/dashboard");
+  revalidatePath(`/admin/incidents/${id}`);
+  return { ok: true };
+}
+
+export async function deleteIncident(id: string): Promise<IncidentActionResult> {
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("incidents").delete().eq("id", id);
+  if (error) return { error: `Failed to delete incident: ${error.message}` };
+
+  revalidatePath("/admin/incidents");
+  revalidatePath("/admin/dashboard");
+  return { ok: true };
 }

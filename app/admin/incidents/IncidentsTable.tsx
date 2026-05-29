@@ -14,6 +14,7 @@ import {
 import { TypeIcon } from "../_lib/icons";
 import { FilterDropdown } from "../_components/FilterDropdown";
 import { NewIncidentModal } from "./NewIncidentModal";
+import { IncidentRowActions } from "./IncidentRowActions";
 
 const statusOptions = [
   { value: "all", label: "All statuses" },
@@ -31,7 +32,6 @@ const typeOptions = [
   { value: "medical", label: "Medical" },
   { value: "flood", label: "Flooding" },
   { value: "traffic", label: "Traffic" },
-  { value: "power", label: "Power Outage" },
   { value: "other", label: "Other" },
 ];
 
@@ -256,13 +256,7 @@ function IncidentRow({ incident }: { incident: Incident }) {
         </button>
       </td>
       <td className="px-6 py-4 text-right">
-        <button aria-label="More actions" className="inline-flex h-7 w-7 items-center justify-center rounded text-fg-muted hover:bg-bg-elev hover:text-fg">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-            <circle cx="5" cy="12" r="1.5" />
-            <circle cx="12" cy="12" r="1.5" />
-            <circle cx="19" cy="12" r="1.5" />
-          </svg>
-        </button>
+        <IncidentRowActions id={incident.id} status={incident.status} />
       </td>
     </tr>
   );
