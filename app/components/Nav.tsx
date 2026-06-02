@@ -12,7 +12,7 @@ export function Nav() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
         <a href="#" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
           <LogoMark />
-          <span>Omni</span>
+          <span>Kasala</span>
         </a>
         <nav className="hidden items-center gap-7 text-sm text-fg-muted md:flex">
           {links.map((l) => (

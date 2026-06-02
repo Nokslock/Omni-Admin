@@ -20,7 +20,7 @@ export function AdminNav() {
     <header className="sticky top-0 z-50 flex h-16 items-center border-b border-border bg-bg-card/95 px-5 backdrop-blur">
       <Link href="/admin/dashboard" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
         <LogoMark />
-        <span>Omni</span>
+        <span>Kasala</span>
         <span className="ml-1.5 text-xs font-normal text-fg-muted">Admin</span>
       </Link>
 

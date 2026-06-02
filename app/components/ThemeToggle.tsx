@@ -7,7 +7,7 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("omni-theme") as "dark" | "light" | null;
+    const stored = localStorage.getItem("kasala-theme") as "dark" | "light" | null;
     const initial = stored ?? (document.documentElement.classList.contains("dark") ? "dark" : "light");
     setTheme(initial);
     setMounted(true);
@@ -17,7 +17,7 @@ export function ThemeToggle() {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
     document.documentElement.classList.toggle("dark", next === "dark");
-    localStorage.setItem("omni-theme", next);
+    localStorage.setItem("kasala-theme", next);
   }
 
   return (

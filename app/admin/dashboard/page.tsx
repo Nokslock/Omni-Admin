@@ -6,8 +6,8 @@ import { StatsRow } from "./StatsRow";
 import { DashboardClient } from "./DashboardClient";
 
 export const metadata: Metadata = {
-  title: "Dashboard — Omni Admin",
-  description: "Live operations dashboard for the Omni admin team.",
+  title: "Dashboard — Kasala Admin",
+  description: "Live operations dashboard for the Kasala admin team.",
 };
 
 export default async function DashboardPage() {

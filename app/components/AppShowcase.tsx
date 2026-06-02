@@ -13,7 +13,7 @@ export function AppShowcase() {
       <div className="relative mx-auto max-w-6xl px-5">
         <div className="mx-auto max-w-2xl text-center">
           <Reveal>
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-fg-muted">The Omni App</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-fg-muted">The Kasala App</p>
           </Reveal>
           <Reveal delay={80}>
             <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-5xl">

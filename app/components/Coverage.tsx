@@ -18,7 +18,7 @@ export function Coverage() {
               Live in Lagos. Rolling out across Nigeria.
             </h2>
             <p className="mt-5 max-w-md text-pretty text-base text-fg-muted">
-              We&apos;re activating one city at a time so every Omni community starts with enough
+              We&apos;re activating one city at a time so every Kasala community starts with enough
               reporters to make alerts meaningful from day one.
             </p>
             <a

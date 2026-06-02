@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: RouteParams): Promise<Metadat
   const { id } = await params;
   const inc = await getIncidentById(id);
   return {
-    title: inc ? `${inc.id} — ${inc.title}` : "Incident — Omni Admin",
+    title: inc ? `${inc.id} — ${inc.title}` : "Incident — Kasala Admin",
   };
 }
 

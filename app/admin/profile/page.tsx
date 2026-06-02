@@ -6,8 +6,8 @@ import type { UserRole } from "../_lib/users";
 import { ChangePasswordModal } from "./ChangePasswordModal";
 
 export const metadata: Metadata = {
-  title: "Profile — Omni Admin",
-  description: "Your Omni admin account.",
+  title: "Profile — Kasala Admin",
+  description: "Your Kasala admin account.",
 };
 
 export default async function ProfilePage() {
@@ -25,7 +25,7 @@ export default async function ProfilePage() {
             <span className="text-fg">Profile</span>
           </nav>
           <h1 className="text-3xl font-semibold tracking-tight">Profile</h1>
-          <p className="mt-1 text-sm text-fg-muted">Your Omni admin account details.</p>
+          <p className="mt-1 text-sm text-fg-muted">Your Kasala admin account details.</p>
 
           <div className="mt-6 rounded-2xl border border-border bg-bg-card p-6">
             <div className="flex items-center gap-4">

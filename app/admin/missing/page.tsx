@@ -5,7 +5,7 @@ import { getMissingRequests } from "../_lib/missing.data";
 import { MissingList } from "./MissingList";
 
 export const metadata: Metadata = {
-  title: "Missing persons — Omni Admin",
+  title: "Missing persons — Kasala Admin",
   description: "Review missing-person broadcast requests submitted from the mobile app.",
 };
 

@@ -29,7 +29,7 @@ export function Features() {
     <section id="how" className="border-b border-border py-24">
       <div className="mx-auto max-w-6xl px-5">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-fg-muted">How Omni Works</p>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-fg-muted">How Kasala Works</p>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-5xl">
             Built for the moments when every second counts.
           </h2>

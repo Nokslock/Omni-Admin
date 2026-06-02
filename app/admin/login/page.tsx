@@ -3,8 +3,8 @@ import Link from "next/link";
 import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = {
-  title: "Admin Sign In — Omni",
-  description: "Sign in to the Omni admin portal.",
+  title: "Admin Sign In — Kasala",
+  description: "Sign in to the Kasala admin portal.",
 };
 
 export default async function AdminLoginPage({
@@ -32,7 +32,7 @@ export default async function AdminLoginPage({
       <header className="relative z-10 flex items-center justify-between px-6 py-5">
         <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
           <LogoMark />
-          <span>Omni</span>
+          <span>Kasala</span>
         </Link>
         <div className="text-xs text-fg-muted">
           Not an admin?{" "}
@@ -71,7 +71,7 @@ export default async function AdminLoginPage({
 
       {/* Footer */}
       <footer className="relative z-10 flex flex-col items-center justify-between gap-2 px-6 py-5 text-[11px] text-fg-subtle md:flex-row">
-        <div>© {new Date().getFullYear()} Omni Technologies Ltd.</div>
+        <div>© {new Date().getFullYear()} Kasala Technologies Ltd.</div>
         <div className="font-mono">v0.1.0 · build 7f3a92</div>
         <div className="inline-flex items-center gap-1.5">
           <span className="relative inline-flex h-1.5 w-1.5">

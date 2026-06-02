@@ -6,7 +6,7 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-2 text-sm font-semibold tracking-tight">
               <LogoMark />
-              <span>Omni</span>
+              <span>Kasala</span>
             </div>
             <p className="mt-3 max-w-sm text-sm text-fg-muted">
               A real-time, community-driven emergency notification system. Built for Nigerian
@@ -14,12 +14,10 @@ export function Footer() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm md:grid-cols-3">
-            <a href="#privacy" className="text-fg-muted hover:text-fg">Privacy</a>
-            <a href="#terms" className="text-fg-muted hover:text-fg">Terms</a>
-            <a href="#support" className="text-fg-muted hover:text-fg">Support</a>
-            <a href="#status" className="text-fg-muted hover:text-fg">Status</a>
-            <a href="#contact" className="text-fg-muted hover:text-fg">Contact</a>
+          <div className="flex flex-wrap gap-x-10 gap-y-2 text-sm">
+            <a href="/privacy" className="text-fg-muted hover:text-fg">Privacy</a>
+            <a href="/terms" className="text-fg-muted hover:text-fg">Terms</a>
+            <a href="/support" className="text-fg-muted hover:text-fg">Support</a>
           </div>
         </div>
 
@@ -32,7 +30,7 @@ export function Footer() {
             NODES: 14,289
           </div>
           <div className="text-[11px] text-fg-subtle">
-            © {new Date().getFullYear()} Omni. All rights reserved.
+            © {new Date().getFullYear()} Kasala. All rights reserved.
           </div>
         </div>
       </div>

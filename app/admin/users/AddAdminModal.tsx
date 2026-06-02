@@ -87,7 +87,7 @@ export function AddAdminModal() {
                   <input name="name" required placeholder="Ada Bello" className={fieldClass} />
                 </Field>
                 <Field label="Email">
-                  <input name="email" type="email" required placeholder="a.bello@omni.ng" className={fieldClass} />
+                  <input name="email" type="email" required placeholder="a.bello@kasala.ng" className={fieldClass} />
                 </Field>
                 <Field label="Password">
                   <input

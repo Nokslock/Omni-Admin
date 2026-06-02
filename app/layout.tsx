@@ -14,12 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Omni — Immediate community safety alerts",
+  title: "Kasala — Immediate community safety alerts",
   description:
     "Spot, report, and monitor critical incidents in your area in real time. Powering a safer community together.",
 };
 
-const themeInitScript = `(function(){try{var s=localStorage.getItem('omni-theme');var t=s||'dark';if(t==='dark')document.documentElement.classList.add('dark');}catch(e){document.documentElement.classList.add('dark');}})();`;
+const themeInitScript = `(function(){try{var s=localStorage.getItem('kasala-theme');var t=s||'dark';if(t==='dark')document.documentElement.classList.add('dark');}catch(e){document.documentElement.classList.add('dark');}})();`;
 
 export default function RootLayout({
   children,
@@ -34,7 +34,7 @@ export default function RootLayout({
     >
       <head>
         <Script
-          id="omni-theme-init"
+          id="kasala-theme-init"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: themeInitScript }}
         />

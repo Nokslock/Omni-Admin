@@ -5,7 +5,7 @@ import { getIncidents } from "../_lib/incidents.data";
 import { IncidentsTable } from "./IncidentsTable";
 
 export const metadata: Metadata = {
-  title: "Incidents — Omni Admin",
+  title: "Incidents — Kasala Admin",
   description: "Browse, filter, and manage every incident report.",
 };
 

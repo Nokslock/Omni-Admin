@@ -8,7 +8,7 @@ const steps = [
   },
   {
     n: "02",
-    title: "Reports via Omni app",
+    title: "Reports via Kasala app",
     body: "One-tap report — type, photo, location auto-attached.",
   },
   {
@@ -30,7 +30,7 @@ export function Lifecycle() {
         <div className="rounded-2xl border border-border bg-bg-elev p-6 sm:p-10">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-fg-muted">The Omni Loop</p>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-fg-muted">The Kasala Loop</p>
               <h2 className="mt-2 text-balance text-2xl font-semibold tracking-tight sm:text-4xl">
                 From spot → alert in seconds.
               </h2>

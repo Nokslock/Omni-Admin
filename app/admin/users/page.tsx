@@ -5,7 +5,7 @@ import { getUsers } from "../_lib/users.data";
 import { UsersTable } from "./UsersTable";
 
 export const metadata: Metadata = {
-  title: "Users — Omni Admin",
+  title: "Users — Kasala Admin",
   description: "Browse and manage verified mobile reporters.",
 };
 

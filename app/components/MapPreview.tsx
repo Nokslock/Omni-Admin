@@ -33,7 +33,7 @@ export function MapPreview() {
           <span className="h-3 w-3 rounded-full bg-[#28c840]" />
         </div>
         <div className="flex-1 text-center">
-          <span className="font-mono text-[11px] text-fg-muted">omni.ng/admin/dashboard</span>
+          <span className="font-mono text-[11px] text-fg-muted">kasala.ng/admin/dashboard</span>
         </div>
         <div className="inline-flex items-center gap-1.5 text-[10px] font-medium text-ok">
           <span className="relative inline-flex h-1.5 w-1.5">
@@ -153,7 +153,7 @@ export function MapPreview() {
 
         {/* Attribution */}
         <div className="absolute bottom-2 right-3 font-mono text-[9px] text-fg-subtle">
-          © Omni Maps · OSM
+          © Kasala Maps · OSM
         </div>
       </div>
     </div>

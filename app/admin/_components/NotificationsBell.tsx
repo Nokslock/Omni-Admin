@@ -5,7 +5,7 @@ import Link from "next/link";
 import { severityMeta, typeLabels } from "../_lib/incidents";
 import { getRecentIncidents, type NotificationItem } from "../notifications";
 
-const SEEN_KEY = "omni:notifications:lastSeen";
+const SEEN_KEY = "kasala:notifications:lastSeen";
 const POLL_MS = 30_000;
 
 function relTime(iso: string): string {
