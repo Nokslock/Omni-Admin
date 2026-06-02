@@ -5,7 +5,15 @@ export type IncidentType =
   | "medical"
   | "flood"
   | "traffic"
-  | "other";
+  | "other"
+  | "hoodlums"
+  | "protest"
+  | "kidnapping"
+  | "armed_robbery"
+  | "bandit"
+  | "cultist"
+  | "collapse"
+  | "boat_accident";
 
 export type IncidentStatus =
   | "active"
@@ -43,6 +51,14 @@ export const typeLabels: Record<IncidentType, string> = {
   flood: "Flooding",
   traffic: "Traffic",
   other: "Other",
+  hoodlums: "Hoodlums",
+  protest: "Protest",
+  kidnapping: "Kidnapping",
+  armed_robbery: "Armed Robbery",
+  bandit: "Bandit",
+  cultist: "Cultist",
+  collapse: "Collapse",
+  boat_accident: "Boat Accident",
 };
 
 export const typeColor: Record<IncidentType, string> = {
@@ -53,6 +69,14 @@ export const typeColor: Record<IncidentType, string> = {
   flood: "#eab308",
   traffic: "#fb923c",
   other: "#a3a3a3",
+  hoodlums: "#fb923c",
+  protest: "#eab308",
+  kidnapping: "#8b5cf6",
+  armed_robbery: "#dc2626",
+  bandit: "#f43f5e",
+  cultist: "#06b6d4",
+  collapse: "#3b82f6",
+  boat_accident: "#2563eb",
 };
 
 export const statusMeta: Record<

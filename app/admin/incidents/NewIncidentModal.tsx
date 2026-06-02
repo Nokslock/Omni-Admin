@@ -12,6 +12,14 @@ const typeOptions = [
   { value: "medical", label: "Medical" },
   { value: "flood", label: "Flooding" },
   { value: "traffic", label: "Traffic" },
+  { value: "hoodlums", label: "Hoodlums" },
+  { value: "protest", label: "Protest" },
+  { value: "kidnapping", label: "Kidnapping" },
+  { value: "armed_robbery", label: "Armed Robbery" },
+  { value: "bandit", label: "Bandit" },
+  { value: "cultist", label: "Cultist" },
+  { value: "collapse", label: "Collapse" },
+  { value: "boat_accident", label: "Boat Accident" },
   { value: "other", label: "Other" },
 ];
 
