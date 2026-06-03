@@ -37,9 +37,7 @@ export function Nav() {
 
 function LogoMark() {
   return (
-    <span className="relative inline-flex h-5 w-5 items-center justify-center">
-      <span className="absolute inset-0 rounded-full border border-fg" />
-      <span className="h-1.5 w-1.5 rounded-full bg-fg" />
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/logo.svg" alt="Kasala" className="h-6 w-6" />
   );
 }

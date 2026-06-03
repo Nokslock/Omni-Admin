@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { AdminNav } from "../../_components/AdminNav";
 import { statusMeta, typeColor, severityMeta } from "../../_lib/incidents";
 import { getIncidentById, getIncidents } from "../../_lib/incidents.data";
+import { getIncidentFeedback } from "../../_lib/feedback.data";
 import { TypeIcon } from "../../_lib/icons";
 import { MiniMap } from "./MiniMap";
 import { IncidentActions } from "./IncidentActions";
@@ -50,11 +51,18 @@ export default async function IncidentDetailPage({ params }: RouteParams) {
     .join("")
     .toUpperCase();
 
-  const nearby = (await getIncidents())
+  const [nearbyAll, feedback] = await Promise.all([
+    getIncidents(),
+    getIncidentFeedback(incident.id),
+  ]);
+  const nearby = nearbyAll
     .filter((i) => i.id !== incident.id)
     .map((i) => ({ inc: i, d: haversineKm(incident.coords, i.coords) }))
     .sort((a, b) => a.d - b.d)
     .slice(0, 3);
+
+  const confirmCount = feedback.filter((f) => f.kind === "confirm").length;
+  const flagCount = feedback.filter((f) => f.kind === "flag").length;
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-fg">
@@ -128,6 +136,84 @@ export default async function IncidentDetailPage({ params }: RouteParams) {
               <p className="mt-3 text-[15px] leading-relaxed text-fg">
                 {incident.description}
               </p>
+            </section>
+
+            {/* Community feedback */}
+            <section className="rounded-xl border border-border bg-bg-card p-5">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold tracking-tight">
+                  Community feedback
+                </h2>
+                <div className="flex items-center gap-3 text-xs">
+                  <span className="inline-flex items-center gap-1.5 text-ok">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    {confirmCount} confirmed
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-warn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <line x1="4" y1="22" x2="4" y2="2" />
+                      <path d="M4 4h15l-3 4 3 4H4" />
+                    </svg>
+                    {flagCount} flagged
+                  </span>
+                </div>
+              </div>
+
+              {feedback.length === 0 ? (
+                <p className="mt-4 text-sm text-fg-muted">
+                  No reports from the community yet.
+                </p>
+              ) : (
+                <ul className="mt-4 space-y-2">
+                  {feedback.map((f) => (
+                    <li
+                      key={f.id}
+                      className="flex items-start gap-3 rounded-lg border border-border bg-bg-elev/40 p-3"
+                    >
+                      <span
+                        className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
+                          f.kind === "confirm"
+                            ? "bg-ok/15 text-ok"
+                            : "bg-warn/15 text-warn"
+                        }`}
+                        aria-label={f.kind}
+                      >
+                        {f.kind === "confirm" ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                            <line x1="4" y1="22" x2="4" y2="2" />
+                            <path d="M4 4h15l-3 4 3 4H4" />
+                          </svg>
+                        )}
+                      </span>
+                      <div className="min-w-0 flex-1 leading-tight">
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                          <span className="text-sm font-medium text-fg">
+                            {f.userName ?? "Anonymous user"}
+                          </span>
+                          {f.userEmail && (
+                            <span className="text-[11px] text-fg-muted">{f.userEmail}</span>
+                          )}
+                          <span className="ml-auto font-mono text-[11px] text-fg-subtle">
+                            {relTime(f.createdAt)}
+                          </span>
+                        </div>
+                        <div className="mt-0.5 text-[11px] uppercase tracking-wider text-fg-subtle">
+                          {f.kind === "confirm" ? "Confirmed this incident" : "Flagged as false / inaccurate"}
+                        </div>
+                        {f.reason && (
+                          <p className="mt-1.5 text-sm text-fg">{f.reason}</p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
 
             {/* Location */}
@@ -210,6 +296,16 @@ export default async function IncidentDetailPage({ params }: RouteParams) {
 }
 
 /* ── helpers ─────────────────────────────── */
+
+function relTime(iso: string): string {
+  const diff = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (diff < 60) return `${diff}s ago`;
+  const m = Math.floor(diff / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
 
 function Pill({ color, label }: { color: string; label: string }) {
   return (

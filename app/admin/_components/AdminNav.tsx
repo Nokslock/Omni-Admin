@@ -83,10 +83,8 @@ export function AdminNav() {
 
 function LogoMark() {
   return (
-    <span className="relative inline-flex h-5 w-5 items-center justify-center">
-      <span className="absolute inset-0 rounded-full border border-fg" />
-      <span className="h-1.5 w-1.5 rounded-full bg-fg" />
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/logo.svg" alt="Kasala" className="h-6 w-6" />
   );
 }
 function DashboardIcon() { return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>; }

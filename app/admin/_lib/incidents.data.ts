@@ -61,8 +61,30 @@ function mapRow(row: IncidentRow): Incident {
 const COLUMNS =
   "id, type, title, description, status, severity, reporter_name, reporter_id, reporter_phone, location, address, lat, lng, map_x, map_y, reported_at";
 
+// Auto-resolve any incident reported more than 24h ago that hasn't already been
+// closed (resolved / false_alarm). Throttled so we run at most once a minute,
+// even when the admin auto-refresh polls more often.
+const AUTO_RESOLVE_AFTER_MS = 24 * 60 * 60 * 1000;
+const AUTO_RESOLVE_THROTTLE_MS = 60 * 1000;
+let lastAutoResolveAt = 0;
+
+async function autoResolveStaleIncidents(
+  supabase: ReturnType<typeof createAdminClient>,
+): Promise<void> {
+  const now = Date.now();
+  if (now - lastAutoResolveAt < AUTO_RESOLVE_THROTTLE_MS) return;
+  lastAutoResolveAt = now;
+  const cutoff = new Date(now - AUTO_RESOLVE_AFTER_MS).toISOString();
+  await supabase
+    .from("incidents")
+    .update({ status: "resolved" })
+    .lt("reported_at", cutoff)
+    .in("status", ["active", "investigating"]);
+}
+
 export async function getIncidents(): Promise<Incident[]> {
   const supabase = createAdminClient();
+  await autoResolveStaleIncidents(supabase);
   const { data, error } = await supabase
     .from("incidents")
     .select(COLUMNS)

@@ -1,17 +1,31 @@
-type IncidentType = "fire" | "crash" | "bandits" | "medical" | "flood" | "power" | "protest" | "other";
+"use client";
 
-const incidents: { x: number; y: number; type: IncidentType }[] = [
-  { x: 230, y: 250, type: "fire" },
-  { x: 305, y: 245, type: "medical" },
-  { x: 370, y: 295, type: "crash" },
-  { x: 460, y: 285, type: "power" },
-  { x: 345, y: 350, type: "flood" },
-  { x: 425, y: 420, type: "fire" },
-  { x: 680, y: 340, type: "bandits" },
-  { x: 770, y: 320, type: "other" },
+import { useEffect, useRef, useState } from "react";
+import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
+import { currentMapStyle, observeMapTheme } from "../admin/_lib/mapTheme";
+
+type PinType =
+  | "fire"
+  | "crash"
+  | "bandits"
+  | "medical"
+  | "flood"
+  | "power"
+  | "protest"
+  | "other";
+
+const pins: { lat: number; lng: number; type: PinType }[] = [
+  { lat: 6.5341, lng: 3.3539, type: "fire" },     // Mushin
+  { lat: 6.5095, lng: 3.3735, type: "medical" },  // Yaba
+  { lat: 6.5511, lng: 3.3858, type: "crash" },    // Gbagada
+  { lat: 6.5917, lng: 3.3850, type: "power" },    // Ikeja / Ketu
+  { lat: 6.4928, lng: 3.3589, type: "flood" },    // Surulere
+  { lat: 6.4488, lng: 3.3621, type: "fire" },     // Apapa
+  { lat: 6.4541, lng: 3.3947, type: "bandits" },  // Lagos Island
+  { lat: 6.4382, lng: 3.4717, type: "other" },    // Lekki
 ];
 
-const incidentColor: Record<IncidentType, string> = {
+const pinColor: Record<PinType, string> = {
   fire: "#ef4444",
   crash: "#f59e0b",
   bandits: "#ef4444",
@@ -22,7 +36,72 @@ const incidentColor: Record<IncidentType, string> = {
   other: "#f97316",
 };
 
+const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+// Teardrop pin SVG path — anchored at the bottom tip (0, 8).
+const TEARDROP_PATH =
+  "M 0 -32 C -10 -32 -16 -24 -16 -16 C -16 -4 0 8 0 8 C 0 8 16 -4 16 -16 C 16 -24 10 -32 0 -32 Z";
+
 export function MapPreview() {
+  const mapDiv = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(
+    apiKey ? null : "Map unavailable",
+  );
+
+  useEffect(() => {
+    if (!apiKey) return;
+    let cancelled = false;
+    let stopThemeObserver: (() => void) | undefined;
+
+    try {
+      setOptions({ key: apiKey, v: "weekly" });
+    } catch (e) {
+      // Already configured by another mount/page — that's fine, keep going.
+      console.warn("MapPreview: setOptions skipped:", e);
+    }
+
+    importLibrary("maps")
+      .then(() => {
+        if (cancelled || !mapDiv.current) return;
+        const map = new google.maps.Map(mapDiv.current, {
+          center: { lat: 6.5, lng: 3.4 },
+          zoom: 11,
+          disableDefaultUI: true,
+          gestureHandling: "none",
+          keyboardShortcuts: false,
+          clickableIcons: false,
+          styles: currentMapStyle(),
+        });
+
+        for (const p of pins) {
+          new google.maps.Marker({
+            position: { lat: p.lat, lng: p.lng },
+            map,
+            icon: {
+              path: TEARDROP_PATH,
+              fillColor: pinColor[p.type],
+              fillOpacity: 1,
+              strokeColor: "#ffffff",
+              strokeWeight: 1.5,
+              scale: 0.9,
+              anchor: new google.maps.Point(0, 8),
+            },
+          });
+        }
+
+        stopThemeObserver = observeMapTheme((styles) => map.setOptions({ styles }));
+      })
+      .catch((err) => {
+        console.error("MapPreview load failed:", err);
+        setError("Failed to load map");
+      });
+
+    return () => {
+      cancelled = true;
+      stopThemeObserver?.();
+    };
+  }, []);
+
   return (
     <div className="relative overflow-hidden rounded-xl border border-border-strong bg-bg-card shadow-2xl shadow-black/40">
       {/* Browser chrome */}
@@ -46,81 +125,17 @@ export function MapPreview() {
 
       {/* Map area */}
       <div className="relative aspect-[16/9] w-full bg-bg-elev">
-        <svg
-          viewBox="0 0 960 540"
-          preserveAspectRatio="xMidYMid slice"
+        <div
+          ref={mapDiv}
           className="absolute inset-0 h-full w-full"
           aria-label="Live incident map of Lagos"
-        >
-          <defs>
-            <pattern id="map-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeOpacity="0.08" strokeWidth="0.5" className="text-fg" />
-            </pattern>
-            <pattern id="map-grid-strong" width="160" height="160" patternUnits="userSpaceOnUse">
-              <path d="M 160 0 L 0 0 0 160" fill="none" stroke="currentColor" strokeOpacity="0.16" strokeWidth="0.5" className="text-fg" />
-            </pattern>
-            <radialGradient id="map-vignette" cx="50%" cy="50%" r="70%">
-              <stop offset="60%" stopColor="transparent" />
-              <stop offset="100%" stopColor="currentColor" stopOpacity="0.4" className="text-bg" />
-            </radialGradient>
-          </defs>
+        />
 
-          {/* Grid background */}
-          <rect width="960" height="540" fill="url(#map-grid)" />
-          <rect width="960" height="540" fill="url(#map-grid-strong)" />
-
-          {/* Lagoon / water */}
-          <path
-            d="M 0 380 C 140 360, 280 410, 420 395 C 560 380, 700 420, 840 405 C 900 400, 960 410, 960 410 L 960 540 L 0 540 Z"
-            fill="#3b82f6"
-            fillOpacity="0.18"
-          />
-          <path
-            d="M 0 380 C 140 360, 280 410, 420 395 C 560 380, 700 420, 840 405 C 900 400, 960 410, 960 410"
-            fill="none"
-            stroke="#3b82f6"
-            strokeOpacity="0.4"
-            strokeWidth="1"
-          />
-
-          {/* Main roads */}
-          <g stroke="currentColor" strokeOpacity="0.2" strokeWidth="2" fill="none" className="text-fg">
-            <path d="M 0 260 L 960 280" />
-            <path d="M 0 180 L 960 200" />
-            <path d="M 200 0 L 220 540" />
-            <path d="M 480 0 L 500 540" />
-            <path d="M 760 0 L 780 540" />
-            <path d="M 0 100 C 240 120, 480 80, 720 120 S 960 110, 960 110" strokeOpacity="0.12" />
-          </g>
-
-          {/* District labels */}
-          <g className="text-fg-subtle" fill="currentColor" fontFamily="var(--font-geist-mono), monospace" fontSize="10" letterSpacing="2">
-            <text x="180" y="220">MUSHIN</text>
-            <text x="320" y="180">YABA</text>
-            <text x="560" y="190">GBAGADA</text>
-            <text x="790" y="220">KETU</text>
-            <text x="170" y="320">SURULERE</text>
-            <text x="380" y="330">LAGOS ISLAND</text>
-            <text x="780" y="320">KOSOFE</text>
-            <text x="120" y="480" className="text-fg-muted" fill="currentColor">APAPA</text>
-            <text x="540" y="450">VICTORIA ISLAND</text>
-            <text x="800" y="475">LEKKI</text>
-          </g>
-
-          {/* Roadway label */}
-          <g fill="currentColor" className="text-fg-subtle" fontFamily="var(--font-geist-sans), sans-serif" fontSize="9" fontStyle="italic">
-            <text x="430" y="375">Third Mainland Br.</text>
-            <text x="540" y="510">Lekki-Epe Expy</text>
-          </g>
-
-          {/* Vignette */}
-          <rect width="960" height="540" fill="url(#map-vignette)" />
-
-          {/* Incident pins */}
-          {incidents.map((i, idx) => (
-            <IncidentPin key={idx} x={i.x} y={i.y} color={incidentColor[i.type]} delay={idx * 0.3} />
-          ))}
-        </svg>
+        {error && (
+          <div className="absolute inset-0 flex items-center justify-center text-xs text-fg-muted">
+            {error}
+          </div>
+        )}
 
         {/* Scan sweep */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
@@ -133,42 +148,18 @@ export function MapPreview() {
           />
         </div>
 
-        {/* Zoom controls */}
-        <div className="absolute right-3 top-3 flex flex-col overflow-hidden rounded-md border border-border-strong bg-bg-card shadow-sm">
-          <button className="flex h-7 w-7 items-center justify-center text-fg-muted hover:text-fg" aria-label="Zoom in">+</button>
+        {/* Zoom controls (decorative) */}
+        <div className="pointer-events-none absolute right-3 top-3 flex flex-col overflow-hidden rounded-md border border-border-strong bg-bg-card shadow-sm">
+          <span className="flex h-7 w-7 items-center justify-center text-fg-muted">+</span>
           <span className="h-px bg-border" />
-          <button className="flex h-7 w-7 items-center justify-center text-fg-muted hover:text-fg" aria-label="Zoom out">−</button>
+          <span className="flex h-7 w-7 items-center justify-center text-fg-muted">−</span>
         </div>
 
         {/* Coordinates */}
-        <div className="absolute right-3 top-20 rounded-md border border-border bg-bg-card/80 px-2 py-1 font-mono text-[10px] text-fg-muted backdrop-blur">
+        <div className="pointer-events-none absolute right-3 top-20 rounded-md border border-border bg-bg-card/80 px-2 py-1 font-mono text-[10px] text-fg-muted backdrop-blur">
           6.45°N · 3.40°E
-        </div>
-
-        {/* Scale */}
-        <div className="absolute bottom-3 left-3 flex items-end gap-1.5">
-          <div className="h-1.5 w-12 border border-fg-muted border-t-0" />
-          <span className="font-mono text-[10px] text-fg-muted leading-none pb-0.5">2 km</span>
-        </div>
-
-        {/* Attribution */}
-        <div className="absolute bottom-2 right-3 font-mono text-[9px] text-fg-subtle">
-          © Kasala Maps · OSM
         </div>
       </div>
     </div>
-  );
-}
-
-function IncidentPin({ x, y, color, delay }: { x: number; y: number; color: string; delay: number }) {
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <circle r="14" fill={color} fillOpacity="0.18">
-        <animate attributeName="r" values="14;26;14" dur="2.4s" begin={`${delay}s`} repeatCount="indefinite" />
-        <animate attributeName="fill-opacity" values="0.25;0;0.25" dur="2.4s" begin={`${delay}s`} repeatCount="indefinite" />
-      </circle>
-      <path d="M 0 -16 C -7 -16 -11 -11 -11 -5 C -11 3 0 12 0 12 C 0 12 11 3 11 -5 C 11 -11 7 -16 0 -16 Z" fill={color} />
-      <circle cx="0" cy="-5" r="3.5" fill="#fff" fillOpacity="0.95" />
-    </g>
   );
 }
