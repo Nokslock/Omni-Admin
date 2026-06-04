@@ -4,9 +4,16 @@ import { Nav } from "../components/Nav";
 import { Footer } from "../components/Footer";
 
 export const metadata: Metadata = {
-  title: "Terms of Use — Kasala",
+  title: "Terms of Use",
   description:
     "The terms and conditions that govern your use of the Kasala Alert application.",
+  alternates: { canonical: "/terms" },
+  openGraph: {
+    url: "/terms",
+    title: "Terms of Use — Kasala",
+    description:
+      "The terms and conditions that govern your use of the Kasala Alert application.",
+  },
 };
 
 export default function TermsPage() {

@@ -4,9 +4,16 @@ import { Nav } from "../components/Nav";
 import { Footer } from "../components/Footer";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Kasala",
+  title: "Privacy Policy",
   description:
     "How Kasala Alert collects, uses, and protects your information when you use our application.",
+  alternates: { canonical: "/privacy" },
+  openGraph: {
+    url: "/privacy",
+    title: "Privacy Policy — Kasala",
+    description:
+      "How Kasala Alert collects, uses, and protects your information.",
+  },
 };
 
 export default function PrivacyPage() {

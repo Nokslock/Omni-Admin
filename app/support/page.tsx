@@ -4,9 +4,16 @@ import { Nav } from "../components/Nav";
 import { Footer } from "../components/Footer";
 
 export const metadata: Metadata = {
-  title: "Support — Kasala",
+  title: "Support",
   description:
     "Get in touch with the Kasala team for help, feedback, or account-related questions.",
+  alternates: { canonical: "/support" },
+  openGraph: {
+    url: "/support",
+    title: "Support — Kasala",
+    description:
+      "Get in touch with the Kasala team for help, feedback, or account-related questions.",
+  },
 };
 
 export default function SupportPage() {
