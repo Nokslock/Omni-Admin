@@ -18,6 +18,7 @@ export function Footer() {
             <a href="/privacy" className="text-fg-muted hover:text-fg">Privacy</a>
             <a href="/terms" className="text-fg-muted hover:text-fg">Terms</a>
             <a href="/support" className="text-fg-muted hover:text-fg">Support</a>
+            <a href="/account-deletion" className="text-fg-muted hover:text-fg">Delete account</a>
           </div>
         </div>
 
