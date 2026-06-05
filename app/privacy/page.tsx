@@ -86,14 +86,81 @@ export default function PrivacyPage() {
             </p>
           </Section>
 
-          <Section title="4. Data Retention">
+          <Section title="4. Location Data">
+            <p>
+              Because Kasala Alert is a community safety service, location is core to how the App
+              works. This section explains exactly what we collect, when, and why.
+            </p>
+
+            <SubHeading>Types of Location We Collect</SubHeading>
+            <Bullets
+              items={[
+                "Approximate location — derived from your device when the App is open, used to centre the map and show incidents in your general area.",
+                "Precise location (GPS) — collected only when you choose to report an incident or enable proximity alerts, so the incident is tagged accurately and notifications target the right radius.",
+                "Background location — collected only if you grant the “Allow all the time” permission, and used solely to keep your proximity-alert radius accurate while you move around the city.",
+              ]}
+            />
+
+            <SubHeading>Foreground vs Background Use</SubHeading>
+            <p>
+              <strong>Foreground location</strong> (used while the App is open) powers the live map,
+              the nearby-incidents feed, and the location attached to any report you submit.
+            </p>
+            <p>
+              <strong>Background location</strong> (used when the App is closed or in the
+              background) is used for a single feature: <em>proximity-based safety alerts</em>. When
+              a new incident is reported, the App compares the incident&rsquo;s coordinates with your
+              current location and sends a push notification only if you are within your chosen
+              alert radius. Background access keeps that radius accurate as you move, so warnings
+              reach you near where you actually are — not where you last opened the App.
+            </p>
+            <p>
+              Before background access is requested, the App shows a prominent disclosure
+              explaining this use and links back to this Policy. You can decline or revoke it at any
+              time (see below) without losing access to the rest of the App.
+            </p>
+
+            <SubHeading>What We Do Not Do</SubHeading>
+            <Bullets
+              items={[
+                "We do not sell location data.",
+                "We do not share location data with advertisers or ad networks.",
+                "We do not build location-based advertising profiles.",
+                "We do not continuously stream your location to our servers — only the coordinates needed to evaluate proximity alerts and incident reports are processed.",
+              ]}
+            />
+
+            <SubHeading>How to Disable or Revoke</SubHeading>
+            <p>
+              You can change location permissions at any time from your device settings:
+            </p>
+            <Bullets
+              items={[
+                "Android: Settings → Apps → Kasala → Permissions → Location.",
+                "iOS: Settings → Kasala → Location.",
+              ]}
+            />
+            <p>
+              You can also disable proximity alerts from within the App, which stops all background
+              location use even if the system permission remains granted.
+            </p>
+
+            <SubHeading>Retention</SubHeading>
+            <p>
+              Location attached to a published incident report is retained for as long as that
+              report is part of the Service. Location used for proximity matching is processed
+              transiently and is not stored as a movement history or location trail.
+            </p>
+          </Section>
+
+          <Section title="5. Data Retention">
             <p>
               We retain personal information only as long as necessary to provide the Service,
               comply with legal obligations, resolve disputes, and enforce our agreements.
             </p>
           </Section>
 
-          <Section title="5. Data Security">
+          <Section title="6. Data Security">
             <p>
               We implement reasonable administrative, technical, and organizational measures to
               protect your information.
@@ -104,7 +171,7 @@ export default function PrivacyPage() {
             </p>
           </Section>
 
-          <Section title="6. Your Rights">
+          <Section title="7. Your Rights">
             <p>Depending on your jurisdiction, you may have rights to:</p>
             <Bullets
               items={[
@@ -118,7 +185,7 @@ export default function PrivacyPage() {
             <p>To exercise these rights, contact us at the email address below.</p>
           </Section>
 
-          <Section title="7. Children’s Privacy">
+          <Section title="8. Children’s Privacy">
             <p>
               The App is not intended for children under the age of 13, and we do not knowingly
               collect personal information from children.
@@ -128,7 +195,7 @@ export default function PrivacyPage() {
             </p>
           </Section>
 
-          <Section title="8. Third-Party Services">
+          <Section title="9. Third-Party Services">
             <p>
               The App may use third-party providers for hosting, analytics, notifications,
               authentication, or other operational purposes. These providers may process information
@@ -136,21 +203,21 @@ export default function PrivacyPage() {
             </p>
           </Section>
 
-          <Section title="9. International Users">
+          <Section title="10. International Users">
             <p>
               If you access the App from outside Nigeria, your information may be transferred to
               and processed in Nigeria where our service providers operate.
             </p>
           </Section>
 
-          <Section title="10. Changes to This Privacy Policy">
+          <Section title="11. Changes to This Privacy Policy">
             <p>
               We may update this Privacy Policy periodically. The updated version will be posted
               within the App and will become effective upon posting.
             </p>
           </Section>
 
-          <Section title="11. Contact Us">
+          <Section title="12. Contact Us">
             <p>
               If you have questions about this Privacy Policy or your personal information, contact:
             </p>
