@@ -195,9 +195,11 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
 }
 
 function IncidentRow({ incident }: { incident: Incident }) {
-  const color = typeColor[incident.type];
-  const sev = severityMeta[incident.severity];
-  const status = statusMeta[incident.status];
+  // Fall back to safe defaults if a row carries a value the meta tables don't
+  // know about yet — keeps the table rendering instead of throwing.
+  const color = typeColor[incident.type] ?? typeColor.other;
+  const sev = severityMeta[incident.severity] ?? severityMeta.info;
+  const status = statusMeta[incident.status] ?? statusMeta.active;
   const initials = incident.reporter
     .split(" ")
     .map((p) => p[0])

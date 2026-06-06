@@ -21,7 +21,7 @@ export type IncidentStatus =
   | "resolved"
   | "false_alarm";
 
-export type Severity = "critical" | "high" | "medium" | "info" | "resolved";
+export type Severity = "critical" | "high" | "medium" | "low" | "info" | "resolved";
 
 export type Incident = {
   id: string;
@@ -97,6 +97,27 @@ export const severityMeta: Record<Severity, { label: string; color: string }> = 
   critical: { label: "Critical", color: "#ef4444" },
   high: { label: "High", color: "#fb923c" },
   medium: { label: "Medium", color: "#eab308" },
+  low: { label: "Low", color: "#10b981" },
   info: { label: "Info", color: "#3b82f6" },
   resolved: { label: "Resolved", color: "#22c55e" },
 };
+
+/**
+ * Coerce a raw DB severity string into a known Severity. Unknown / null
+ * values fall back to "info" so the row still renders instead of crashing.
+ */
+export function normalizeSeverity(raw: unknown): Severity {
+  if (typeof raw === "string" && raw in severityMeta) {
+    return raw as Severity;
+  }
+  if (raw === "warning") return "medium";
+  return "info";
+}
+
+/** Same idea for incident types — unknown values render as "other". */
+export function normalizeIncidentType(raw: unknown): IncidentType {
+  if (typeof raw === "string" && raw in typeLabels) {
+    return raw as IncidentType;
+  }
+  return "other";
+}

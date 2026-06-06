@@ -1,20 +1,23 @@
 import "server-only";
 import { createAdminClient } from "@/app/lib/supabase/server";
 import {
+  normalizeIncidentType,
+  normalizeSeverity,
   typeLabels,
   type Incident,
   type IncidentStatus,
-  type IncidentType,
-  type Severity,
 } from "./incidents";
 
+// Raw shape coming out of Postgres. We type type/severity as `string` rather
+// than the strict union because legacy or future rows can carry values the
+// web app doesn't know about yet — we normalize them in mapRow().
 type IncidentRow = {
   id: string;
-  type: IncidentType;
+  type: string;
   title: string;
   description: string;
   status: IncidentStatus;
-  severity: Severity;
+  severity: string | null;
   reporter_name: string;
   reporter_id: string | null;
   reporter_phone: string;
@@ -38,14 +41,16 @@ function relativeTime(iso: string): string {
 }
 
 function mapRow(row: IncidentRow): Incident {
+  const type = normalizeIncidentType(row.type);
+  const severity = normalizeSeverity(row.severity);
   return {
     id: row.id,
-    type: row.type,
-    typeLabel: typeLabels[row.type],
+    type,
+    typeLabel: typeLabels[type],
     title: row.title,
     description: row.description,
     status: row.status,
-    severity: row.severity,
+    severity,
     reporter: row.reporter_name,
     reporterId: row.reporter_id ?? null,
     reporterPhone: row.reporter_phone,
