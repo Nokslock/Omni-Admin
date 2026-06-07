@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   type Incident,
@@ -14,8 +14,10 @@ import {
 } from "../_lib/incidents";
 import { TypeIcon } from "../_lib/icons";
 import { FilterDropdown } from "../_components/FilterDropdown";
+import { ConfirmDialog } from "../_components/ConfirmDialog";
 import { NewIncidentModal } from "./NewIncidentModal";
 import { IncidentRowActions } from "./IncidentRowActions";
+import { deleteIncidents } from "./actions";
 
 const statusOptions = [
   { value: "all", label: "All statuses" },
@@ -49,6 +51,7 @@ const severityOptions = [
   { value: "critical", label: "Critical" },
   { value: "high", label: "High" },
   { value: "medium", label: "Medium" },
+  { value: "low", label: "Low" },
   { value: "info", label: "Info" },
   { value: "resolved", label: "Resolved" },
 ];
@@ -68,6 +71,12 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
   const [severity, setSeverity] = useState("all");
   const [time, setTime] = useState("24h");
 
+  // ── Batch selection ───────────────────────────────────────────────────────
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const headerCheckRef = useRef<HTMLInputElement>(null);
+
   const router = useRouter();
   const [isRefreshing, startTransition] = useTransition();
 
@@ -78,6 +87,11 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
     }, 60_000);
     return () => clearInterval(id);
   }, [router]);
+
+  // Clear selection whenever the underlying list changes (after a delete / refresh).
+  useEffect(() => {
+    setSelected(new Set());
+  }, [incidents]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -92,6 +106,55 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
       return true;
     });
   }, [incidents, query, status, type, severity]);
+
+  // Keep the header checkbox in the right indeterminate / checked state.
+  const allFilteredSelected =
+    filtered.length > 0 && filtered.every((i) => selected.has(i.id));
+  const someSelected = filtered.some((i) => selected.has(i.id));
+  useEffect(() => {
+    if (headerCheckRef.current) {
+      headerCheckRef.current.indeterminate = someSelected && !allFilteredSelected;
+    }
+  }, [someSelected, allFilteredSelected]);
+
+  function toggleAll() {
+    if (allFilteredSelected) {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        filtered.forEach((i) => next.delete(i.id));
+        return next;
+      });
+    } else {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        filtered.forEach((i) => next.add(i.id));
+        return next;
+      });
+    }
+  }
+
+  function toggleOne(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function confirmBatchDelete() {
+    setDeleting(true);
+    const res = await deleteIncidents([...selected]);
+    setDeleting(false);
+    setConfirmOpen(false);
+    if ("error" in res) {
+      alert(res.error);
+    } else {
+      router.refresh();
+    }
+  }
+
+  const selectedCount = selected.size;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -146,12 +209,47 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
         </div>
       </div>
 
+      {/* Batch action bar — slides in when something is selected */}
+      {selectedCount > 0 && (
+        <div className="flex items-center gap-3 border-b border-danger/30 bg-danger/8 px-6 py-2.5">
+          <span className="text-sm font-medium text-fg">
+            <span className="tabular-nums text-danger">{selectedCount}</span>{" "}
+            incident{selectedCount !== 1 ? "s" : ""} selected
+          </span>
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={() => setSelected(new Set())}
+              className="inline-flex h-8 items-center rounded-md border border-border px-3 text-xs font-medium hover:border-border-strong transition-colors"
+            >
+              Deselect all
+            </button>
+            <button
+              onClick={() => setConfirmOpen(true)}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-danger/40 bg-danger/10 px-3 text-xs font-medium text-danger hover:bg-danger/20 transition-colors"
+            >
+              <TrashIcon />
+              Delete {selectedCount} incident{selectedCount !== 1 ? "s" : ""}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className="flex-1 overflow-auto">
         <table className="w-full text-sm">
           <thead className="sticky top-0 z-10 bg-bg">
             <tr className="text-left text-[10px] uppercase tracking-wider text-fg-subtle">
-              <th className="border-b border-border px-6 py-3 font-medium">ID</th>
+              <th className="border-b border-border px-4 py-3">
+                <input
+                  ref={headerCheckRef}
+                  type="checkbox"
+                  aria-label="Select all visible incidents"
+                  checked={allFilteredSelected}
+                  onChange={toggleAll}
+                  className="h-4 w-4 cursor-pointer rounded border-border accent-fg"
+                />
+              </th>
+              <th className="border-b border-border px-2 py-3 font-medium">ID</th>
               <th className="border-b border-border py-3 font-medium">Type · Title</th>
               <th className="border-b border-border py-3 font-medium">Severity</th>
               <th className="border-b border-border py-3 font-medium">Location</th>
@@ -164,12 +262,19 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-6 py-16 text-center text-sm text-fg-muted">
+                <td colSpan={9} className="px-6 py-16 text-center text-sm text-fg-muted">
                   No incidents match these filters.
                 </td>
               </tr>
             ) : (
-              filtered.map((inc) => <IncidentRow key={inc.id} incident={inc} />)
+              filtered.map((inc) => (
+                <IncidentRow
+                  key={inc.id}
+                  incident={inc}
+                  isSelected={selected.has(inc.id)}
+                  onToggle={toggleOne}
+                />
+              ))
             )}
           </tbody>
         </table>
@@ -190,11 +295,31 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
           </button>
         </div>
       </div>
+
+      {/* Batch delete confirmation */}
+      <ConfirmDialog
+        open={confirmOpen}
+        title={`Delete ${selectedCount} incident${selectedCount !== 1 ? "s" : ""}?`}
+        message={`This will permanently delete ${selectedCount} incident${selectedCount !== 1 ? "s" : ""}. This can't be undone.`}
+        confirmLabel="Delete all"
+        destructive
+        busy={deleting}
+        onConfirm={confirmBatchDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   );
 }
 
-function IncidentRow({ incident }: { incident: Incident }) {
+function IncidentRow({
+  incident,
+  isSelected,
+  onToggle,
+}: {
+  incident: Incident;
+  isSelected: boolean;
+  onToggle: (id: string) => void;
+}) {
   // Fall back to safe defaults if a row carries a value the meta tables don't
   // know about yet — keeps the table rendering instead of throwing.
   const color = typeColor[incident.type] ?? typeColor.other;
@@ -207,8 +332,19 @@ function IncidentRow({ incident }: { incident: Incident }) {
     .join("");
 
   return (
-    <tr className="border-b border-border transition-colors hover:bg-bg-elev/40">
-      <td className="whitespace-nowrap px-6 py-4 font-mono text-xs text-fg-muted">
+    <tr
+      className={`border-b border-border transition-colors hover:bg-bg-elev/40 ${isSelected ? "bg-bg-elev/60" : ""}`}
+    >
+      <td className="px-4 py-4">
+        <input
+          type="checkbox"
+          aria-label={`Select incident ${incident.id}`}
+          checked={isSelected}
+          onChange={() => onToggle(incident.id)}
+          className="h-4 w-4 cursor-pointer rounded border-border accent-fg"
+        />
+      </td>
+      <td className="whitespace-nowrap px-2 py-4 font-mono text-xs text-fg-muted">
         <Link href={`/admin/incidents/${incident.id}`} className="hover:text-fg">
           {incident.id}
         </Link>
@@ -298,6 +434,14 @@ function DownloadIcon() {
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  );
+}
+function TrashIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     </svg>
   );
 }

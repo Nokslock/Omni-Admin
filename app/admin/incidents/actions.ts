@@ -146,6 +146,25 @@ export async function deleteIncident(id: string): Promise<IncidentActionResult> 
   return { ok: true };
 }
 
+export type BatchDeleteResult = { ok: true; deleted: number } | { error: string };
+
+export async function deleteIncidents(ids: string[]): Promise<BatchDeleteResult> {
+  if (!ids.length) return { error: "No incidents selected." };
+  if (ids.length > 500) return { error: "Cannot delete more than 500 incidents at once." };
+
+  const supabase = createAdminClient();
+  const { error, count } = await supabase
+    .from("incidents")
+    .delete({ count: "exact" })
+    .in("id", ids);
+
+  if (error) return { error: `Batch delete failed: ${error.message}` };
+
+  revalidatePath("/admin/incidents");
+  revalidatePath("/admin/dashboard");
+  return { ok: true, deleted: count ?? ids.length };
+}
+
 export type ReporterOption = { id: string; name: string };
 
 export async function getReporters(): Promise<ReporterOption[]> {
