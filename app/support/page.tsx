@@ -68,7 +68,7 @@ export default function SupportPage() {
         </section>
 
         <section className="mt-10 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm font-medium text-danger">
-          Kasala is <span className="uppercase">not</span> a substitute for emergency services. If
+          Kasala is <span className="uppercase">not </span> a substitute for emergency services. If
           there&rsquo;s an emergency, call the police or your local emergency number immediately.
         </section>
 
