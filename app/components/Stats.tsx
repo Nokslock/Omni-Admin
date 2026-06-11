@@ -3,7 +3,7 @@ import { Reveal } from "./Reveal";
 
 const stats = [
   { value: 12, suffix: "s", label: "Median report-to-alert" },
-  { value: 4218, suffix: "", label: "Active reporters" },
+  { value: 4218, suffix: "", label: "Reporters worldwide" },
   { value: 98.4, suffix: "%", decimals: 1, label: "Verification accuracy" },
   { value: 37621, suffix: "", label: "Incidents reported" },
 ];

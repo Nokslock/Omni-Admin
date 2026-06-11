@@ -9,8 +9,8 @@ export function Footer() {
               <span>Kasala</span>
             </div>
             <p className="mt-3 max-w-sm text-sm text-fg-muted">
-              A real-time, community-driven emergency notification system. Built for Nigerian
-              cities — owned by the people who live in them.
+              A real-time, community-driven emergency notification system. Built for every city
+              — owned by the people who live in them.
             </p>
           </div>
 

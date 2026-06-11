@@ -88,10 +88,17 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
     return () => clearInterval(id);
   }, [router]);
 
-  // Clear selection whenever the underlying list changes (after a delete / refresh).
-  useEffect(() => {
-    setSelected(new Set());
-  }, [incidents]);
+  // Derive the still-valid selection: drop any ids that no longer exist in the
+  // list (e.g. after a delete / auto-refresh). This replaces clearing selection
+  // in an effect, which would trigger an extra render pass.
+  const validSelected = useMemo(() => {
+    const liveIds = new Set(incidents.map((i) => i.id));
+    const next = new Set<string>();
+    selected.forEach((id) => {
+      if (liveIds.has(id)) next.add(id);
+    });
+    return next;
+  }, [incidents, selected]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -109,8 +116,8 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
 
   // Keep the header checkbox in the right indeterminate / checked state.
   const allFilteredSelected =
-    filtered.length > 0 && filtered.every((i) => selected.has(i.id));
-  const someSelected = filtered.some((i) => selected.has(i.id));
+    filtered.length > 0 && filtered.every((i) => validSelected.has(i.id));
+  const someSelected = filtered.some((i) => validSelected.has(i.id));
   useEffect(() => {
     if (headerCheckRef.current) {
       headerCheckRef.current.indeterminate = someSelected && !allFilteredSelected;
@@ -144,7 +151,7 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
 
   async function confirmBatchDelete() {
     setDeleting(true);
-    const res = await deleteIncidents([...selected]);
+    const res = await deleteIncidents([...validSelected]);
     setDeleting(false);
     setConfirmOpen(false);
     if ("error" in res) {
@@ -154,7 +161,7 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
     }
   }
 
-  const selectedCount = selected.size;
+  const selectedCount = validSelected.size;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -271,7 +278,7 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
                 <IncidentRow
                   key={inc.id}
                   incident={inc}
-                  isSelected={selected.has(inc.id)}
+                  isSelected={validSelected.has(inc.id)}
                   onToggle={toggleOne}
                 />
               ))

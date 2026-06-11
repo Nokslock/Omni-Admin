@@ -20,14 +20,14 @@ export const siteConfig = {
   twitter: "@kasala_ng",
   themeColorDark: "#0f1115",
   themeColorLight: "#ffffff",
-  locale: "en_NG",
+  locale: "en",
   keywords: [
     "community safety alerts",
     "emergency notifications",
     "incident reporting",
-    "Nigeria safety app",
     "neighborhood watch",
-    "real-time alerts",
+    "real-time safety alerts",
+    "local incident reporting",
     "Kasala",
   ],
 } as const;

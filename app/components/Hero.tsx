@@ -21,8 +21,8 @@ export function Hero() {
           </Reveal>
           <Reveal delay={180}>
             <p className="mt-6 max-w-xl text-pretty text-base text-fg-muted sm:text-lg">
-              Spot, report, and monitor critical incidents in your area in real time. Powering a safer
-              community together — from Apapa to Lekki.
+              Spot, report, and monitor critical incidents in your area in real time. Powering safer
+              communities together — wherever you are in the world.
             </p>
           </Reveal>
 
@@ -53,11 +53,11 @@ export function Hero() {
 
           <Reveal delay={340}>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-fg-muted">
-              <TrustItem label="Free forever" />
+              <TrustItem label="GDPR-ready" />
               <span className="text-fg-subtle">·</span>
-              <TrustItem label="No ads" />
+              <TrustItem label="Privacy-first" />
               <span className="text-fg-subtle">·</span>
-              <TrustItem label="NDPR compliant" />
+              <TrustItem label="iOS & Android" />
             </div>
           </Reveal>
         </div>
@@ -78,9 +78,9 @@ function LivePill() {
         <span className="absolute inset-0 rounded-full bg-ok animate-ping-slow" />
         <span className="relative inline-flex h-2 w-2 rounded-full bg-ok animate-pulse-dot" />
       </span>
-      <span className="text-ok">LIVE IN LAGOS</span>
+      <span className="text-ok">NOW AVAILABLE WORLDWIDE</span>
       <span className="text-fg-subtle">·</span>
-      <span className="text-fg-muted">4,218 active reporters</span>
+      <span className="text-fg-muted">iOS &amp; Android</span>
     </div>
   );
 }

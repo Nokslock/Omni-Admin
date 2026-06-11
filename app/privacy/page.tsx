@@ -205,8 +205,9 @@ export default function PrivacyPage() {
 
           <Section title="10. International Users">
             <p>
-              If you access the App from outside Nigeria, your information may be transferred to
-              and processed in Nigeria where our service providers operate.
+              Your information may be transferred to and processed in countries other than your
+              own where our service providers operate. We take steps to ensure appropriate
+              safeguards are in place wherever your data is processed.
             </p>
           </Section>
 

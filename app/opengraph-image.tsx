@@ -129,7 +129,7 @@ export default async function OpenGraphImage() {
                 boxShadow: "0 0 24px rgba(232,64,64,0.7)",
               }}
             />
-            <div>Live · Nigeria-wide</div>
+            <div>Live · Worldwide</div>
           </div>
         </div>
       </div>

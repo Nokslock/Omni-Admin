@@ -25,12 +25,16 @@ function genId(): string {
 
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 
-// Rough projection of Lagos lat/lng onto the stylized SVG map (0–2000 x, 0–1200 y).
+// Web-Mercator projection onto the admin SVG canvas (0–2000 x, 0–1200 y).
+// Works for any lat/lng on Earth — longitude maps linearly, latitude uses
+// the Mercator formula so high-latitude cities aren't squashed.
 function projectX(lng: number) {
-  return Math.round(clamp(((lng - 3.25) / (3.6 - 3.25)) * 2000, 0, 2000));
+  return Math.round(clamp(((lng + 180) / 360) * 2000, 0, 2000));
 }
 function projectY(lat: number) {
-  return Math.round(clamp(((6.62 - lat) / (6.62 - 6.4)) * 1200, 0, 1200));
+  const rad = (lat * Math.PI) / 180;
+  const mercN = Math.log(Math.tan(Math.PI / 4 + rad / 2));
+  return Math.round(clamp((1 - (mercN + Math.PI) / (2 * Math.PI)) * 1200, 0, 1200));
 }
 
 export async function createIncident(

@@ -128,7 +128,7 @@ export function MapPreview() {
         <div
           ref={mapDiv}
           className="absolute inset-0 h-full w-full"
-          aria-label="Live incident map of Lagos"
+          aria-label="Live incident map"
         />
 
         {error && (

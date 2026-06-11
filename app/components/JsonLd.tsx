@@ -43,7 +43,7 @@ export function HomeJsonLd() {
     offers: {
       "@type": "Offer",
       price: "0",
-      priceCurrency: "NGN",
+      priceCurrency: "USD",
     },
   };
 
