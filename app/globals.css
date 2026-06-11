@@ -209,3 +209,33 @@ section[id] {
 
 .text-balance { text-wrap: balance; }
 .text-pretty { text-wrap: pretty; }
+
+/* ── Ambient depth utilities ─────────────────────────────────────────────
+   Layered radial glows + a faint noise texture so large dark areas read as
+   "lit" rather than flat. Drop onto a section's absolute background layer. */
+.glow-ambient {
+  background:
+    radial-gradient(50% 45% at 18% 8%, color-mix(in oklab, var(--danger) 14%, transparent), transparent 70%),
+    radial-gradient(45% 45% at 85% 30%, color-mix(in oklab, var(--info) 12%, transparent), transparent 70%),
+    radial-gradient(60% 50% at 50% 100%, color-mix(in oklab, var(--warn) 8%, transparent), transparent 70%);
+}
+
+.glow-soft {
+  background:
+    radial-gradient(60% 60% at 50% 0%, color-mix(in oklab, var(--danger) 10%, transparent), transparent 70%);
+}
+
+/* Subtle film-grain so flat panels don't look plasticky. */
+.noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+/* Conic accent sheen used on premium cards/CTAs. */
+.sheen {
+  background: conic-gradient(from 140deg at 50% 0%, transparent 0deg, color-mix(in oklab, var(--danger) 18%, transparent) 90deg, transparent 180deg, color-mix(in oklab, var(--info) 16%, transparent) 270deg, transparent 360deg);
+}
+
+.mask-fade-b {
+  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+}

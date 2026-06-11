@@ -1,6 +1,32 @@
 import { Reveal } from "./Reveal";
 import { AppDemo } from "./AppDemo";
 
+function PinIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+function WifiOffIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <line x1="1" y1="1" x2="23" y2="23" />
+      <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
+    </svg>
+  );
+}
+function MaskIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M2 8c0-1 1-2 3-2 2.5 0 3.5 1.5 6 1.5S17.5 6 20 6c2 0 3 1 3 2v3c0 4-4 7-11 7S2 15 2 11z" />
+      <circle cx="8" cy="11" r="1.2" />
+      <circle cx="16" cy="11" r="1.2" />
+    </svg>
+  );
+}
+
 export function AppShowcase() {
   return (
     <section id="app" className="relative overflow-hidden border-b border-border py-28">
@@ -33,15 +59,29 @@ export function AppShowcase() {
           <AppDemo />
         </Reveal>
 
-        <Reveal delay={200} className="mt-20 grid gap-6 sm:grid-cols-3">
+        <Reveal delay={200} className="mt-20 grid gap-5 sm:grid-cols-3">
           {[
-            { k: "Auto-GPS", v: "Location attaches itself. No typing required." },
-            { k: "Offline-safe", v: "Reports queue if signal drops and send when you reconnect." },
-            { k: "Anonymous", v: "Your identity is never shared with other reporters." },
+            { k: "Auto-GPS", v: "Location attaches itself. No typing required.", accent: "#2563eb", icon: <PinIcon /> },
+            { k: "Offline-safe", v: "Reports queue if signal drops and send when you reconnect.", accent: "#16a34a", icon: <WifiOffIcon /> },
+            { k: "Anonymous", v: "Your identity is never shared with other reporters.", accent: "#a855f7", icon: <MaskIcon /> },
           ].map((b) => (
-            <div key={b.k} className="rounded-lg border border-border bg-bg-card p-5">
-              <div className="font-mono text-[10px] uppercase tracking-wider text-fg-subtle">{b.k}</div>
-              <div className="mt-2 text-sm leading-relaxed text-fg-muted">{b.v}</div>
+            <div
+              key={b.k}
+              className="group relative overflow-hidden rounded-xl border border-border bg-bg-card p-5 transition-colors hover:border-border-strong"
+            >
+              <div
+                className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full opacity-20 blur-2xl transition-opacity group-hover:opacity-40"
+                style={{ background: b.accent }}
+                aria-hidden
+              />
+              <span
+                className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg"
+                style={{ color: b.accent, background: `color-mix(in oklab, ${b.accent} 14%, transparent)` }}
+              >
+                {b.icon}
+              </span>
+              <div className="relative mt-4 font-mono text-[10px] uppercase tracking-wider text-fg-subtle">{b.k}</div>
+              <div className="relative mt-1.5 text-sm leading-relaxed text-fg-muted">{b.v}</div>
             </div>
           ))}
         </Reveal>

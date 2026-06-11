@@ -5,8 +5,9 @@ import { Hero } from "./components/Hero";
 import { Stats } from "./components/Stats";
 import { Features } from "./components/Features";
 import { AppShowcase } from "./components/AppShowcase";
+import { IncidentTypes } from "./components/IncidentTypes";
 import { Lifecycle } from "./components/Lifecycle";
-import { Coverage } from "./components/Coverage";
+import { CTA } from "./components/CTA";
 import { Footer } from "./components/Footer";
 import { HomeJsonLd } from "./components/JsonLd";
 
@@ -34,8 +35,9 @@ export default function Home() {
         <Stats />
         <Features />
         <AppShowcase />
+        <IncidentTypes />
         <Lifecycle />
-        <Coverage />
+        <CTA />
       </main>
       <Footer />
     </>

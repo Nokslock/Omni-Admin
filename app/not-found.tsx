@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 const destinations = [
   { href: "/", label: "Home", desc: "What Kasala is and how it works" },
   { href: "/#how", label: "How it works", desc: "From spot to alert in seconds" },
-  { href: "/#coverage", label: "Coverage", desc: "Where Kasala is live" },
+  { href: "/#app", label: "The app", desc: "See Kasala in action" },
   { href: "/support", label: "Support", desc: "Talk to a real person" },
 ];
 

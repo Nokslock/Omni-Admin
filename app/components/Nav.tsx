@@ -3,7 +3,6 @@ import { ThemeToggle } from "./ThemeToggle";
 const links = [
   { href: "#how", label: "How it works" },
   { href: "#app", label: "The app" },
-  { href: "#coverage", label: "Coverage" },
 ];
 
 export function Nav() {

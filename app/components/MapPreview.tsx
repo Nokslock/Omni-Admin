@@ -14,15 +14,19 @@ type PinType =
   | "protest"
   | "other";
 
+// Spread across continents so the preview reads "worldwide" at a glance.
 const pins: { lat: number; lng: number; type: PinType }[] = [
-  { lat: 6.5341, lng: 3.3539, type: "fire" },     // Mushin
-  { lat: 6.5095, lng: 3.3735, type: "medical" },  // Yaba
-  { lat: 6.5511, lng: 3.3858, type: "crash" },    // Gbagada
-  { lat: 6.5917, lng: 3.3850, type: "power" },    // Ikeja / Ketu
-  { lat: 6.4928, lng: 3.3589, type: "flood" },    // Surulere
-  { lat: 6.4488, lng: 3.3621, type: "fire" },     // Apapa
-  { lat: 6.4541, lng: 3.3947, type: "bandits" },  // Lagos Island
-  { lat: 6.4382, lng: 3.4717, type: "other" },    // Lekki
+  { lat: 40.7128, lng: -74.006, type: "crash" },    // New York
+  { lat: 19.4326, lng: -99.1332, type: "fire" },    // Mexico City
+  { lat: -23.5558, lng: -46.6396, type: "protest" },// São Paulo
+  { lat: 51.5074, lng: -0.1278, type: "flood" },    // London
+  { lat: 48.8566, lng: 2.3522, type: "medical" },   // Paris
+  { lat: 6.5244, lng: 3.3792, type: "fire" },       // Lagos
+  { lat: -1.2921, lng: 36.8219, type: "other" },    // Nairobi
+  { lat: 30.0444, lng: 31.2357, type: "power" },    // Cairo
+  { lat: 19.076, lng: 72.8777, type: "flood" },     // Mumbai
+  { lat: 35.6762, lng: 139.6503, type: "bandits" }, // Tokyo
+  { lat: -33.8688, lng: 151.2093, type: "medical" },// Sydney
 ];
 
 const pinColor: Record<PinType, string> = {
@@ -64,8 +68,9 @@ export function MapPreview() {
       .then(() => {
         if (cancelled || !mapDiv.current) return;
         const map = new google.maps.Map(mapDiv.current, {
-          center: { lat: 6.5, lng: 3.4 },
-          zoom: 11,
+          center: { lat: 25, lng: 8 },
+          zoom: 2,
+          minZoom: 2,
           disableDefaultUI: true,
           gestureHandling: "none",
           keyboardShortcuts: false,
@@ -155,9 +160,10 @@ export function MapPreview() {
           <span className="flex h-7 w-7 items-center justify-center text-fg-muted">−</span>
         </div>
 
-        {/* Coordinates */}
-        <div className="pointer-events-none absolute right-3 top-20 rounded-md border border-border bg-bg-card/80 px-2 py-1 font-mono text-[10px] text-fg-muted backdrop-blur">
-          6.45°N · 3.40°E
+        {/* Global indicator */}
+        <div className="pointer-events-none absolute right-3 top-20 inline-flex items-center gap-1.5 rounded-md border border-border bg-bg-card/80 px-2 py-1 font-mono text-[10px] text-fg-muted backdrop-blur">
+          <span className="h-1.5 w-1.5 rounded-full bg-ok" />
+          WORLDWIDE
         </div>
       </div>
     </div>
