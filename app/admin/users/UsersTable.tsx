@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   type User,
   type UserStatus,
@@ -13,8 +13,9 @@ import {
 import { FilterDropdown } from "../_components/FilterDropdown";
 import { AddAdminModal } from "./AddAdminModal";
 import { BroadcastModal } from "./BroadcastModal";
-import { setUserStatus } from "./actions";
+import { setUserStatus, deleteUser } from "./actions";
 import { UserActivityPanel } from "./UserActivityPanel";
+import { ConfirmDialog } from "../_components/ConfirmDialog";
 
 const statusOptions = [
   { value: "all", label: "All" },
@@ -52,8 +53,15 @@ const sortOptions: { value: SortKey; label: string }[] = [
   { value: "name", label: "Name (A–Z)" },
 ];
 
-export function UsersTable({ users }: { users: User[] }) {
-  const [query, setQuery] = useState("");
+export function UsersTable({
+  users,
+  currentEmail,
+}: {
+  users: User[];
+  currentEmail: string | null;
+}) {
+  // Pre-fill from global search (?q=…), e.g. when jumping to a specific reporter.
+  const [query, setQuery] = useState(useSearchParams().get("q") ?? "");
   const [status, setStatus] = useState("all");
   const [role, setRole] = useState("all");
   const [reliability, setReliability] = useState("any");
@@ -192,7 +200,13 @@ export function UsersTable({ users }: { users: User[] }) {
                 </td>
               </tr>
             ) : (
-              filtered.map((u) => <UserRow key={u.id} user={u} />)
+              filtered.map((u) => (
+                <UserRow
+                  key={u.id}
+                  user={u}
+                  isSelf={!!currentEmail && u.email === currentEmail}
+                />
+              ))
             )}
           </tbody>
         </table>
@@ -217,10 +231,12 @@ export function UsersTable({ users }: { users: User[] }) {
   );
 }
 
-function UserRow({ user }: { user: User }) {
+function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const meta = userStatusMeta[user.status];
   const role = roleMeta[user.role];
   const reliColor = reliabilityColor(user.reliability);
@@ -234,6 +250,19 @@ function UserRow({ user }: { user: User }) {
     if ("ok" in res) {
       router.refresh();
     } else {
+      alert(res.error);
+    }
+  }
+
+  async function confirmRemove() {
+    setDeleting(true);
+    const res = await deleteUser(user.id);
+    if ("ok" in res) {
+      setConfirmDelete(false);
+      router.refresh();
+    } else {
+      setDeleting(false);
+      setConfirmDelete(false);
       alert(res.error);
     }
   }
@@ -315,7 +344,30 @@ function UserRow({ user }: { user: User }) {
           >
             {pending ? "…" : isSuspended ? "Reinstate" : "Suspend"}
           </button>
+          {!isSelf && (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              aria-label={`Delete ${user.name}`}
+              title="Delete user"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-fg-muted hover:border-danger/40 hover:text-danger transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+            </button>
+          )}
         </div>
+        <ConfirmDialog
+          open={confirmDelete}
+          title={`Delete ${user.name}?`}
+          message={`This permanently removes ${user.name} (${user.email})${user.role === "admin" ? ", including their admin login" : ""}. This can't be undone.`}
+          confirmLabel="Delete user"
+          destructive
+          busy={deleting}
+          onConfirm={confirmRemove}
+          onCancel={() => setConfirmDelete(false)}
+        />
       </td>
     </tr>
   );

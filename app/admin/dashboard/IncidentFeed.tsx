@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IncidentCard } from "./IncidentCard";
+import { CountryFilter } from "./CountryFilter";
 import type { Incident, IncidentType, Severity } from "../_lib/incidents";
 
 type Filter = "all" | "critical" | "high" | "medium" | "resolved";
@@ -51,9 +52,17 @@ type Props = {
   incidents: Incident[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  country: string;
+  onCountryChange: (code: string) => void;
 };
 
-export function IncidentFeed({ incidents, selectedId, onSelect }: Props) {
+export function IncidentFeed({
+  incidents,
+  selectedId,
+  onSelect,
+  country,
+  onCountryChange,
+}: Props) {
   const [filter, setFilter] = useState<Filter>("all");
   const [typeFilter, setTypeFilter] = useState<IncidentType | "all">("all");
   const [sort, setSort] = useState<SortKey>("newest");
@@ -216,6 +225,15 @@ export function IncidentFeed({ incidents, selectedId, onSelect }: Props) {
               {f.label}
             </button>
           ))}
+        </div>
+
+        {/* Country lock — flies the map to the chosen country and filters
+            the feed to incidents within it. */}
+        <div className="mt-3">
+          <div className="mb-1 text-[10px] uppercase tracking-wider text-fg-subtle">
+            Region
+          </div>
+          <CountryFilter value={country} onChange={onCountryChange} />
         </div>
       </div>
 

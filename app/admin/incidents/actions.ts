@@ -184,6 +184,8 @@ export type ReporterIncident = {
   severity: Severity;
   status: IncidentStatus;
   reportedAt: string;
+  confirms: number;
+  flags: number;
 };
 
 type ReporterIncidentRow = {
@@ -205,12 +207,35 @@ export async function getIncidentsByReporter(
     .eq("reporter_id", userId)
     .order("reported_at", { ascending: false });
 
-  return ((data as ReporterIncidentRow[] | null) ?? []).map((r) => ({
-    id: r.id,
-    title: r.title,
-    type: r.type,
-    severity: r.severity,
-    status: r.status,
-    reportedAt: r.reported_at,
-  }));
+  const rows = (data as ReporterIncidentRow[] | null) ?? [];
+  if (rows.length === 0) return [];
+
+  // Tally community feedback (confirm / flag) for just this user's incidents.
+  const ids = rows.map((r) => r.id);
+  const { data: feedback } = await supabase
+    .from("incident_feedback")
+    .select("incident_id, kind")
+    .in("incident_id", ids);
+
+  const counts = new Map<string, { confirms: number; flags: number }>();
+  for (const f of (feedback as { incident_id: string; kind: string }[] | null) ?? []) {
+    const c = counts.get(f.incident_id) ?? { confirms: 0, flags: 0 };
+    if (f.kind === "confirm") c.confirms += 1;
+    else if (f.kind === "flag") c.flags += 1;
+    counts.set(f.incident_id, c);
+  }
+
+  return rows.map((r) => {
+    const c = counts.get(r.id) ?? { confirms: 0, flags: 0 };
+    return {
+      id: r.id,
+      title: r.title,
+      type: r.type,
+      severity: r.severity,
+      status: r.status,
+      reportedAt: r.reported_at,
+      confirms: c.confirms,
+      flags: c.flags,
+    };
+  });
 }

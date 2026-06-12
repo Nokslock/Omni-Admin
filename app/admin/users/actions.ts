@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/app/lib/supabase/server";
 import { getCurrentAdmin } from "../_lib/admin";
 import { createSessionClient } from "@/app/lib/supabase/session";
+import { isValidTarget, WORLDWIDE } from "@/app/lib/countries";
 
 export type NewAdminInput = {
   name: string;
@@ -76,6 +77,7 @@ export type SendBroadcastInput = {
   body: string;
   severity: BroadcastSeverity;
   audience: BroadcastAudience;
+  country: string; // ISO alpha-2 code, or "ALL" for worldwide
 };
 
 export type SendBroadcastResult = { ok: true; id: string } | { error: string };
@@ -87,6 +89,7 @@ export async function sendBroadcast(
   const body = input.body?.trim();
   const severity = input.severity;
   const audience = input.audience;
+  const country = (input.country || WORLDWIDE).trim().toUpperCase();
 
   if (!title || !body) {
     return { error: "Please give the broadcast a title and a message." };
@@ -102,6 +105,9 @@ export async function sendBroadcast(
   }
   if (!["all", "admins", "users"].includes(audience)) {
     return { error: "Invalid audience." };
+  }
+  if (!isValidTarget(country)) {
+    return { error: "Invalid country." };
   }
 
   // Make sure whoever is calling this is actually a signed-in admin — the
@@ -133,6 +139,7 @@ export async function sendBroadcast(
       body,
       severity,
       audience,
+      country,
       sent_by: senderRow?.id ?? null,
       sent_by_name: sender.name,
     })
@@ -145,6 +152,57 @@ export async function sendBroadcast(
 
   revalidatePath("/admin/users");
   return { ok: true, id: data.id };
+}
+
+export type DeleteUserResult = { ok: true } | { error: string };
+
+export async function deleteUser(userId: string): Promise<DeleteUserResult> {
+  if (!userId) return { error: "No user specified." };
+
+  // Verify the caller is a signed-in admin.
+  const sessionClient = await createSessionClient();
+  const {
+    data: { user: authUser },
+  } = await sessionClient.auth.getUser();
+  if (!authUser) return { error: "Not signed in." };
+
+  const caller = await getCurrentAdmin();
+  if (!caller || caller.role !== "admin") {
+    return { error: "Only admins can delete users." };
+  }
+
+  const supabase = createAdminClient();
+
+  // Load the target so we can (a) block self-deletion and (b) remove the
+  // linked auth account, not just the profile row.
+  const { data: target, error: lookupError } = await supabase
+    .from("users")
+    .select("id, auth_id, email")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (lookupError) return { error: `Lookup failed: ${lookupError.message}` };
+  if (!target) return { error: "User not found." };
+
+  // Don't let an admin delete their own account.
+  if (target.auth_id && target.auth_id === authUser.id) {
+    return { error: "You can't delete your own account." };
+  }
+
+  // Remove the linked auth account first (if any). Tolerate "not found" so a
+  // half-deleted record can still be cleaned up.
+  if (target.auth_id) {
+    const { error: authError } = await supabase.auth.admin.deleteUser(target.auth_id);
+    if (authError && !/not.*found/i.test(authError.message)) {
+      return { error: `Failed to delete auth account: ${authError.message}` };
+    }
+  }
+
+  const { error: deleteError } = await supabase.from("users").delete().eq("id", userId);
+  if (deleteError) return { error: `Failed to delete user: ${deleteError.message}` };
+
+  revalidatePath("/admin/users");
+  return { ok: true };
 }
 
 export async function setUserStatus(

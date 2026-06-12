@@ -43,19 +43,52 @@ export function MissingList({ requests }: { requests: MissingRequest[] }) {
     [tab, requests],
   );
 
-  return (
-    <div className="mx-auto w-full max-w-5xl">
-      <nav className="mb-3 flex items-center gap-1.5 text-xs text-fg-muted">
-        <span>Admin</span>
-        <span className="text-fg-subtle">›</span>
-        <span className="text-fg">Missing persons</span>
-      </nav>
-      <h1 className="text-3xl font-semibold tracking-tight">Missing-person requests</h1>
-      <p className="mt-1 text-sm text-fg-muted">
-        Review and approve requests submitted from the mobile app.
-      </p>
+  const total = requests.length;
+  const pct = (n: number) => (total ? `${Math.round((n / total) * 100)}%` : "0%");
+  const stats: { label: string; value: number; sub?: string }[] = [
+    { label: "Total requests", value: total },
+    { label: "Pending review", value: counts.pending, sub: pct(counts.pending) },
+    { label: "Approved", value: counts.approved, sub: pct(counts.approved) },
+    { label: "Resolved", value: counts.resolved, sub: pct(counts.resolved) },
+  ];
 
-      <div className="mt-6 flex flex-wrap items-center gap-1 border-b border-border">
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* Page header */}
+      <div className="border-b border-border bg-bg px-6 pb-5 pt-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <nav className="mb-3 flex items-center gap-1.5 text-xs text-fg-muted">
+              <span>Admin</span>
+              <span className="text-fg-subtle">›</span>
+              <span className="text-fg">Missing persons</span>
+            </nav>
+            <h1 className="text-3xl font-semibold tracking-tight">Missing-person requests</h1>
+            <p className="mt-1 text-sm text-fg-muted">
+              Review and approve requests submitted from the mobile app ·{" "}
+              <span className="font-semibold text-fg">{filtered.length}</span> shown
+            </p>
+          </div>
+        </div>
+
+        {/* Stat cards */}
+        <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {stats.map((s) => (
+            <div key={s.label} className="rounded-xl border border-border bg-bg-card px-5 py-4">
+              <div className="text-xs text-fg-muted">{s.label}</div>
+              <div className="mt-2.5 flex items-baseline gap-2">
+                <span className="text-2xl font-semibold tracking-tight">{s.value.toLocaleString()}</span>
+                {s.sub && (
+                  <span className="font-mono text-[11px] text-fg-muted">{s.sub} of total</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex flex-wrap items-center gap-1 border-b border-border bg-bg px-6">
         {tabs.map((t) => {
           const count =
             t.id === "all"
@@ -66,7 +99,7 @@ export function MissingList({ requests }: { requests: MissingRequest[] }) {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`inline-flex h-9 items-center gap-2 border-b-2 px-3 text-sm font-medium transition-colors ${
+              className={`inline-flex h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium transition-colors ${
                 active
                   ? "border-fg text-fg"
                   : "border-transparent text-fg-muted hover:text-fg"
@@ -85,17 +118,20 @@ export function MissingList({ requests }: { requests: MissingRequest[] }) {
         })}
       </div>
 
-      {filtered.length === 0 ? (
-        <p className="mt-10 text-center text-sm text-fg-muted">
-          No {tab === "all" ? "" : tab} requests.
-        </p>
-      ) : (
-        <ul className="mt-6 space-y-3">
-          {filtered.map((r) => (
-            <RequestCard key={r.id} request={r} />
-          ))}
-        </ul>
-      )}
+      {/* Content */}
+      <div className="flex-1 overflow-auto px-6 py-6">
+        {filtered.length === 0 ? (
+          <p className="py-16 text-center text-sm text-fg-muted">
+            No {tab === "all" ? "" : tab} requests.
+          </p>
+        ) : (
+          <ul className="mx-auto max-w-5xl space-y-3">
+            {filtered.map((r) => (
+              <RequestCard key={r.id} request={r} />
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

@@ -14,9 +14,9 @@ export default async function MissingPage() {
   const requests = await getMissingRequests();
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-fg">
+    <div className="flex h-dvh flex-col bg-bg text-fg">
       <AdminNav />
-      <main className="flex-1 px-6 py-8">
+      <main className="flex min-h-0 flex-1 flex-col">
         <MissingList requests={requests} />
       </main>
     </div>

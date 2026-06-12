@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   type Incident,
   type IncidentStatus,
@@ -65,11 +65,14 @@ const timeOptions = [
 ];
 
 export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
-  const [query, setQuery] = useState("");
+  // When arriving from global search (?q=…) pre-fill the box, and widen the time
+  // window to "all" so an older matching incident isn't hidden by the 24h default.
+  const initialQuery = useSearchParams().get("q") ?? "";
+  const [query, setQuery] = useState(initialQuery);
   const [status, setStatus] = useState("all");
   const [type, setType] = useState("all");
   const [severity, setSeverity] = useState("all");
-  const [time, setTime] = useState("24h");
+  const [time, setTime] = useState(initialQuery ? "all" : "24h");
 
   // ── Batch selection ───────────────────────────────────────────────────────
   const [selected, setSelected] = useState<Set<string>>(new Set());

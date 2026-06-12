@@ -112,6 +112,27 @@ export function UserActivityPanel({
                         <div className="text-[11px] text-fg-muted">
                           {typeLabels[i.type]} · {relTime(i.reportedAt)}
                         </div>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <span
+                            className="inline-flex items-center gap-1 rounded border border-ok/30 bg-ok/10 px-1.5 py-0.5 text-[10px] font-medium text-ok"
+                            title={`${i.confirms} confirmation${i.confirms === 1 ? "" : "s"}`}
+                          >
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            {i.confirms}
+                          </span>
+                          <span
+                            className="inline-flex items-center gap-1 rounded border border-warn/30 bg-warn/10 px-1.5 py-0.5 text-[10px] font-medium text-warn"
+                            title={`${i.flags} flag${i.flags === 1 ? "" : "s"} as false`}
+                          >
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                              <line x1="4" y1="22" x2="4" y2="15" />
+                            </svg>
+                            {i.flags}
+                          </span>
+                        </div>
                       </div>
                       <span
                         className="shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-medium"

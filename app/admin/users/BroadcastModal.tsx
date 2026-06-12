@@ -6,6 +6,7 @@ import {
   type BroadcastAudience,
   type BroadcastSeverity,
 } from "./actions";
+import { COUNTRIES, WORLDWIDE, countryLabel } from "@/app/lib/countries";
 
 const fieldClass =
   "h-10 w-full rounded-lg border border-border bg-bg-elev px-3 text-sm text-fg placeholder:text-fg-subtle focus:border-fg-muted focus:outline-none focus:ring-1 focus:ring-fg-muted/30";
@@ -32,6 +33,7 @@ export function BroadcastModal() {
   const [body, setBody] = useState("");
   const [severity, setSeverity] = useState<BroadcastSeverity>("info");
   const [audience, setAudience] = useState<BroadcastAudience>("all");
+  const [country, setCountry] = useState<string>(WORLDWIDE);
 
   useEffect(() => {
     if (!open) return;
@@ -47,6 +49,7 @@ export function BroadcastModal() {
     setBody("");
     setSeverity("info");
     setAudience("all");
+    setCountry(WORLDWIDE);
     setError(null);
     setSuccess(null);
   }
@@ -62,13 +65,17 @@ export function BroadcastModal() {
     setSubmitting(true);
     setError(null);
     setSuccess(null);
-    const res = await sendBroadcast({ title, body, severity, audience });
+    const res = await sendBroadcast({ title, body, severity, audience, country });
     setSubmitting(false);
     if ("error" in res) {
       setError(res.error);
       return;
     }
-    setSuccess("Broadcast sent. Mobile users will see it on their next sync.");
+    setSuccess(
+      country === WORLDWIDE
+        ? "Broadcast sent worldwide. Mobile users will see it on their next sync."
+        : `Broadcast sent to ${countryLabel(country)}. Mobile users there will see it on their next sync.`,
+    );
     setTitle("");
     setBody("");
   }
@@ -200,6 +207,36 @@ export function BroadcastModal() {
                     })}
                   </div>
                 </Field>
+
+                <Field label="Location">
+                  <div className="relative">
+                    <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-fg-subtle">
+                      <GlobeIcon />
+                    </span>
+                    <select
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      className={`${fieldClass} cursor-pointer appearance-none pl-9 pr-9`}
+                    >
+                      <option value={WORLDWIDE}>🌍 Worldwide — all countries</option>
+                      {COUNTRIES.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-fg-subtle">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-[11px] text-fg-muted">
+                    {country === WORLDWIDE
+                      ? "Reaches the selected audience everywhere."
+                      : `Only reaches people in ${countryLabel(country)}.`}
+                  </p>
+                </Field>
               </div>
 
               {error && (
@@ -262,6 +299,16 @@ function MailIcon() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <rect x="2" y="4" width="20" height="16" rx="2" />
       <polyline points="22,6 12,13 2,6" />
+    </svg>
+  );
+}
+
+function GlobeIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
     </svg>
   );
 }

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import { type Incident, typeColor } from "../_lib/incidents";
 import { currentMapStyle, observeMapTheme } from "../_lib/mapTheme";
+import { WORLDWIDE, countryLabel } from "@/app/lib/countries";
+import { COUNTRY_BBOX } from "@/app/lib/country-bounds";
 import { IncidentDetailCard } from "./IncidentDetailCard";
 
 type View = "map" | "satellite";
@@ -15,10 +17,19 @@ const views: { id: View; label: string }[] = [
 
 const LAGOS = { lat: 6.5244, lng: 3.3792 };
 
+/** Geographic bounding box (a country's viewport) used to lock + filter. */
+export type GeoBounds = { north: number; south: number; east: number; west: number };
+
 type Props = {
   incidents: Incident[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  /** Selected country (ISO alpha-2) or the WORLDWIDE sentinel. */
+  country: string;
+  /** Called with the resolved viewport after a country is geocoded, or null. */
+  onBoundsResolved: (bounds: GeoBounds | null) => void;
+  /** Reset the country lock back to worldwide. */
+  onClearCountry: () => void;
 };
 
 const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -34,7 +45,14 @@ function markerIcon(color: string, selected: boolean): google.maps.Symbol {
   };
 }
 
-export function DashboardMap({ incidents, selectedId, onSelect }: Props) {
+export function DashboardMap({
+  incidents,
+  selectedId,
+  onSelect,
+  country,
+  onBoundsResolved,
+  onClearCountry,
+}: Props) {
   const [view, setView] = useState<View>("map");
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(
@@ -46,9 +64,11 @@ export function DashboardMap({ incidents, selectedId, onSelect }: Props) {
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<Record<string, google.maps.Marker>>({});
   const onSelectRef = useRef(onSelect);
+  const onBoundsResolvedRef = useRef(onBoundsResolved);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
+    onBoundsResolvedRef.current = onBoundsResolved;
   });
 
   const selected = incidents.find((i) => i.id === selectedId) ?? null;
@@ -135,6 +155,34 @@ export function DashboardMap({ incidents, selectedId, onSelect }: Props) {
     return observeMapTheme((styles) => mapRef.current?.setOptions({ styles }));
   }, [ready]);
 
+  // Lock the map to the selected country using a static bounding box (no paid
+  // Geocoding API needed): fit the map to it and report the bounds up so the
+  // feed + markers filter to that area.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map) return;
+
+    if (country === WORLDWIDE) {
+      onBoundsResolvedRef.current(null);
+      return;
+    }
+
+    const box = COUNTRY_BBOX[country];
+    if (!box) {
+      onBoundsResolvedRef.current(null);
+      return;
+    }
+
+    const [west, south, east, north] = box;
+    map.fitBounds(
+      new google.maps.LatLngBounds(
+        { lat: south, lng: west },
+        { lat: north, lng: east },
+      ),
+    );
+    onBoundsResolvedRef.current({ north, south, east, west });
+  }, [ready, country]);
+
   function zoom(delta: number) {
     const map = mapRef.current;
     if (map) map.setZoom((map.getZoom() ?? 12) + delta);
@@ -147,6 +195,30 @@ export function DashboardMap({ incidents, selectedId, onSelect }: Props) {
       {loadError && (
         <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-fg-muted">
           {loadError}
+        </div>
+      )}
+
+      {/* Country lock chip */}
+      {country !== WORLDWIDE && (
+        <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-info/40 bg-bg-card/85 py-1 pl-3 pr-1.5 text-xs font-medium text-fg shadow-lg shadow-black/20 backdrop-blur">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-info" aria-hidden>
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            Locked to {countryLabel(country)}
+            <button
+              type="button"
+              onClick={onClearCountry}
+              aria-label="Clear country lock"
+              className="inline-flex h-5 w-5 items-center justify-center rounded-full text-fg-muted hover:bg-bg-elev hover:text-fg"
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
 
