@@ -65,11 +65,19 @@ export function UsersTable({
   const [status, setStatus] = useState("all");
   const [role, setRole] = useState("all");
   const [reliability, setReliability] = useState("any");
-  const [joined, setJoined] = useState("any");
-  const [sort, setSort] = useState<SortKey>("reports");
+  const [joined, setJoined] = useState("7d");
+  const [sort, setSort] = useState<SortKey>("joined");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const joinedCutoff: Record<string, number> = {
+      "7d": 7, "30d": 30, "90d": 90, "1y": 365,
+    };
+    const cutoffDays = joinedCutoff[joined] ?? null;
+    const cutoffDate = cutoffDays
+      ? new Date(Date.now() - cutoffDays * 86_400_000).toISOString().slice(0, 10)
+      : null;
+
     let list = users.filter((u) => {
       if (q) {
         const hay = `${u.name} ${u.email}`.toLowerCase();
@@ -80,6 +88,7 @@ export function UsersTable({
       if (reliability === "high" && u.reliability < 80) return false;
       if (reliability === "medium" && (u.reliability < 60 || u.reliability >= 80)) return false;
       if (reliability === "low" && u.reliability >= 60) return false;
+      if (cutoffDate && u.joinedDate < cutoffDate) return false;
       return true;
     });
     list = [...list].sort((a, b) => {
@@ -91,7 +100,7 @@ export function UsersTable({
       }
     });
     return list;
-  }, [users, query, status, role, reliability, sort]);
+  }, [users, query, status, role, reliability, joined, sort]);
 
   const stats = useMemo<{ label: string; value: string; sub?: string }[]>(() => {
     const total = users.length;
@@ -126,10 +135,6 @@ export function UsersTable({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-bg-card px-4 text-sm font-medium hover:border-border-strong transition-colors">
-              <DownloadIcon />
-              Export
-            </button>
             <BroadcastModal />
             <AddAdminModal />
           </div>
