@@ -17,7 +17,7 @@ export type IncidentType =
 
 export type IncidentStatus =
   | "active"
-  | "investigating"
+  | "unverified"
   | "resolved"
   | "false_alarm";
 
@@ -84,8 +84,8 @@ export const statusMeta: Record<
   { label: string; color: string; dotClass: string }
 > = {
   active: { label: "Active", color: "#ef4444", dotClass: "bg-danger" },
-  investigating: {
-    label: "Under Investigation",
+  unverified: {
+    label: "Unverified",
     color: "#f59e0b",
     dotClass: "bg-warn",
   },

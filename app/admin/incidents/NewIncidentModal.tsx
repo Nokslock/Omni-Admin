@@ -33,7 +33,7 @@ const severityOptions = [
 
 const statusOptions = [
   { value: "active", label: "Active" },
-  { value: "investigating", label: "Under Investigation" },
+  { value: "unverified", label: "Under Investigation" },
   { value: "resolved", label: "Resolved" },
   { value: "false_alarm", label: "False Alarm" },
 ];

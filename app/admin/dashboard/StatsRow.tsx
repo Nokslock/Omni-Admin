@@ -6,7 +6,7 @@ export function StatsRow({ incidents }: { incidents: Incident[] }) {
 
   const stats = [
     { value: count("active"), label: "Active", color: "var(--danger)", pulse: true },
-    { value: count("investigating"), label: "Investigating", color: "var(--warn)" },
+    { value: count("unverified"), label: "Investigating", color: "var(--warn)" },
     { value: count("resolved"), label: "Resolved (24h)", color: "var(--ok)" },
     { value: count("false_alarm"), label: "False alarm", color: "var(--info)" },
   ];

@@ -9,7 +9,7 @@ import { ConfirmDialog } from "../_components/ConfirmDialog";
 
 const statusActions: { value: IncidentStatus; label: string }[] = [
   { value: "active", label: "Mark Active" },
-  { value: "investigating", label: "Under Investigation" },
+  { value: "unverified", label: "Under Investigation" },
   { value: "resolved", label: "Mark Resolved" },
   { value: "false_alarm", label: "Mark False Alarm" },
 ];

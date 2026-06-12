@@ -40,7 +40,9 @@ export function CTA() {
 
             <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row">
               <a
-                href="#ios"
+                href="https://apps.apple.com/app/kasala-community-alerts/id6777521404"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group inline-flex h-12 items-center gap-3 rounded-lg bg-fg pl-4 pr-5 text-bg transition-transform hover:-translate-y-0.5"
               >
                 <AppleIcon />

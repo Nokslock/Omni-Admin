@@ -133,8 +133,8 @@ export function IncidentActions({
             </button>
             <button
               role="menuitem"
-              disabled={busy || status === "investigating"}
-              onClick={() => setStatus("investigating")}
+              disabled={busy || status === "unverified"}
+              onClick={() => setStatus("unverified")}
               className="block w-full px-3 py-2 text-left text-sm text-fg hover:bg-bg-elev transition-colors disabled:opacity-40"
             >
               Under Investigation

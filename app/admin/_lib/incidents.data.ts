@@ -66,18 +66,12 @@ function mapRow(row: IncidentRow): Incident {
 const COLUMNS =
   "id, type, title, description, status, severity, reporter_name, reporter_id, reporter_phone, location, address, lat, lng, map_x, map_y, reported_at";
 
-// Auto-resolve any incident reported more than 24h ago that hasn't already been
-// closed. Throttled so we run at most once a minute, even when the admin
-// auto-refresh polls more often.
-//
-// This MUST mirror the pg_cron job in supabase/auto_resolve_incidents.sql,
-// which is the primary mechanism. Both use the same rule: resolve anything
-// older than the cutoff whose status is NOT already a closed state. Keeping
-// them identical means the rule still holds if a new open status is ever added.
+// Auto-resolve ACTIVE incidents 24 hours after they were reported.
+// Mirrors the pg_cron job in supabase/auto_resolve_incidents.sql exactly.
+// 'unverified' incidents (not yet community-verified) are excluded — they
+// never start the 24h clock until they reach 10 confirms and flip to 'active'.
 const AUTO_RESOLVE_AFTER_MS = 24 * 60 * 60 * 1000;
 const AUTO_RESOLVE_THROTTLE_MS = 60 * 1000;
-// Statuses considered already "closed" — never auto-resolved again.
-const AUTO_RESOLVE_CLOSED_STATUSES = ["resolved", "false_alarm"];
 let lastAutoResolveAt = 0;
 
 async function autoResolveStaleIncidents(
@@ -90,8 +84,8 @@ async function autoResolveStaleIncidents(
   await supabase
     .from("incidents")
     .update({ status: "resolved" })
-    .lt("reported_at", cutoff)
-    .not("status", "in", `(${AUTO_RESOLVE_CLOSED_STATUSES.join(",")})`);
+    .eq("status", "active")
+    .lt("reported_at", cutoff);
 }
 
 export async function getIncidents(): Promise<Incident[]> {

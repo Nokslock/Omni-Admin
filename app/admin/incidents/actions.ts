@@ -100,7 +100,7 @@ export async function createIncident(
 
 export type IncidentActionResult = { ok: true } | { error: string };
 
-const VALID_STATUSES = ["active", "investigating", "resolved", "false_alarm"];
+const VALID_STATUSES = ["active", "unverified", "resolved", "false_alarm"];
 
 export async function updateIncidentStatus(
   id: string,

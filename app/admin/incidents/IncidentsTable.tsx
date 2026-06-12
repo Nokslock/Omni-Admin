@@ -22,7 +22,7 @@ import { deleteIncidents } from "./actions";
 const statusOptions = [
   { value: "all", label: "All statuses" },
   { value: "active", label: "Active" },
-  { value: "investigating", label: "Under Investigation" },
+  { value: "unverified", label: "Under Investigation" },
   { value: "resolved", label: "Resolved" },
   { value: "false_alarm", label: "False Alarm" },
 ];
