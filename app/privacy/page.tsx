@@ -52,6 +52,7 @@ export default function PrivacyPage() {
                 { label: "Company", value: "Kasala Alert" },
                 { label: "Email", value: <a href="mailto:support@kasalaalert.com" className="hover:underline">support@kasalaalert.com</a> },
                 { label: "Primary Jurisdiction", value: "Nigeria" },
+                { label: "Account Deletion", value: <Link href="/account-deletion" className="hover:underline">kasalaalert.com/account-deletion</Link> },
               ]}
             />
           </Section>

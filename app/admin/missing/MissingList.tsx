@@ -7,7 +7,8 @@ import {
   type MissingRequest,
   type MissingStatus,
 } from "../_lib/missing";
-import { setMissingStatus } from "./actions";
+import { setMissingStatus, setMissingAudience } from "./actions";
+import { COUNTRIES, WORLDWIDE, countryLabel } from "@/app/lib/countries";
 
 type Tab = MissingStatus | "all";
 
@@ -149,6 +150,14 @@ function RequestCard({ request: r }: { request: MissingRequest }) {
     else router.refresh();
   }
 
+  async function changeAudience(country: string) {
+    setBusy(true);
+    const res = await setMissingAudience(r.id, country);
+    setBusy(false);
+    if ("error" in res) alert(res.error);
+    else router.refresh();
+  }
+
   return (
     <li className="overflow-hidden rounded-xl border border-border bg-bg-card">
       <div className="flex flex-col gap-4 p-5 sm:flex-row">
@@ -175,17 +184,28 @@ function RequestCard({ request: r }: { request: MissingRequest }) {
                 {r.submitterEmail ? ` · ${r.submitterEmail}` : ""}
               </p>
             </div>
-            <span
-              className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium"
-              style={{
-                color: meta.color,
-                borderColor: `color-mix(in oklab, ${meta.color} 28%, transparent)`,
-                background: `color-mix(in oklab, ${meta.color} 10%, transparent)`,
-              }}
-            >
-              <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color }} />
-              {meta.label}
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {r.originCountry && (
+                <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-bg-elev px-2 py-1 text-[11px] font-medium text-fg-muted">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  From {countryLabel(r.originCountry)}
+                </span>
+              )}
+              <span
+                className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium"
+                style={{
+                  color: meta.color,
+                  borderColor: `color-mix(in oklab, ${meta.color} 28%, transparent)`,
+                  background: `color-mix(in oklab, ${meta.color} 10%, transparent)`,
+                }}
+              >
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color }} />
+                {meta.label}
+              </span>
+            </div>
           </div>
 
           <p className="mt-3 whitespace-pre-wrap text-sm text-fg">{r.message}</p>
@@ -205,6 +225,35 @@ function RequestCard({ request: r }: { request: MissingRequest }) {
             {r.broadcastAt && <Pair label="Broadcast" value={relTime(r.broadcastAt)} />}
             {r.adminNotes && <Pair label="Admin notes" value={r.adminNotes} />}
           </dl>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-bg-elev/40 px-3 py-2.5">
+            <label className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-fg-muted">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+              Audience
+            </label>
+            <select
+              value={r.audienceCountry}
+              disabled={busy}
+              onChange={(e) => changeAudience(e.target.value)}
+              className="h-8 rounded-md border border-border bg-bg-card px-2 text-xs text-fg focus:border-fg-muted focus:outline-none focus:ring-1 focus:ring-fg-muted/30 disabled:opacity-50"
+            >
+              <option value={WORLDWIDE}>🌍 Worldwide</option>
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name} ({c.code})
+                </option>
+              ))}
+            </select>
+            <span className="text-[11px] text-fg-muted">
+              {r.audienceCountry === WORLDWIDE
+                ? "Visible everywhere"
+                : `Only visible in ${countryLabel(r.audienceCountry)}`}
+            </span>
+          </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <button

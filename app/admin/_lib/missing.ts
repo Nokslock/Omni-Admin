@@ -22,6 +22,10 @@ export type MissingRequest = {
   reviewedAt: string | null;
   broadcastAt: string | null;
   createdAt: string;
+  /** Where the request was reported from (ISO alpha-2). */
+  originCountry: string | null;
+  /** Audience targeting (ISO alpha-2 or 'ALL'). */
+  audienceCountry: string;
 };
 
 export const missingStatusMeta: Record<

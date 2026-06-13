@@ -19,6 +19,8 @@ type Row = {
   reviewed_at: string | null;
   broadcast_at: string | null;
   created_at: string;
+  origin_country: string | null;
+  audience_country: string;
 };
 
 type UserLookup = { auth_id: string | null; name: string; email: string };
@@ -65,5 +67,7 @@ export async function getMissingRequests(): Promise<MissingRequest[]> {
     reviewedAt: r.reviewed_at,
     broadcastAt: r.broadcast_at,
     createdAt: r.created_at,
+    originCountry: r.origin_country,
+    audienceCountry: r.audience_country ?? "ALL",
   }));
 }

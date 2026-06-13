@@ -71,14 +71,16 @@ const COLUMNS =
 // 'unverified' incidents (not yet community-verified) are excluded — they
 // never start the 24h clock until they reach 10 confirms and flip to 'active'.
 const AUTO_RESOLVE_AFTER_MS = 24 * 60 * 60 * 1000;
-const AUTO_RESOLVE_THROTTLE_MS = 60 * 1000;
+const AUTO_DISMISS_UNVERIFIED_AFTER_MS = 48 * 60 * 60 * 1000;
+const AUTO_TASK_THROTTLE_MS = 60 * 1000;
 let lastAutoResolveAt = 0;
+let lastAutoDismissAt = 0;
 
 async function autoResolveStaleIncidents(
   supabase: ReturnType<typeof createAdminClient>,
 ): Promise<void> {
   const now = Date.now();
-  if (now - lastAutoResolveAt < AUTO_RESOLVE_THROTTLE_MS) return;
+  if (now - lastAutoResolveAt < AUTO_TASK_THROTTLE_MS) return;
   lastAutoResolveAt = now;
   const cutoff = new Date(now - AUTO_RESOLVE_AFTER_MS).toISOString();
   await supabase
@@ -88,9 +90,29 @@ async function autoResolveStaleIncidents(
     .lt("reported_at", cutoff);
 }
 
+// Mirror of pg_cron job in supabase/auto_dismiss_unverified.sql. Anything
+// 'unverified' for more than 48 hours never reached the 10-confirm threshold
+// and gets flipped to 'false_alarm' so the feed stays clean.
+async function autoDismissStaleUnverified(
+  supabase: ReturnType<typeof createAdminClient>,
+): Promise<void> {
+  const now = Date.now();
+  if (now - lastAutoDismissAt < AUTO_TASK_THROTTLE_MS) return;
+  lastAutoDismissAt = now;
+  const cutoff = new Date(now - AUTO_DISMISS_UNVERIFIED_AFTER_MS).toISOString();
+  await supabase
+    .from("incidents")
+    .update({ status: "false_alarm" })
+    .eq("status", "unverified")
+    .lt("reported_at", cutoff);
+}
+
 export async function getIncidents(): Promise<Incident[]> {
   const supabase = createAdminClient();
-  await autoResolveStaleIncidents(supabase);
+  await Promise.all([
+    autoResolveStaleIncidents(supabase),
+    autoDismissStaleUnverified(supabase),
+  ]);
   const { data, error } = await supabase
     .from("incidents")
     .select(COLUMNS)

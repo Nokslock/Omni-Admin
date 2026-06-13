@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/app/lib/supabase/server";
 import { createSessionClient } from "@/app/lib/supabase/session";
+import { isValidTarget } from "@/app/lib/countries";
 import type { MissingStatus } from "../_lib/missing";
 
 export type MissingActionResult = { ok: true } | { error: string };
@@ -45,6 +46,26 @@ export async function setMissingStatus(
     .eq("id", id);
 
   if (error) return { error: `Failed to update request: ${error.message}` };
+
+  revalidatePath("/admin/missing");
+  return { ok: true };
+}
+
+export async function setMissingAudience(
+  id: string,
+  country: string,
+): Promise<MissingActionResult> {
+  if (!isValidTarget(country)) {
+    return { error: "Invalid country code." };
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("missing_person_requests")
+    .update({ audience_country: country })
+    .eq("id", id);
+
+  if (error) return { error: `Failed to update audience: ${error.message}` };
 
   revalidatePath("/admin/missing");
   return { ok: true };
