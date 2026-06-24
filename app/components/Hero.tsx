@@ -41,7 +41,9 @@ export function Hero() {
                 </span>
               </a>
               <a
-                href="#android"
+                href="https://play.google.com/store/apps/details?id=com.kasalaalert.nokslock"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group inline-flex h-12 items-center gap-3 rounded-lg bg-fg pl-4 pr-5 text-bg transition-transform hover:-translate-y-0.5"
               >
                 <PlayIcon />
