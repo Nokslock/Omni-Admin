@@ -39,6 +39,12 @@ export function DashboardClient({ incidents }: { incidents: Incident[] }) {
     return incidents.filter((i) => inBounds(i.coords.lat, i.coords.lng, bounds));
   }, [incidents, country, bounds]);
 
+  // Map only shows live incidents — resolved and false_alarm pins are noise.
+  const mapIncidents = useMemo(
+    () => visibleIncidents.filter((i) => i.status === "active" || i.status === "unverified"),
+    [visibleIncidents],
+  );
+
   return (
     <div className="grid h-full grid-cols-[400px_1fr] overflow-hidden">
       <IncidentFeed
@@ -49,7 +55,7 @@ export function DashboardClient({ incidents }: { incidents: Incident[] }) {
         onCountryChange={handleCountry}
       />
       <DashboardMap
-        incidents={visibleIncidents}
+        incidents={mapIncidents}
         selectedId={selectedId}
         onSelect={handleSelect}
         country={country}

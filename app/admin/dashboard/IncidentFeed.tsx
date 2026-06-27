@@ -245,7 +245,9 @@ export function IncidentFeed({
           </span>
           Live stream active
         </span>
-        <span className="text-fg-muted">{incidents.length} reports today</span>
+        <span className="text-fg-muted">
+          {incidents.filter((i) => i.reportedDate === new Date().toISOString().slice(0, 10)).length} reports today
+        </span>
       </div>
 
       <div className="flex-1 overflow-y-auto">
