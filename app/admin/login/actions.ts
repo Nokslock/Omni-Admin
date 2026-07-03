@@ -28,7 +28,7 @@ export async function signInAdmin(
     .eq("auth_id", data.user.id)
     .maybeSingle();
 
-  if (profile?.role !== "admin") {
+  if (!["admin", "moderator"].includes(profile?.role ?? "") || !profile) {
     await supabase.auth.signOut();
     return { error: "This account doesn't have admin access." };
   }

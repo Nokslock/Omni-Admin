@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { toast } from "../_components/toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { IncidentStatus } from "../_lib/incidents";
@@ -48,7 +49,7 @@ export function IncidentRowActions({
     const res = await updateIncidentStatus(id, next);
     setBusy(false);
     setOpen(false);
-    if ("error" in res) alert(res.error);
+    if ("error" in res) toast(res.error, "error");
     else router.refresh();
   }
 
@@ -62,7 +63,7 @@ export function IncidentRowActions({
     const res = await deleteIncident(id);
     setBusy(false);
     setConfirmOpen(false);
-    if ("error" in res) alert(res.error);
+    if ("error" in res) toast(res.error, "error");
     else router.refresh();
   }
 

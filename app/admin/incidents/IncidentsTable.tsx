@@ -18,6 +18,7 @@ import { ConfirmDialog } from "../_components/ConfirmDialog";
 import { NewIncidentModal } from "./NewIncidentModal";
 import { IncidentRowActions } from "./IncidentRowActions";
 import { deleteIncidents } from "./actions";
+import { toast } from "../_components/toast";
 
 const statusOptions = [
   { value: "all", label: "All statuses" },
@@ -158,7 +159,7 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
     setDeleting(false);
     setConfirmOpen(false);
     if ("error" in res) {
-      alert(res.error);
+      toast(res.error, "error");
     } else {
       router.refresh();
     }

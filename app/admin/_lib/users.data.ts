@@ -6,6 +6,7 @@ type UserRow = {
   id: string;
   name: string;
   email: string;
+  phone: string | null;
   avatar_color: string;
   joined_date: string;
   status: UserStatus;
@@ -49,8 +50,8 @@ export async function getUsers(): Promise<User[]> {
   const [usersRes, incidentsRes, feedbackRes] = await Promise.all([
     supabase
       .from("users")
-      .select("id, name, email, avatar_color, joined_date, status, role"),
-    supabase.from("incidents").select("id, reporter_id"),
+      .select("id, name, email, phone, avatar_color, joined_date, status, role"),
+    supabase.from("incidents").select("id, reporter_id, reporter_phone, reported_at"),
     supabase.from("incident_feedback").select("incident_id, kind"),
   ]);
 
@@ -59,13 +60,21 @@ export async function getUsers(): Promise<User[]> {
   }
 
   const userRows = (usersRes.data as UserRow[]) ?? [];
-  const incidents = (incidentsRes.data as { id: string; reporter_id: string | null }[]) ?? [];
+  const incidents =
+    (incidentsRes.data as {
+      id: string;
+      reporter_id: string | null;
+      reporter_phone: string | null;
+      reported_at: string | null;
+    }[]) ?? [];
   const feedback = (feedbackRes.data as { incident_id: string; kind: string }[]) ?? [];
 
   // incident id → the user who reported it
   const reporterOf = new Map<string, string>();
   // reporterId → running tally of reports / confirms / flags
   const tally = new Map<string, Tally>();
+  // reporterId → phone from their most recent report
+  const phoneOf = new Map<string, { phone: string; at: string }>();
 
   const bump = (userId: string): Tally => {
     let t = tally.get(userId);
@@ -80,6 +89,15 @@ export async function getUsers(): Promise<User[]> {
     if (!inc.reporter_id) continue;
     reporterOf.set(inc.id, inc.reporter_id);
     bump(inc.reporter_id).reports += 1;
+
+    // Keep the phone from the reporter's most recent report.
+    if (inc.reporter_phone) {
+      const at = inc.reported_at ?? "";
+      const current = phoneOf.get(inc.reporter_id);
+      if (!current || at > current.at) {
+        phoneOf.set(inc.reporter_id, { phone: inc.reporter_phone, at });
+      }
+    }
   }
 
   for (const f of feedback) {
@@ -96,6 +114,7 @@ export async function getUsers(): Promise<User[]> {
       id: row.id,
       name: row.name,
       email: row.email,
+      phone: row.phone ?? phoneOf.get(row.id)?.phone ?? null,
       avatarColor: row.avatar_color,
       joined: formatJoined(row.joined_date),
       joinedDate: row.joined_date,

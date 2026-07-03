@@ -8,6 +8,7 @@ import {
   type MissingStatus,
 } from "../_lib/missing";
 import { setMissingStatus, setMissingAudience } from "./actions";
+import { toast } from "../_components/toast";
 import { COUNTRIES, WORLDWIDE, countryLabel } from "@/app/lib/countries";
 
 type Tab = MissingStatus | "all";
@@ -146,7 +147,7 @@ function RequestCard({ request: r }: { request: MissingRequest }) {
     setBusy(true);
     const res = await setMissingStatus(r.id, next);
     setBusy(false);
-    if ("error" in res) alert(res.error);
+    if ("error" in res) toast(res.error, "error");
     else router.refresh();
   }
 
@@ -154,7 +155,7 @@ function RequestCard({ request: r }: { request: MissingRequest }) {
     setBusy(true);
     const res = await setMissingAudience(r.id, country);
     setBusy(false);
-    if ("error" in res) alert(res.error);
+    if ("error" in res) toast(res.error, "error");
     else router.refresh();
   }
 

@@ -10,6 +10,7 @@ export type NewAdminInput = {
   name: string;
   email: string;
   password: string;
+  role?: "admin" | "moderator";
 };
 
 export type CreateAdminResult = { ok: true } | { error: string };
@@ -30,6 +31,14 @@ export async function createAdmin(input: NewAdminInput): Promise<CreateAdminResu
     return { error: "Password must be at least 6 characters." };
   }
 
+  // Only admins can create staff accounts. This gate is what actually enforces
+  // it — the hidden UI button is just cosmetic, this endpoint is reachable
+  // directly. Without it a moderator could self-escalate to admin.
+  const caller = await getCurrentAdmin();
+  if (!caller || caller.role !== "admin") {
+    return { error: "Only admins can create staff accounts." };
+  }
+
   const supabase = createAdminClient();
 
   // 1. Create the auth account (email pre-confirmed so they can sign in right away).
@@ -45,15 +54,18 @@ export async function createAdmin(input: NewAdminInput): Promise<CreateAdminResu
 
   const authId = created.user.id;
 
-  // 2. Create the linked profile row with the admin role.
+  const assignedRole = input.role === "moderator" ? "moderator" : "admin";
+  const avatarColor = assignedRole === "moderator" ? "#0ea5e9" : "#6366f1";
+
+  // 2. Create the linked profile row with the assigned role.
   const { error: profileError } = await supabase.from("users").insert({
     id: genId(),
     name,
     email,
-    avatar_color: "#6366f1",
+    avatar_color: avatarColor,
     reliability: 100,
     status: "clear",
-    role: "admin",
+    role: assignedRole,
     auth_id: authId,
   });
 
@@ -119,8 +131,8 @@ export async function sendBroadcast(
   if (!user) return { error: "Not signed in." };
 
   const sender = await getCurrentAdmin();
-  if (!sender || sender.role !== "admin") {
-    return { error: "Only admins can send broadcasts." };
+  if (!sender || !["admin", "moderator"].includes(sender.role)) {
+    return { error: "Only admins and moderators can send broadcasts." };
   }
 
   const supabase = createAdminClient();
@@ -189,7 +201,12 @@ export async function deleteUser(userId: string): Promise<DeleteUserResult> {
     return { error: "You can't delete your own account." };
   }
 
-  // Remove the linked auth account first (if any). Tolerate "not found" so a
+  // Delete the public profile row first so FK constraints don't block the
+  // auth account deletion below.
+  const { error: deleteError } = await supabase.from("users").delete().eq("id", userId);
+  if (deleteError) return { error: `Failed to delete user: ${deleteError.message}` };
+
+  // Remove the linked auth account (if any). Tolerate "not found" so a
   // half-deleted record can still be cleaned up.
   if (target.auth_id) {
     const { error: authError } = await supabase.auth.admin.deleteUser(target.auth_id);
@@ -197,9 +214,6 @@ export async function deleteUser(userId: string): Promise<DeleteUserResult> {
       return { error: `Failed to delete auth account: ${authError.message}` };
     }
   }
-
-  const { error: deleteError } = await supabase.from("users").delete().eq("id", userId);
-  if (deleteError) return { error: `Failed to delete user: ${deleteError.message}` };
 
   revalidatePath("/admin/users");
   return { ok: true };
@@ -213,7 +227,35 @@ export async function setUserStatus(
     return { error: "Invalid status." };
   }
 
+  const sessionClient = await createSessionClient();
+  const {
+    data: { user: authUser },
+  } = await sessionClient.auth.getUser();
+  if (!authUser) return { error: "Not signed in." };
+
+  const caller = await getCurrentAdmin();
+  if (!caller || !["admin", "moderator"].includes(caller.role)) {
+    return { error: "Insufficient permissions." };
+  }
+
   const supabase = createAdminClient();
+
+  const { data: target } = await supabase
+    .from("users")
+    .select("role, auth_id")
+    .eq("id", userId)
+    .maybeSingle();
+
+  // Don't let anyone suspend their own account (would lock them out).
+  if (target?.auth_id && target.auth_id === authUser.id) {
+    return { error: "You can't change your own account status." };
+  }
+
+  // Moderators cannot act on admin or moderator accounts.
+  if (caller.role === "moderator" && target && ["admin", "moderator"].includes(target.role)) {
+    return { error: "Moderators cannot modify admin or moderator accounts." };
+  }
+
   const { error } = await supabase
     .from("users")
     .update({ status })

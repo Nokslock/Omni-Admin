@@ -40,8 +40,8 @@ export async function setDeletionStatus(
     .select("id, role")
     .eq("auth_id", user.id)
     .maybeSingle();
-  if (!adminRow || adminRow.role !== "admin") {
-    return { error: "Admin privileges required." };
+  if (!adminRow || !["admin", "moderator"].includes(adminRow.role)) {
+    return { error: "Admin or moderator privileges required." };
   }
 
   const now = new Date().toISOString();

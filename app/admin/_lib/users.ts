@@ -1,11 +1,12 @@
 export type UserStatus = "clear" | "investigation" | "suspended";
 
-export type UserRole = "admin" | "user";
+export type UserRole = "admin" | "moderator" | "user";
 
 export type User = {
   id: string;
   name: string;
   email: string;
+  phone: string | null;
   avatarColor: string;
   joined: string; // formatted "12 Aug 24"
   joinedDate: string; // ISO "2024-08-12"
@@ -26,6 +27,7 @@ export const userStatusMeta: Record<
 
 export const roleMeta: Record<UserRole, { label: string; color: string }> = {
   admin: { label: "Admin", color: "#6366f1" },
+  moderator: { label: "Moderator", color: "#0ea5e9" },
   user: { label: "User", color: "#64748b" },
 };
 

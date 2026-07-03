@@ -12,6 +12,7 @@ export function AddAdminModal() {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [role, setRole] = useState<"admin" | "moderator">("moderator");
 
   useEffect(() => {
     if (!open) return;
@@ -31,6 +32,7 @@ export function AddAdminModal() {
       name: String(fd.get("name") ?? ""),
       email: String(fd.get("email") ?? ""),
       password: String(fd.get("password") ?? ""),
+      role,
     });
 
     if ("error" in res) {
@@ -52,7 +54,7 @@ export function AddAdminModal() {
         className="inline-flex h-10 items-center gap-2 rounded-lg bg-fg px-4 text-sm font-medium text-bg hover:opacity-90 transition-opacity"
       >
         <ShieldPlusIcon />
-        Add admin
+        Add staff
       </button>
 
       {open && (
@@ -65,8 +67,8 @@ export function AddAdminModal() {
           <div className="my-8 w-full max-w-md rounded-2xl border border-border bg-bg-card shadow-2xl shadow-black/40">
             <div className="flex items-center justify-between border-b border-border px-6 py-4">
               <div>
-                <h2 className="text-lg font-semibold tracking-tight">Add admin</h2>
-                <p className="text-xs text-fg-muted">Creates a login account with admin access.</p>
+                <h2 className="text-lg font-semibold tracking-tight">Add staff</h2>
+                <p className="text-xs text-fg-muted">Creates a login account with portal access.</p>
               </div>
               <button
                 type="button"
@@ -83,6 +85,31 @@ export function AddAdminModal() {
 
             <form onSubmit={onSubmit} className="px-6 py-5">
               <div className="space-y-4">
+                <Field label="Role">
+                  <div className="grid grid-cols-2 gap-2">
+                    {(["moderator", "admin"] as const).map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setRole(r)}
+                        className={`h-10 rounded-lg border text-sm font-medium transition-colors ${
+                          role === r
+                            ? r === "admin"
+                              ? "border-indigo-500/60 bg-indigo-500/10 text-indigo-400"
+                              : "border-sky-500/60 bg-sky-500/10 text-sky-400"
+                            : "border-border text-fg-muted hover:border-border-strong hover:text-fg"
+                        }`}
+                      >
+                        {r === "admin" ? "Admin" : "Moderator"}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-1.5 text-[11px] text-fg-subtle">
+                    {role === "admin"
+                      ? "Full access including deleting users and managing other accounts."
+                      : "Can manage incidents, users, and broadcasts — cannot delete accounts or modify admin/moderator accounts."}
+                  </p>
+                </Field>
                 <Field label="Full name">
                   <input name="name" required placeholder="Ada Bello" className={fieldClass} />
                 </Field>
@@ -120,7 +147,7 @@ export function AddAdminModal() {
                   disabled={submitting}
                   className="inline-flex h-10 items-center gap-2 rounded-lg bg-fg px-4 text-sm font-semibold text-bg hover:opacity-90 transition-opacity disabled:opacity-70"
                 >
-                  {submitting ? "Creating…" : "Create admin"}
+                  {submitting ? "Creating…" : `Create ${role}`}
                 </button>
               </div>
             </form>

@@ -11,6 +11,7 @@ import {
   reliabilityColor,
 } from "../_lib/users";
 import { FilterDropdown } from "../_components/FilterDropdown";
+import { toast } from "../_components/toast";
 import { AddAdminModal } from "./AddAdminModal";
 import { BroadcastModal } from "./BroadcastModal";
 import { setUserStatus, deleteUser } from "./actions";
@@ -27,6 +28,7 @@ const statusOptions = [
 const roleOptions = [
   { value: "all", label: "All roles" },
   { value: "admin", label: "Admins" },
+  { value: "moderator", label: "Moderators" },
   { value: "user", label: "Users" },
 ];
 
@@ -56,9 +58,11 @@ const sortOptions: { value: SortKey; label: string }[] = [
 export function UsersTable({
   users,
   currentEmail,
+  currentRole,
 }: {
   users: User[];
   currentEmail: string | null;
+  currentRole: string | null;
 }) {
   // Pre-fill from global search (?q=…), e.g. when jumping to a specific reporter.
   const [query, setQuery] = useState(useSearchParams().get("q") ?? "");
@@ -67,6 +71,8 @@ export function UsersTable({
   const [reliability, setReliability] = useState("any");
   const [joined, setJoined] = useState("7d");
   const [sort, setSort] = useState<SortKey>("joined");
+  // Capture "now" once per mount so the filter stays pure across re-renders.
+  const [nowMs] = useState(() => Date.now());
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -75,12 +81,12 @@ export function UsersTable({
     };
     const cutoffDays = joinedCutoff[joined] ?? null;
     const cutoffDate = cutoffDays
-      ? new Date(Date.now() - cutoffDays * 86_400_000).toISOString().slice(0, 10)
+      ? new Date(nowMs - cutoffDays * 86_400_000).toISOString().slice(0, 10)
       : null;
 
     let list = users.filter((u) => {
       if (q) {
-        const hay = `${u.name} ${u.email}`.toLowerCase();
+        const hay = `${u.name} ${u.email} ${u.phone ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       if (status !== "all" && u.status !== (status as UserStatus)) return false;
@@ -100,11 +106,12 @@ export function UsersTable({
       }
     });
     return list;
-  }, [users, query, status, role, reliability, joined, sort]);
+  }, [users, query, status, role, reliability, joined, sort, nowMs]);
 
   const stats = useMemo<{ label: string; value: string; sub?: string }[]>(() => {
     const total = users.length;
     const admins = users.filter((u) => u.role === "admin").length;
+    const moderators = users.filter((u) => u.role === "moderator").length;
     const suspended = users.filter((u) => u.status === "suspended").length;
     const avgReliability = total
       ? Math.round((users.reduce((sum, u) => sum + u.reliability, 0) / total) * 10) / 10
@@ -113,6 +120,7 @@ export function UsersTable({
     return [
       { label: "Total reporters", value: total.toLocaleString() },
       { label: "Admins", value: admins.toLocaleString(), sub: pct(admins) },
+      { label: "Moderators", value: moderators.toLocaleString(), sub: pct(moderators) },
       { label: "Suspended", value: suspended.toLocaleString(), sub: pct(suspended) },
       { label: "Avg reliability", value: `${avgReliability}%` },
     ];
@@ -136,12 +144,12 @@ export function UsersTable({
           </div>
           <div className="flex items-center gap-2">
             <BroadcastModal />
-            <AddAdminModal />
+            {currentRole === "admin" && <AddAdminModal />}
           </div>
         </div>
 
         {/* Stat cards */}
-        <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
           {stats.map((s) => (
             <div key={s.label} className="rounded-xl border border-border bg-bg-card px-5 py-4">
               <div className="text-xs text-fg-muted">{s.label}</div>
@@ -191,6 +199,7 @@ export function UsersTable({
           <thead className="sticky top-0 z-10 bg-bg">
             <tr className="text-left text-[10px] uppercase tracking-wider text-fg-subtle">
               <th className="border-b border-border px-6 py-3 font-medium">User</th>
+              <th className="border-b border-border py-3 font-medium">Phone</th>
               <th className="border-b border-border py-3 font-medium">Joined</th>
               <th className="border-b border-border py-3 font-medium">Reports · Reliability</th>
               <th className="border-b border-border py-3 font-medium">Status</th>
@@ -200,7 +209,7 @@ export function UsersTable({
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-16 text-center text-sm text-fg-muted">
+                <td colSpan={6} className="px-6 py-16 text-center text-sm text-fg-muted">
                   No users match these filters.
                 </td>
               </tr>
@@ -210,6 +219,7 @@ export function UsersTable({
                   key={u.id}
                   user={u}
                   isSelf={!!currentEmail && u.email === currentEmail}
+                  viewerRole={currentRole}
                 />
               ))
             )}
@@ -236,7 +246,7 @@ export function UsersTable({
   );
 }
 
-function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
+function UserRow({ user, isSelf, viewerRole }: { user: User; isSelf: boolean; viewerRole: string | null }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
@@ -247,15 +257,19 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
   const reliColor = reliabilityColor(user.reliability);
   const initials = user.name.split(" ").map((p) => p[0]).slice(0, 2).join("");
   const isSuspended = user.status === "suspended";
+  const isPrivilegedTarget = user.role === "admin" || user.role === "moderator";
+  const canDelete = viewerRole === "admin" && !isSelf;
+  const canChangeStatus = !isSelf && !(viewerRole === "moderator" && isPrivilegedTarget);
 
   async function toggleStatus() {
     setPending(true);
     const res = await setUserStatus(user.id, isSuspended ? "clear" : "suspended");
     setPending(false);
     if ("ok" in res) {
+      toast(isSuspended ? `${user.name} reinstated.` : `${user.name} suspended.`, "success");
       router.refresh();
     } else {
-      alert(res.error);
+      toast(res.error, "error");
     }
   }
 
@@ -264,11 +278,12 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
     const res = await deleteUser(user.id);
     if ("ok" in res) {
       setConfirmDelete(false);
+      toast(`${user.name}'s account has been deleted.`, "success");
       router.refresh();
     } else {
       setDeleting(false);
       setConfirmDelete(false);
-      alert(res.error);
+      toast(res.error, "error");
     }
   }
 
@@ -300,6 +315,13 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
             <div className="text-[11px] text-fg-muted">{user.email}</div>
           </div>
         </div>
+      </td>
+      <td className="py-4 pr-6 tabular-nums text-fg">
+        {user.phone ? (
+          <a href={`tel:${user.phone}`} className="hover:underline">{user.phone}</a>
+        ) : (
+          <span className="text-fg-subtle">—</span>
+        )}
       </td>
       <td className="py-4 pr-6 text-fg">{user.joined}</td>
       <td className="py-4 pr-6">
@@ -338,18 +360,20 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
           {activityOpen && (
             <UserActivityPanel user={user} onClose={() => setActivityOpen(false)} />
           )}
-          <button
-            onClick={toggleStatus}
-            disabled={pending}
-            className={`inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium transition-colors disabled:opacity-50 ${
-              isSuspended
-                ? "border-ok/40 text-ok hover:bg-ok/10"
-                : "border-danger/40 text-danger hover:bg-danger/10"
-            }`}
-          >
-            {pending ? "…" : isSuspended ? "Reinstate" : "Suspend"}
-          </button>
-          {!isSelf && (
+          {canChangeStatus && (
+            <button
+              onClick={toggleStatus}
+              disabled={pending}
+              className={`inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium transition-colors disabled:opacity-50 ${
+                isSuspended
+                  ? "border-ok/40 text-ok hover:bg-ok/10"
+                  : "border-danger/40 text-danger hover:bg-danger/10"
+              }`}
+            >
+              {pending ? "…" : isSuspended ? "Reinstate" : "Suspend"}
+            </button>
+          )}
+          {canDelete && (
             <button
               onClick={() => setConfirmDelete(true)}
               aria-label={`Delete ${user.name}`}
@@ -366,7 +390,7 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
         <ConfirmDialog
           open={confirmDelete}
           title={`Delete ${user.name}?`}
-          message={`This permanently removes ${user.name} (${user.email})${user.role === "admin" ? ", including their admin login" : ""}. This can't be undone.`}
+          message={`This permanently removes ${user.name} (${user.email})${isPrivilegedTarget ? ", including their portal login" : ""}. This can't be undone.`}
           confirmLabel="Delete user"
           destructive
           busy={deleting}
@@ -383,15 +407,6 @@ function SearchIcon() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
-function DownloadIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
     </svg>
   );
 }

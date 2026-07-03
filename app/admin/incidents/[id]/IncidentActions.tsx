@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { toast } from "../../_components/toast";
 import { useRouter } from "next/navigation";
 import type { IncidentStatus, Severity } from "../../_lib/incidents";
 import {
@@ -46,7 +47,7 @@ export function IncidentActions({
     const res = await updateIncidentStatus(id, next);
     setBusy(false);
     setOpen(false);
-    if ("error" in res) alert(res.error);
+    if ("error" in res) toast(res.error, "error");
     else router.refresh();
   }
 
@@ -54,7 +55,7 @@ export function IncidentActions({
     setBusy(true);
     const res = await updateIncidentSeverity(id, "critical");
     setBusy(false);
-    if ("error" in res) alert(res.error);
+    if ("error" in res) toast(res.error, "error");
     else router.refresh();
   }
 
@@ -69,7 +70,7 @@ export function IncidentActions({
     if ("error" in res) {
       setBusy(false);
       setConfirmOpen(false);
-      alert(res.error);
+      toast(res.error, "error");
       return;
     }
     router.push("/admin/incidents");

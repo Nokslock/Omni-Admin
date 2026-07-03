@@ -18,7 +18,7 @@ export default async function UsersPage() {
     <div className="flex h-dvh flex-col bg-bg text-fg">
       <AdminNav />
       <main className="flex min-h-0 flex-1 flex-col">
-        <UsersTable users={users} currentEmail={currentAdmin?.email ?? null} />
+        <UsersTable users={users} currentEmail={currentAdmin?.email ?? null} currentRole={currentAdmin?.role ?? null} />
       </main>
     </div>
   );
