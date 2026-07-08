@@ -35,8 +35,10 @@ export async function middleware(request: NextRequest) {
 
   const isLoginRoute = request.nextUrl.pathname === LOGIN_PATH;
 
-  async function isAdmin(authId: string): Promise<boolean> {
+  async function isStaff(authId: string): Promise<boolean> {
     // Role/status live in public.users (RLS-locked) → read with the service role.
+    // Both admins and moderators may access the dashboard; per-action limits
+    // (e.g. delete user) are enforced deeper in the server actions.
     const admin = createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
       auth: { persistSession: false },
     });
@@ -45,12 +47,15 @@ export async function middleware(request: NextRequest) {
       .select("role, status")
       .eq("auth_id", authId)
       .maybeSingle();
-    return data?.role === "admin" && data.status !== "suspended";
+    return (
+      (data?.role === "admin" || data?.role === "moderator") &&
+      data.status !== "suspended"
+    );
   }
 
   if (isLoginRoute) {
-    // Already-authenticated admins skip the login screen.
-    if (user && (await isAdmin(user.id))) {
+    // Already-authenticated staff skip the login screen.
+    if (user && (await isStaff(user.id))) {
       return redirectWithCookies(request, DASHBOARD_PATH, response);
     }
     return response;
@@ -60,7 +65,7 @@ export async function middleware(request: NextRequest) {
   if (!user) {
     return redirectWithCookies(request, LOGIN_PATH, response);
   }
-  if (!(await isAdmin(user.id))) {
+  if (!(await isStaff(user.id))) {
     return redirectWithCookies(request, `${LOGIN_PATH}?error=not_admin`, response);
   }
 

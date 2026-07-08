@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   sendBroadcast,
   type BroadcastAudience,
@@ -23,7 +24,25 @@ const audienceOptions: { value: BroadcastAudience; label: string; hint: string }
   { value: "admins", label: "Admins only", hint: "Other admins of this dashboard" },
 ];
 
-export function BroadcastModal() {
+// How long the broadcast stays live in the app feed. null = never expires.
+const durationOptions: { value: number | null; label: string }[] = [
+  { value: 1, label: "1 hour" },
+  { value: 6, label: "6 hours" },
+  { value: 12, label: "12 hours" },
+  { value: 24, label: "24 hours" },
+  { value: 72, label: "3 days" },
+  { value: 168, label: "7 days" },
+  { value: null, label: "No expiry" },
+];
+
+export function BroadcastModal({
+  variant = "secondary",
+  label = "Broadcast",
+}: {
+  variant?: "primary" | "secondary";
+  label?: string;
+} = {}) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +53,7 @@ export function BroadcastModal() {
   const [severity, setSeverity] = useState<BroadcastSeverity>("info");
   const [audience, setAudience] = useState<BroadcastAudience>("all");
   const [country, setCountry] = useState<string>(WORLDWIDE);
+  const [durationHours, setDurationHours] = useState<number | null>(24);
 
   useEffect(() => {
     if (!open) return;
@@ -50,6 +70,7 @@ export function BroadcastModal() {
     setSeverity("info");
     setAudience("all");
     setCountry(WORLDWIDE);
+    setDurationHours(24);
     setError(null);
     setSuccess(null);
   }
@@ -65,7 +86,7 @@ export function BroadcastModal() {
     setSubmitting(true);
     setError(null);
     setSuccess(null);
-    const res = await sendBroadcast({ title, body, severity, audience, country });
+    const res = await sendBroadcast({ title, body, severity, audience, country, durationHours });
     setSubmitting(false);
     if ("error" in res) {
       setError(res.error);
@@ -78,6 +99,8 @@ export function BroadcastModal() {
     );
     setTitle("");
     setBody("");
+    // Pull the freshly-inserted broadcast into any list on the page.
+    router.refresh();
   }
 
   return (
@@ -85,10 +108,14 @@ export function BroadcastModal() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-bg-card px-4 text-sm font-medium hover:border-border-strong transition-colors"
+        className={
+          variant === "primary"
+            ? "inline-flex h-10 items-center gap-2 rounded-lg bg-fg px-4 text-sm font-semibold text-bg hover:opacity-90 transition-opacity"
+            : "inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-bg-card px-4 text-sm font-medium hover:border-border-strong transition-colors"
+        }
       >
         <MailIcon />
-        Broadcast
+        {label}
       </button>
 
       {open && (
@@ -235,6 +262,34 @@ export function BroadcastModal() {
                     {country === WORLDWIDE
                       ? "Reaches the selected audience everywhere."
                       : `Only reaches people in ${countryLabel(country)}.`}
+                  </p>
+                </Field>
+
+                <Field label="Duration">
+                  <div className="flex flex-wrap gap-2">
+                    {durationOptions.map((opt) => {
+                      const active = durationHours === opt.value;
+                      return (
+                        <button
+                          key={opt.label}
+                          type="button"
+                          onClick={() => setDurationHours(opt.value)}
+                          aria-pressed={active}
+                          className={`inline-flex h-9 items-center rounded-lg border px-3 text-xs font-medium transition-colors ${
+                            active
+                              ? "border-fg/40 bg-bg-elev text-fg"
+                              : "border-border text-fg-muted hover:border-border-strong hover:text-fg"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-1.5 text-[11px] text-fg-muted">
+                    {durationHours === null
+                      ? "Stays in the feed until you remove it."
+                      : "Automatically stops showing in the app after this time."}
                   </p>
                 </Field>
               </div>

@@ -90,7 +90,12 @@ export type SendBroadcastInput = {
   severity: BroadcastSeverity;
   audience: BroadcastAudience;
   country: string; // ISO alpha-2 code, or "ALL" for worldwide
+  durationHours: number | null; // how long it stays live; null = never expires
 };
+
+// How long a broadcast may stay live. Guards against arbitrary values from the
+// client (max 30 days). null = permanent.
+const MAX_DURATION_HOURS = 24 * 30;
 
 export type SendBroadcastResult = { ok: true; id: string } | { error: string };
 
@@ -122,6 +127,20 @@ export async function sendBroadcast(
     return { error: "Invalid country." };
   }
 
+  // Duration: null = never expires. Otherwise a positive number of hours,
+  // capped so a client can't set an absurd value.
+  const durationHours = input.durationHours;
+  if (
+    durationHours !== null &&
+    (!Number.isFinite(durationHours) || durationHours <= 0 || durationHours > MAX_DURATION_HOURS)
+  ) {
+    return { error: "Invalid duration." };
+  }
+  const expiresAt =
+    durationHours === null
+      ? null
+      : new Date(Date.now() + durationHours * 3_600_000).toISOString();
+
   // Make sure whoever is calling this is actually a signed-in admin — the
   // service-role client bypasses RLS so we can't rely on the DB to gate it.
   const sessionClient = await createSessionClient();
@@ -152,6 +171,7 @@ export async function sendBroadcast(
       severity,
       audience,
       country,
+      expires_at: expiresAt,
       sent_by: senderRow?.id ?? null,
       sent_by_name: sender.name,
     })
@@ -163,6 +183,7 @@ export async function sendBroadcast(
   }
 
   revalidatePath("/admin/users");
+  revalidatePath("/admin/broadcasts");
   return { ok: true, id: data.id };
 }
 
