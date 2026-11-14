@@ -28,6 +28,12 @@ type IncidentRow = {
   map_x: number;
   map_y: number;
   reported_at: string;
+  pro_verified: boolean | null;
+  reporter_attested: boolean | null;
+  reporter_note: string | null;
+  photo_url: string | null;
+  /** The reporter's profile, for their phone (reports don't store one). */
+  reporter: { phone: string | null; verified: boolean | null } | null;
 };
 
 function relativeTime(iso: string): string {
@@ -53,73 +59,38 @@ function mapRow(row: IncidentRow): Incident {
     severity,
     reporter: row.reporter_name,
     reporterId: row.reporter_id ?? null,
-    reporterPhone: row.reporter_phone,
+    reporterPhone: row.reporter?.phone ?? "—",
+    reporterPro: row.reporter?.verified === true,
     reportedAt: relativeTime(row.reported_at),
     reportedDate: new Date(row.reported_at).toISOString().slice(0, 10),
+    reportedAtIso: new Date(row.reported_at).toISOString(),
     location: row.location,
     address: row.address,
     coords: { lat: row.lat, lng: row.lng },
     mapXY: { x: row.map_x, y: row.map_y },
+    proVerified: row.pro_verified === true,
+    attested: row.reporter_attested === true,
+    note: row.reporter_note,
+    photoUrl: row.photo_url,
   };
 }
 
 const COLUMNS =
-  "id, type, title, description, status, severity, reporter_name, reporter_id, reporter_phone, location, address, lat, lng, map_x, map_y, reported_at";
+  "id, type, title, description, status, severity, reporter_name, reporter_id, reporter_phone, location, address, lat, lng, map_x, map_y, reported_at, pro_verified, reporter_attested, reporter_note, photo_url, reporter:users!reporter_id(phone, verified)";
 
-// Auto-resolve ACTIVE incidents 24 hours after they were reported.
-// Mirrors the pg_cron job in supabase/auto_resolve_incidents.sql exactly.
-// 'unverified' incidents (not yet community-verified) are excluded — they
-// never start the 24h clock until they reach 10 confirms and flip to 'active'.
-const AUTO_RESOLVE_AFTER_MS = 24 * 60 * 60 * 1000;
-const AUTO_DISMISS_UNVERIFIED_AFTER_MS = 48 * 60 * 60 * 1000;
-const AUTO_TASK_THROTTLE_MS = 60 * 1000;
-let lastAutoResolveAt = 0;
-let lastAutoDismissAt = 0;
-
-async function autoResolveStaleIncidents(
-  supabase: ReturnType<typeof createAdminClient>,
-): Promise<void> {
-  const now = Date.now();
-  if (now - lastAutoResolveAt < AUTO_TASK_THROTTLE_MS) return;
-  lastAutoResolveAt = now;
-  const cutoff = new Date(now - AUTO_RESOLVE_AFTER_MS).toISOString();
-  await supabase
-    .from("incidents")
-    .update({ status: "resolved" })
-    .eq("status", "active")
-    .lt("reported_at", cutoff);
-}
-
-// Mirror of pg_cron job in supabase/auto_dismiss_unverified.sql. Anything
-// 'unverified' for more than 48 hours never reached the 10-confirm threshold
-// and gets flipped to 'false_alarm' so the feed stays clean.
-async function autoDismissStaleUnverified(
-  supabase: ReturnType<typeof createAdminClient>,
-): Promise<void> {
-  const now = Date.now();
-  if (now - lastAutoDismissAt < AUTO_TASK_THROTTLE_MS) return;
-  lastAutoDismissAt = now;
-  const cutoff = new Date(now - AUTO_DISMISS_UNVERIFIED_AFTER_MS).toISOString();
-  await supabase
-    .from("incidents")
-    .update({ status: "false_alarm" })
-    .eq("status", "unverified")
-    .lt("reported_at", cutoff);
-}
+// Closing stale reports (verified ones after 24 hours, unverified ones after
+// 48) is done by the database's auto_resolve_stale_incidents job every 10
+// minutes. Pages only read; opening the admin never changes data.
 
 export async function getIncidents(): Promise<Incident[]> {
   const supabase = createAdminClient();
-  await Promise.all([
-    autoResolveStaleIncidents(supabase),
-    autoDismissStaleUnverified(supabase),
-  ]);
   const { data, error } = await supabase
     .from("incidents")
     .select(COLUMNS)
     .order("reported_at", { ascending: false });
 
   if (error) throw new Error(`Failed to load incidents: ${error.message}`);
-  return (data as IncidentRow[]).map(mapRow);
+  return (data as unknown as IncidentRow[]).map(mapRow);
 }
 
 export async function getIncidentById(id: string): Promise<Incident | null> {
@@ -131,5 +102,63 @@ export async function getIncidentById(id: string): Promise<Incident | null> {
     .maybeSingle();
 
   if (error) throw new Error(`Failed to load incident: ${error.message}`);
-  return data ? mapRow(data as IncidentRow) : null;
+  return data ? mapRow(data as unknown as IncidentRow) : null;
+}
+
+/** What the incident page shows about the person who filed a report. */
+export type ReporterAccount = {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  avatarUrl: string | null;
+  status: string;
+  isPro: boolean;
+  /** Instant verification switched off after 3 false alarms. */
+  instantOffAt: string | null;
+  /** False alarms on their instantly-verified reports since the last restore. */
+  strikes: number;
+  deactivated: boolean;
+};
+
+export async function getReporterAccount(
+  reporterId: string,
+): Promise<ReporterAccount | null> {
+  const supabase = createAdminClient();
+  const { data: u } = await supabase
+    .from("users")
+    .select(
+      "id, name, email, phone, avatar_url, status, instant_verify_off_at, instant_verify_reset_at, deletion_requested_at",
+    )
+    .eq("id", reporterId)
+    .maybeSingle();
+  if (!u) return null;
+
+  const [{ count: proCount }, { count: strikes }] = await Promise.all([
+    supabase
+      .from("pro_subscriptions")
+      .select("user_id", { count: "exact", head: true })
+      .eq("user_id", reporterId)
+      .gt("expires_at", new Date().toISOString()),
+    supabase
+      .from("incidents")
+      .select("id", { count: "exact", head: true })
+      .eq("reporter_id", reporterId)
+      .eq("pro_verified", true)
+      .eq("status", "false_alarm")
+      .gt("reported_at", u.instant_verify_reset_at ?? "1970-01-01T00:00:00Z"),
+  ]);
+
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    phone: u.phone,
+    avatarUrl: u.avatar_url,
+    status: u.status,
+    isPro: (proCount ?? 0) > 0,
+    instantOffAt: u.instant_verify_off_at,
+    strikes: strikes ?? 0,
+    deactivated: u.deletion_requested_at != null,
+  };
 }

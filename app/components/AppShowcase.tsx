@@ -9,11 +9,11 @@ function PinIcon() {
     </svg>
   );
 }
-function WifiOffIcon() {
+function GlobeIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <line x1="1" y1="1" x2="23" y2="23" />
-      <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
+      <circle cx="12" cy="12" r="10" />
+      <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
     </svg>
   );
 }
@@ -44,13 +44,13 @@ export function AppShowcase() {
           </Reveal>
           <Reveal delay={80}>
             <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-5xl">
-              Four taps from bystander to lifesaver.
+              From bystander to lifesaver in a few taps.
             </h2>
           </Reveal>
           <Reveal delay={160}>
             <p className="mt-5 text-pretty text-base text-fg-muted">
-              Built to be fast under pressure — big targets, no menus, no logins to bury the moment.
-              Tap through to see exactly how it works.
+              Built to be fast under pressure — big targets, nothing to type, and you can look
+              around before you even make an account. Tap through to see how it works.
             </p>
           </Reveal>
         </div>
@@ -62,8 +62,8 @@ export function AppShowcase() {
         <Reveal delay={200} className="mt-20 grid gap-5 sm:grid-cols-3">
           {[
             { k: "Auto-GPS", v: "Location attaches itself. No typing required.", accent: "#2563eb", icon: <PinIcon /> },
-            { k: "Offline-safe", v: "Reports queue if signal drops and send when you reconnect.", accent: "#16a34a", icon: <WifiOffIcon /> },
-            { k: "Anonymous", v: "Your identity is never shared with other reporters.", accent: "#a855f7", icon: <MaskIcon /> },
+            { k: "5 languages", v: "English, Español, Français, Português and Deutsch — alerts arrive in yours.", accent: "#16a34a", icon: <GlobeIcon /> },
+            { k: "Anonymous option", v: "Report as an anonymous reporter. Your phone number and email are never shown.", accent: "#a855f7", icon: <MaskIcon /> },
           ].map((b) => (
             <div
               key={b.k}

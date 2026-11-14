@@ -1,18 +1,18 @@
 # App screenshots
 
-Drop real app screenshots here to replace the CSS-rendered mockups in the
-landing page's "How to use Kasala" walkthrough (`app/components/AppDemo.tsx`).
-
-Use these exact filenames — they overlay the matching CSS mockup automatically.
-If a file is missing, the CSS mockup shows instead, so the page never breaks.
+Real app screenshots for the landing page's "How to use Kasala" walkthrough
+(`app/components/AppDemo.tsx`). Each one overlays the matching CSS mock-up; if
+a file is missing, the mock-up shows instead, so the page never breaks.
 
 | File | Screen |
 |------|--------|
-| `report.png`   | Report incident screen |
+| `report.png`   | Report an incident |
 | `map.png`      | Live incident map |
-| `alerts.png`   | Alerts / notifications feed |
-| `settings.png` | Settings (radius, sounds, permissions) |
+| `alerts.png`   | Alerts feed (timeline) |
+| `digest.png`   | Area digest (past week) |
+| `family.png`   | Family & places |
+| `settings.png` | Settings |
 
-**Recommended:** portrait PNG, 2–3× density (e.g. 1080×2340), no device frame
-— the page renders its own phone frame around the image. The image is shown
-with `object-cover` inside a 290×600 frame (≈9:19.5 aspect).
+Portrait PNG, no device frame (the page draws its own), roughly 9:19.5 —
+iPhone simulator screenshots at 1206×2622 work as they are. Shown with
+`object-cover` in a 290×600 frame.

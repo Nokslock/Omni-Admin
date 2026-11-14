@@ -31,18 +31,19 @@ export function FilterDropdown({ label, value, options, onChange }: Props) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-bg-card px-3.5 text-sm transition-colors hover:border-border-strong"
+        aria-expanded={open}
+        className={`inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-xl border bg-bg px-3.5 text-sm transition-colors hover:border-border-strong ${open ? "border-border-strong" : "border-border"}`}
       >
-        <span className="text-fg-muted">{label}:</span>
+        <span className="text-fg-muted">{label}</span>
         <span className="font-medium text-fg">{current?.label}</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-fg-muted" aria-hidden>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`text-fg-subtle transition-transform ${open ? "rotate-180" : ""}`} aria-hidden>
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-30 mt-1.5 min-w-[180px] overflow-hidden rounded-lg border border-border-strong bg-bg-card shadow-xl shadow-black/40">
-          <ul className="py-1">
+        <div className="absolute left-0 top-full z-30 mt-2 max-h-80 min-w-[200px] overflow-y-auto rounded-xl border border-border-strong bg-bg-card p-1 shadow-xl shadow-black/30 animate-swap-in">
+          <ul>
             {options.map((o) => (
               <li key={o.value}>
                 <button
@@ -51,7 +52,7 @@ export function FilterDropdown({ label, value, options, onChange }: Props) {
                     onChange(o.value);
                     setOpen(false);
                   }}
-                  className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors hover:bg-bg-elev ${
+                  className={`flex w-full items-center justify-between gap-4 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-bg-elev ${
                     o.value === value ? "text-fg" : "text-fg-muted"
                   }`}
                 >

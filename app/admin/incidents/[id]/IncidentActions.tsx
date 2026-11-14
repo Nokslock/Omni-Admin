@@ -15,10 +15,13 @@ export function IncidentActions({
   id,
   status,
   severity,
+  proVerified = false,
 }: {
   id: string;
   status: IncidentStatus;
   severity: Severity;
+  /** Marking it a false alarm then counts toward the reporter's 3 strikes. */
+  proVerified?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -81,26 +84,31 @@ export function IncidentActions({
       <button
         onClick={() => setStatus("resolved")}
         disabled={busy || status === "resolved"}
-        className="inline-flex h-9 items-center gap-1.5 rounded-md border border-ok/40 bg-ok/10 px-3 text-sm font-medium text-ok hover:bg-ok/15 transition-colors disabled:opacity-40"
+        className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-ok/40 bg-ok/10 px-4 text-sm font-semibold text-ok hover:bg-ok/20 transition-colors disabled:opacity-40"
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
           <polyline points="20 6 9 17 4 12" />
         </svg>
-        Mark Resolved
+        Mark resolved
       </button>
       <button
         onClick={escalate}
         disabled={busy || severity === "critical"}
-        className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-bg-card px-3 text-sm font-medium hover:border-border-strong transition-colors disabled:opacity-40"
+        className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border bg-bg-card px-3 text-sm font-medium hover:border-border-strong transition-colors disabled:opacity-40"
       >
         Escalate
       </button>
       <button
         onClick={() => setStatus("false_alarm")}
         disabled={busy || status === "false_alarm"}
-        className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-bg-card px-3 text-sm font-medium text-fg-muted hover:text-fg hover:border-border-strong transition-colors disabled:opacity-40"
+        title={
+          proVerified
+            ? "Counts as 1 of the 3 false alarms that switch off this Pro reporter's instant verification"
+            : undefined
+        }
+        className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border bg-bg-card px-3 text-sm font-medium text-fg-muted hover:text-fg hover:border-border-strong transition-colors disabled:opacity-40"
       >
-        False Alarm
+        False alarm
       </button>
 
       <div ref={menuRef} className="relative">
@@ -110,7 +118,7 @@ export function IncidentActions({
           aria-label="More actions"
           aria-haspopup="menu"
           aria-expanded={open}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-fg-muted hover:text-fg hover:border-border-strong transition-colors disabled:opacity-40"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border text-fg-muted hover:text-fg hover:border-border-strong transition-colors disabled:opacity-40"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
             <circle cx="5" cy="12" r="1.5" />
@@ -122,21 +130,21 @@ export function IncidentActions({
         {open && (
           <div
             role="menu"
-            className="absolute right-0 z-50 mt-1 w-52 overflow-hidden rounded-lg border border-border bg-bg-card py-1 text-left shadow-xl shadow-black/40"
+            className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl border border-border-strong bg-bg-card p-1 text-left shadow-xl shadow-black/40"
           >
             <button
               role="menuitem"
               disabled={busy || status === "active"}
               onClick={() => setStatus("active")}
-              className="block w-full px-3 py-2 text-left text-sm text-fg hover:bg-bg-elev transition-colors disabled:opacity-40"
+              className="block w-full rounded-lg px-3 py-2 text-left text-sm text-fg hover:bg-bg-elev transition-colors disabled:opacity-40"
             >
-              Mark Active
+              Mark investigating
             </button>
             <button
               role="menuitem"
               disabled={busy || status === "unverified"}
               onClick={() => setStatus("unverified")}
-              className="block w-full px-3 py-2 text-left text-sm text-fg hover:bg-bg-elev transition-colors disabled:opacity-40"
+              className="block w-full rounded-lg px-3 py-2 text-left text-sm text-fg hover:bg-bg-elev transition-colors disabled:opacity-40"
             >
               Under Investigation
             </button>
@@ -145,7 +153,7 @@ export function IncidentActions({
               role="menuitem"
               disabled={busy}
               onClick={remove}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-danger hover:bg-danger/10 transition-colors disabled:opacity-40"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-danger hover:bg-danger/10 transition-colors disabled:opacity-40"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <polyline points="3 6 5 6 21 6" />

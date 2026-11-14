@@ -26,6 +26,30 @@ export type MissingRequest = {
   originCountry: string | null;
   /** Audience targeting (ISO alpha-2 or 'ALL'). */
   audienceCountry: string;
+  /** A missing person, or a general community notice. */
+  requestType: "missing" | "notice";
+  age: number | null;
+  sex: "female" | "male" | null;
+  clothing: string | null;
+  /**
+   * The submitter chose "hide my number": the public contact is blank and the
+   * real number is in privatePhone, which only staff see.
+   */
+  contactHidden: boolean;
+  privatePhone: string | null;
+  /** "I've seen them" reports from the public, newest first. */
+  sightings: Sighting[];
+};
+
+export type Sighting = {
+  id: string;
+  note: string | null;
+  lat: number | null;
+  lng: number | null;
+  createdAt: string;
+  byName: string | null;
+  byEmail: string | null;
+  byPhone: string | null;
 };
 
 export const missingStatusMeta: Record<

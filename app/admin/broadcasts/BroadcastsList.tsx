@@ -19,6 +19,7 @@ import {
   archiveBroadcast,
   restoreBroadcast,
 } from "./actions";
+import { EmptyState, GUTTER, PageHeader, Panel, SearchField, StatGrid, StatTile, StatusPill, TD, TH, TR, btnSm } from "../_components/ui";
 
 const severityOptions = [
   { value: "all", label: "All" },
@@ -40,11 +41,21 @@ const statusOptions = [
   { value: "archived", label: "Archived" },
 ];
 
-export function BroadcastsList({ broadcasts }: { broadcasts: Broadcast[] }) {
+export function BroadcastsList({
+  broadcasts,
+  initialStatus,
+  openNew = false,
+}: {
+  broadcasts: Broadcast[];
+  initialStatus?: string;
+  openNew?: boolean;
+}) {
   const [query, setQuery] = useState("");
   const [severity, setSeverity] = useState("all");
   const [audience, setAudience] = useState("all");
-  const [status, setStatus] = useState("all");
+  const [status, setStatus] = useState(
+    statusOptions.some((o) => o.value === initialStatus) ? initialStatus! : "all",
+  );
   const [location, setLocation] = useState("all");
 
   // Only surface locations that actually appear in the broadcasts.
@@ -91,48 +102,30 @@ export function BroadcastsList({ broadcasts }: { broadcasts: Broadcast[] }) {
   }, [broadcasts]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      {/* Header */}
-      <div className="border-b border-border bg-bg px-6 pb-5 pt-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <nav className="mb-3 flex items-center gap-1.5 text-xs text-fg-muted">
-              <span>Admin</span>
-              <span className="text-fg-subtle">›</span>
-              <span className="text-fg">Broadcasts</span>
-            </nav>
-            <h1 className="text-3xl font-semibold tracking-tight">Broadcasts</h1>
-            <p className="mt-1 text-sm text-fg-muted">
-              Announcements pushed to the mobile app · {broadcasts.length} total
-            </p>
-          </div>
-          <BroadcastModal variant="primary" label="Send broadcast" />
-        </div>
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      <PageHeader
+        title="Broadcasts"
+        description={
+          <>
+            Announcements pushed to everyone&rsquo;s phone. Showing{" "}
+            <span className="font-semibold text-fg">{filtered.length}</span> of {broadcasts.length}.
+          </>
+        }
+        actions={<BroadcastModal variant="primary" label="Send broadcast" defaultOpen={openNew} />}
+      >
+        <StatGrid>
+          <StatTile label="Total sent" value={stats.total.toLocaleString()} color="var(--info)" />
+          <StatTile label="Live now" value={stats.live.toLocaleString()} color="var(--ok)" />
+          <StatTile label="Expired" value={stats.expired.toLocaleString()} />
+          <StatTile label="Archived" value={stats.archived.toLocaleString()} />
+        </StatGrid>
+      </PageHeader>
 
-        {/* Stat cards */}
-        <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard label="Total sent" value={stats.total} />
-          <StatCard label="Live now" value={stats.live} accent="#22c55e" />
-          <StatCard label="Expired" value={stats.expired} accent="#64748b" />
-          <StatCard label="Archived" value={stats.archived} accent="#64748b" />
-        </div>
-      </div>
-
+      <div className={`flex min-h-0 flex-1 flex-col pb-6 ${GUTTER}`}>
+      <Panel className="flex min-h-[440px] flex-1 flex-col overflow-hidden">
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 border-b border-border bg-bg px-6 py-4">
-        <div className="relative w-full max-w-xs">
-          <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-fg-subtle">
-            <SearchIcon />
-          </span>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search title, message…"
-            className="h-10 w-full rounded-lg border border-border bg-bg-card pl-9 pr-3 text-sm text-fg placeholder:text-fg-subtle focus:border-fg-muted focus:outline-none focus:ring-1 focus:ring-fg-muted/30"
-          />
-        </div>
-        <span className="hidden h-6 w-px bg-border md:block" aria-hidden />
+      <div className="flex flex-wrap items-center gap-2.5 border-b border-border px-4 py-3">
+        <SearchField value={query} onChange={setQuery} placeholder="Search title, message…" />
         <FilterDropdown label="Severity" value={severity} options={severityOptions} onChange={setSeverity} />
         <FilterDropdown label="Audience" value={audience} options={audienceOptions} onChange={setAudience} />
         <FilterDropdown label="Location" value={location} options={locationOptions} onChange={setLocation} />
@@ -140,21 +133,22 @@ export function BroadcastsList({ broadcasts }: { broadcasts: Broadcast[] }) {
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto">
+      <div className="min-h-0 flex-1 overflow-auto">
         {filtered.length === 0 ? (
-          <div className="flex h-48 items-center justify-center px-6 text-center text-sm text-fg-muted">
-            No broadcasts match these filters.
-          </div>
+          <EmptyState
+            title={broadcasts.length === 0 ? "No broadcasts yet" : "No broadcasts match"}
+            hint={broadcasts.length === 0 ? "Send one to reach everyone on the app." : "Try a different search or filter."}
+          />
         ) : (
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 z-10 bg-bg">
-              <tr className="text-left text-[10px] uppercase tracking-wider text-fg-subtle">
-                <th className="border-b border-border px-6 py-3 font-medium">Broadcast</th>
-                <th className="border-b border-border py-3 font-medium">Audience</th>
-                <th className="border-b border-border py-3 font-medium">Location</th>
-                <th className="border-b border-border py-3 font-medium">Sent</th>
-                <th className="border-b border-border py-3 font-medium">Status</th>
-                <th className="border-b border-border px-6 py-3 text-right font-medium">Actions</th>
+          <table className="w-full min-w-[880px] text-sm">
+            <thead className="sticky top-0 z-10">
+              <tr>
+                <th className={TH}>Broadcast</th>
+                <th className={TH}>Audience</th>
+                <th className={TH}>Location</th>
+                <th className={TH}>Sent</th>
+                <th className={TH}>Status</th>
+                <th className={`${TH} text-right`}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -164,6 +158,8 @@ export function BroadcastsList({ broadcasts }: { broadcasts: Broadcast[] }) {
             </tbody>
           </table>
         )}
+      </div>
+      </Panel>
       </div>
     </div>
   );
@@ -227,15 +223,15 @@ function BroadcastRow({ broadcast: b }: { broadcast: Broadcast }) {
   }
 
   return (
-    <tr className="border-b border-border align-top transition-colors hover:bg-bg-elev/40">
-      <td className="px-6 py-4">
-        <div className="flex items-start gap-2.5">
-          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: sev.color }} />
+    <tr className={TR}>
+      <td className={TD}>
+        <div className="flex items-start gap-3">
+          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: sev.color, boxShadow: `0 0 0 4px color-mix(in oklab, ${sev.color} 16%, transparent)` }} />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-medium text-fg">{b.title}</span>
               <span
-                className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
                 style={{
                   color: sev.color,
                   borderColor: `color-mix(in oklab, ${sev.color} 28%, transparent)`,
@@ -253,36 +249,27 @@ function BroadcastRow({ broadcast: b }: { broadcast: Broadcast }) {
           </div>
         </div>
       </td>
-      <td className="py-4 pr-6 text-fg-muted">{audienceMeta[b.audience].label}</td>
-      <td className="py-4 pr-6 text-fg-muted">
+      <td className={`${TD} whitespace-nowrap text-fg-muted`}>{audienceMeta[b.audience].label}</td>
+      <td className={`${TD} whitespace-nowrap text-fg-muted`}>
         {b.country === WORLDWIDE ? "🌍 Worldwide" : countryLabel(b.country)}
       </td>
-      <td className="py-4 pr-6 text-fg-muted">{b.createdAgo}</td>
-      <td className="py-4 pr-6">
+      <td className={`${TD} whitespace-nowrap text-fg-muted`}>{b.createdAgo}</td>
+      <td className={TD}>
         {b.isArchived ? (
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-fg-muted">
-            <span className="h-1.5 w-1.5 rounded-full bg-fg-subtle" />
-            Archived
-          </span>
+          <StatusPill color="var(--fg-subtle)" label="Archived" />
         ) : b.isExpired ? (
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-fg-muted">
-            <span className="h-1.5 w-1.5 rounded-full bg-fg-subtle" />
-            Expired
-          </span>
+          <StatusPill color="var(--fg-subtle)" label="Expired" />
         ) : (
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-ok/30 bg-ok/10 px-2 py-1 text-[11px] font-medium text-ok">
-            <span className="h-1.5 w-1.5 rounded-full bg-ok" />
-            {exp ?? "Live · no expiry"}
-          </span>
+          <StatusPill color="var(--ok)" label={exp ?? "Live · no expiry"} />
         )}
       </td>
-      <td className="px-6 py-4 text-right">
+      <td className={`${TD} text-right`}>
         <div className="inline-flex items-center gap-2">
           {b.isArchived ? (
             <button
               onClick={restore}
               disabled={busy}
-              className="inline-flex h-8 items-center rounded-md border border-border px-3 text-xs font-medium text-fg hover:border-border-strong transition-colors disabled:opacity-50"
+              className={btnSm.ghost}
             >
               Restore
             </button>
@@ -292,7 +279,7 @@ function BroadcastRow({ broadcast: b }: { broadcast: Broadcast }) {
                 <button
                   onClick={endNow}
                   disabled={busy}
-                  className="inline-flex h-8 items-center rounded-md border border-border px-3 text-xs font-medium text-fg hover:border-border-strong transition-colors disabled:opacity-50"
+                  className={btnSm.ghost}
                 >
                   End now
                 </button>
@@ -302,7 +289,7 @@ function BroadcastRow({ broadcast: b }: { broadcast: Broadcast }) {
                 disabled={busy}
                 aria-label="Archive broadcast"
                 title="Archive broadcast"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-fg-muted hover:border-border-strong hover:text-fg transition-colors disabled:opacity-50"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-fg-muted hover:border-border-strong hover:text-fg transition-colors disabled:opacity-50"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <rect x="3" y="4" width="18" height="4" rx="1" />
@@ -317,7 +304,7 @@ function BroadcastRow({ broadcast: b }: { broadcast: Broadcast }) {
             disabled={busy}
             aria-label="Delete broadcast"
             title="Delete broadcast"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-fg-muted hover:border-danger/40 hover:text-danger transition-colors disabled:opacity-50"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-fg-muted hover:border-danger/40 hover:text-danger transition-colors disabled:opacity-50"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <polyline points="3 6 5 6 21 6" />
@@ -337,27 +324,5 @@ function BroadcastRow({ broadcast: b }: { broadcast: Broadcast }) {
         />
       </td>
     </tr>
-  );
-}
-
-function StatCard({ label, value, accent }: { label: string; value: number; accent?: string }) {
-  return (
-    <div className="rounded-xl border border-border bg-bg-card px-5 py-4">
-      <div className="text-xs text-fg-muted">{label}</div>
-      <div className="mt-2.5 flex items-baseline gap-2">
-        <span className="text-2xl font-semibold tracking-tight" style={accent ? { color: accent } : undefined}>
-          {value.toLocaleString()}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
   );
 }

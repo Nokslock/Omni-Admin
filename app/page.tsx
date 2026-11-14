@@ -8,6 +8,9 @@ import { AppShowcase } from "./components/AppShowcase";
 import { IncidentTypes } from "./components/IncidentTypes";
 import { Lifecycle } from "./components/Lifecycle";
 import { CTA } from "./components/CTA";
+import { MoreFeatures } from "./components/MoreFeatures";
+import { ProSection } from "./components/ProSection";
+import { Advertise } from "./components/Advertise";
 import { Footer } from "./components/Footer";
 import { HomeJsonLd } from "./components/JsonLd";
 
@@ -35,8 +38,11 @@ export default function Home() {
         <Stats />
         <Features />
         <AppShowcase />
+        <MoreFeatures />
         <IncidentTypes />
         <Lifecycle />
+        <ProSection />
+        <Advertise />
         <CTA />
       </main>
       <Footer />

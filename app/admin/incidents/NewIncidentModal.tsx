@@ -32,10 +32,10 @@ const severityOptions = [
 ];
 
 const statusOptions = [
-  { value: "active", label: "Active" },
-  { value: "unverified", label: "Under Investigation" },
+  { value: "active", label: "Investigating" },
+  { value: "unverified", label: "Unverified" },
   { value: "resolved", label: "Resolved" },
-  { value: "false_alarm", label: "False Alarm" },
+  { value: "false_alarm", label: "False alarm" },
 ];
 
 const fieldClass =

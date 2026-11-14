@@ -14,6 +14,8 @@ export type User = {
   reliability: number; // 0–100
   status: UserStatus;
   role: UserRole;
+  /** Has Kasala Pro (gold badge). */
+  pro: boolean;
 };
 
 export const userStatusMeta: Record<

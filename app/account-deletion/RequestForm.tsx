@@ -54,12 +54,12 @@ export function RequestForm() {
             <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">
               We&rsquo;ve logged your account deletion request for{" "}
               <span className="font-medium text-fg">{email}</span>. Our team will
-              process it within <strong>7 business days</strong> and email you to
-              confirm once it&rsquo;s done.
+              process it within <strong>7 business days</strong>. Your account is
+              then deactivated, and permanently deleted 30 days later.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-fg-muted">
-              If you didn&rsquo;t mean to submit this, reply to the confirmation
-              email or contact us at{" "}
+              Changed your mind? Sign back in to the app within those 30 days to
+              restore your account, or contact us at{" "}
               <a href="mailto:Support@kasalaalert.com" className="font-medium text-fg hover:underline">
                 Support@kasalaalert.com
               </a>{" "}
@@ -154,9 +154,9 @@ export function RequestForm() {
           className="mt-0.5 h-4 w-4 accent-fg"
         />
         <span className="leading-relaxed">
-          I understand that deleting my account is{" "}
-          <span className="font-semibold">permanent</span> and that my reports,
-          activity, and saved preferences will be removed.
+          I understand my account will be deactivated, then{" "}
+          <span className="font-semibold">permanently deleted after 30 days</span>,
+          and that my profile, saved places and any Kasala Coins will be removed.
         </span>
       </label>
 

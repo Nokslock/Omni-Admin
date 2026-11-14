@@ -38,12 +38,14 @@ const durationOptions: { value: number | null; label: string }[] = [
 export function BroadcastModal({
   variant = "secondary",
   label = "Broadcast",
+  defaultOpen = false,
 }: {
   variant?: "primary" | "secondary";
   label?: string;
+  defaultOpen?: boolean;
 } = {}) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);

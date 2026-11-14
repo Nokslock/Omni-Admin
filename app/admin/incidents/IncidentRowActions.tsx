@@ -9,10 +9,10 @@ import { updateIncidentStatus, deleteIncident } from "./actions";
 import { ConfirmDialog } from "../_components/ConfirmDialog";
 
 const statusActions: { value: IncidentStatus; label: string }[] = [
-  { value: "active", label: "Mark Active" },
-  { value: "unverified", label: "Under Investigation" },
-  { value: "resolved", label: "Mark Resolved" },
-  { value: "false_alarm", label: "Mark False Alarm" },
+  { value: "active", label: "Verify (investigating)" },
+  { value: "unverified", label: "Mark unverified" },
+  { value: "resolved", label: "Mark resolved" },
+  { value: "false_alarm", label: "Mark false alarm" },
 ];
 
 export function IncidentRowActions({

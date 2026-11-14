@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { AdminNav } from "../_components/AdminNav";
-import { getDeletionRequests } from "../_lib/deletion-requests.data";
+import { getCurrentAdmin } from "../_lib/admin";
+import {
+  getDeletionRequests,
+  getScheduledDeletions,
+} from "../_lib/deletion-requests.data";
 import { DeletionTable } from "./DeletionTable";
 
 export const metadata: Metadata = {
@@ -12,12 +15,17 @@ export const metadata: Metadata = {
 export default async function DeletionRequestsPage() {
   await connection();
   const requests = await getDeletionRequests();
+  const scheduled = await getScheduledDeletions(requests);
+  const admin = await getCurrentAdmin();
 
   return (
-    <div className="flex h-dvh flex-col bg-bg text-fg">
-      <AdminNav />
+    <div className="flex h-full flex-col bg-bg text-fg">
       <main className="flex min-h-0 flex-1 flex-col">
-        <DeletionTable requests={requests} />
+        <DeletionTable
+          requests={requests}
+          scheduled={scheduled}
+          canErase={admin?.role === "admin"}
+        />
       </main>
     </div>
   );

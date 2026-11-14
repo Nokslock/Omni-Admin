@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { AdminNav } from "../_components/AdminNav";
 import { getMissingRequests } from "../_lib/missing.data";
 import { MissingList } from "./MissingList";
 
@@ -9,15 +8,16 @@ export const metadata: Metadata = {
   description: "Review missing-person broadcast requests submitted from the mobile app.",
 };
 
-export default async function MissingPage() {
+export default async function MissingPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await connection();
+  const sp = await searchParams;
+  const status = typeof sp.status === "string" ? sp.status : undefined;
   const requests = await getMissingRequests();
 
   return (
-    <div className="flex h-dvh flex-col bg-bg text-fg">
-      <AdminNav />
+    <div className="flex h-full flex-col bg-bg text-fg">
       <main className="flex min-h-0 flex-1 flex-col">
-        <MissingList requests={requests} />
+        <MissingList key={status ?? "pending"} requests={requests} initialTab={status} />
       </main>
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { ProBadge } from "../_components/ProBadge";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -19,13 +20,14 @@ import { NewIncidentModal } from "./NewIncidentModal";
 import { IncidentRowActions } from "./IncidentRowActions";
 import { deleteIncidents } from "./actions";
 import { toast } from "../_components/toast";
+import { EmptyState, GUTTER, PageHeader, Panel, SearchField, StatGrid, StatTile, StatusPill, TD, TH, TR } from "../_components/ui";
 
 const statusOptions = [
   { value: "all", label: "All statuses" },
-  { value: "active", label: "Active" },
-  { value: "unverified", label: "Under Investigation" },
+  { value: "unverified", label: "Unverified" },
+  { value: "active", label: "Investigating" },
   { value: "resolved", label: "Resolved" },
-  { value: "false_alarm", label: "False Alarm" },
+  { value: "false_alarm", label: "False alarm" },
 ];
 
 const typeOptions = [
@@ -65,15 +67,23 @@ const timeOptions = [
   { value: "all", label: "All time" },
 ];
 
-export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
+export function IncidentsTable({
+  incidents,
+  initialStatus,
+}: {
+  incidents: Incident[];
+  initialStatus?: string;
+}) {
   // When arriving from global search (?q=…) pre-fill the box, and widen the time
   // window to "all" so an older matching incident isn't hidden by the 24h default.
   const initialQuery = useSearchParams().get("q") ?? "";
   const [query, setQuery] = useState(initialQuery);
-  const [status, setStatus] = useState("all");
+  const [status, setStatus] = useState(
+    statusOptions.some((o) => o.value === initialStatus) ? initialStatus! : "all",
+  );
   const [type, setType] = useState("all");
   const [severity, setSeverity] = useState("all");
-  const [time, setTime] = useState(initialQuery ? "all" : "24h");
+  const [time, setTime] = useState(initialQuery || initialStatus ? "all" : "24h");
 
   // ── Batch selection ───────────────────────────────────────────────────────
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -167,58 +177,69 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
 
   const selectedCount = validSelected.size;
 
-  return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      {/* Page header */}
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border bg-bg px-6 pb-5 pt-6">
-        <div>
-          <nav className="mb-3 flex items-center gap-1.5 text-xs text-fg-muted">
-            <span>Admin</span>
-            <span className="text-fg-subtle">›</span>
-            <span className="text-fg">Incidents</span>
-          </nav>
-          <h1 className="text-3xl font-semibold tracking-tight">Incident Management</h1>
-          <p className="mt-1 text-sm text-fg-muted">
-            Showing <span className="font-semibold text-fg">{filtered.length}</span> of {incidents.length} incidents
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <NewIncidentModal />
-        </div>
-      </div>
+  const statusCounts = useMemo(() => {
+    const c: Record<IncidentStatus, number> = { unverified: 0, active: 0, resolved: 0, false_alarm: 0 };
+    for (const i of incidents) if (i.status in c) c[i.status]++;
+    return c;
+  }, [incidents]);
+  const tiles: IncidentStatus[] = ["unverified", "active", "resolved", "false_alarm"];
+  const filtersOn = !!query.trim() || status !== "all" || type !== "all" || severity !== "all";
+  function clearFilters() {
+    setQuery("");
+    setStatus("all");
+    setType("all");
+    setSeverity("all");
+  }
 
+  return (
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      <PageHeader
+        title="Incidents"
+        description={
+          <>
+            Every report sent in from the app. Showing{" "}
+            <span className="font-semibold text-fg">{filtered.length}</span> of {incidents.length}.
+          </>
+        }
+        actions={<NewIncidentModal />}
+      >
+        <StatGrid>
+          {tiles.map((t) => (
+            <StatTile
+              key={t}
+              label={statusMeta[t].label}
+              value={statusCounts[t].toLocaleString()}
+              color={statusMeta[t].color}
+              active={status === t}
+              onClick={() => setStatus(status === t ? "all" : t)}
+            />
+          ))}
+        </StatGrid>
+      </PageHeader>
+
+      <div className={`flex min-h-0 flex-1 flex-col pb-6 ${GUTTER}`}>
+      <Panel className="flex min-h-[440px] flex-1 flex-col overflow-hidden">
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 border-b border-border bg-bg px-6 py-4">
-        <div className="relative w-full max-w-xs">
-          <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-fg-subtle">
-            <SearchIcon />
-          </span>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by ID, type, location…"
-            className="h-10 w-full rounded-lg border border-border bg-bg-card pl-9 pr-3 text-sm text-fg placeholder:text-fg-subtle focus:border-fg-muted focus:outline-none focus:ring-1 focus:ring-fg-muted/30"
-          />
-        </div>
-        <span className="hidden h-6 w-px bg-border md:block" aria-hidden />
+      <div className="flex flex-wrap items-center gap-2.5 border-b border-border px-4 py-3">
+        <SearchField value={query} onChange={setQuery} placeholder="Search by ID, type, location…" />
         <FilterDropdown label="Status" value={status} options={statusOptions} onChange={setStatus} />
         <FilterDropdown label="Type" value={type} options={typeOptions} onChange={setType} />
         <FilterDropdown label="Severity" value={severity} options={severityOptions} onChange={setSeverity} />
         <FilterDropdown label="Time" value={time} options={timeOptions} onChange={setTime} />
-        <div className="ml-auto inline-flex items-center gap-1.5 text-xs text-fg-muted">
-          <span>Auto-refresh</span>
-          <span className="relative inline-flex h-1.5 w-1.5">
-            {isRefreshing && <span className="absolute inset-0 rounded-full bg-ok animate-ping-slow" />}
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-ok" />
-          </span>
-          <span className="font-mono text-fg">{isRefreshing ? "syncing…" : "1m"}</span>
-        </div>
+        {filtersOn && (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="h-10 rounded-xl px-2.5 text-sm font-medium text-fg-muted transition-colors hover:text-fg"
+          >
+            Clear
+          </button>
+        )}
       </div>
 
       {/* Batch action bar — slides in when something is selected */}
       {selectedCount > 0 && (
-        <div className="flex items-center gap-3 border-b border-danger/30 bg-danger/8 px-6 py-2.5">
+        <div className="flex animate-swap-in items-center gap-3 border-b border-danger/25 bg-danger/10 px-5 py-2.5">
           <span className="text-sm font-medium text-fg">
             <span className="tabular-nums text-danger">{selectedCount}</span>{" "}
             incident{selectedCount !== 1 ? "s" : ""} selected
@@ -226,13 +247,13 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
           <div className="ml-auto flex items-center gap-2">
             <button
               onClick={() => setSelected(new Set())}
-              className="inline-flex h-8 items-center rounded-md border border-border px-3 text-xs font-medium hover:border-border-strong transition-colors"
+              className="inline-flex h-8 items-center rounded-lg border border-border bg-bg-card px-3 text-xs font-medium transition-colors hover:border-border-strong"
             >
               Deselect all
             </button>
             <button
               onClick={() => setConfirmOpen(true)}
-              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-danger/40 bg-danger/10 px-3 text-xs font-medium text-danger hover:bg-danger/20 transition-colors"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-danger px-3 text-xs font-semibold text-white transition-opacity hover:opacity-90"
             >
               <TrashIcon />
               Delete {selectedCount} incident{selectedCount !== 1 ? "s" : ""}
@@ -242,11 +263,11 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
       )}
 
       {/* Table */}
-      <div className="flex-1 overflow-auto">
-        <table className="w-full text-sm">
-          <thead className="sticky top-0 z-10 bg-bg">
-            <tr className="text-left text-[10px] uppercase tracking-wider text-fg-subtle">
-              <th className="border-b border-border px-4 py-3">
+      <div className="min-h-0 flex-1 overflow-auto">
+        <table className="w-full min-w-[980px] text-sm">
+          <thead className="sticky top-0 z-10">
+            <tr>
+              <th className={TH}>
                 <input
                   ref={headerCheckRef}
                   type="checkbox"
@@ -256,21 +277,24 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
                   className="h-4 w-4 cursor-pointer rounded border-border accent-fg"
                 />
               </th>
-              <th className="border-b border-border px-2 py-3 font-medium">ID</th>
-              <th className="border-b border-border py-3 font-medium">Type · Title</th>
-              <th className="border-b border-border py-3 font-medium">Severity</th>
-              <th className="border-b border-border py-3 font-medium">Location</th>
-              <th className="border-b border-border py-3 font-medium">Reporter</th>
-              <th className="border-b border-border py-3 font-medium">Time</th>
-              <th className="border-b border-border py-3 font-medium">Status</th>
-              <th className="border-b border-border px-6 py-3 font-medium"></th>
+              <th className={TH}>ID</th>
+              <th className={TH}>Type · Title</th>
+              <th className={TH}>Severity</th>
+              <th className={TH}>Location</th>
+              <th className={TH}>Reporter</th>
+              <th className={TH}>Time</th>
+              <th className={TH}>Status</th>
+              <th className={TH}></th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-6 py-16 text-center text-sm text-fg-muted">
-                  No incidents match these filters.
+                <td colSpan={9}>
+                  <EmptyState
+                    title="No incidents match"
+                    hint={filtersOn ? "Try a different search or clear the filters." : "Reports from the app will show up here."}
+                  />
                 </td>
               </tr>
             ) : (
@@ -288,19 +312,19 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t border-border bg-bg px-6 py-3 text-xs text-fg-muted">
-        <span>{filtered.length} rows · 25 per page</span>
-        <div className="flex items-center gap-3">
-          <button aria-label="Previous page" className="inline-flex h-7 w-7 items-center justify-center rounded border border-border text-fg-muted hover:text-fg disabled:opacity-40" disabled>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="15 18 9 12 15 6" /></svg>
-          </button>
-          <span className="font-mono">
-            <span className="text-fg">1</span> <span className="text-fg-subtle">/</span> 1
+      <div className="flex items-center justify-between gap-4 border-t border-border px-5 py-3 text-xs text-fg-muted">
+        <span>
+          <span className="font-semibold text-fg">{filtered.length}</span> incident{filtered.length === 1 ? "" : "s"}
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <span className="relative inline-flex h-1.5 w-1.5">
+            {isRefreshing && <span className="absolute inset-0 animate-ping-slow rounded-full bg-ok" />}
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-ok" />
           </span>
-          <button aria-label="Next page" className="inline-flex h-7 w-7 items-center justify-center rounded border border-border text-fg-muted hover:text-fg disabled:opacity-40" disabled>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="9 18 15 12 9 6" /></svg>
-          </button>
-        </div>
+          {isRefreshing ? "Syncing…" : "Refreshes every minute"}
+        </span>
+      </div>
+      </Panel>
       </div>
 
       {/* Batch delete confirmation */}
@@ -340,9 +364,9 @@ function IncidentRow({
 
   return (
     <tr
-      className={`border-b border-border transition-colors hover:bg-bg-elev/40 ${isSelected ? "bg-bg-elev/60" : ""}`}
+      className={`${TR} ${isSelected ? "bg-bg-elev/70" : ""}`}
     >
-      <td className="px-4 py-4">
+      <td className={`${TD} w-10`}>
         <input
           type="checkbox"
           aria-label={`Select incident ${incident.id}`}
@@ -351,90 +375,59 @@ function IncidentRow({
           className="h-4 w-4 cursor-pointer rounded border-border accent-fg"
         />
       </td>
-      <td className="whitespace-nowrap px-2 py-4 font-mono text-xs text-fg-muted">
+      <td className={`${TD} whitespace-nowrap font-mono text-xs text-fg-muted`}>
         <Link href={`/admin/incidents/${incident.id}`} className="hover:text-fg">
           {incident.id}
         </Link>
       </td>
-      <td className="py-4 pr-6">
+      <td className={TD}>
         <Link href={`/admin/incidents/${incident.id}`} className="flex items-center gap-3 hover:[&_.title]:underline">
           <span
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
             style={{ background: `color-mix(in oklab, ${color} 14%, transparent)`, color }}
           >
             <TypeIcon type={incident.type} size={16} />
           </span>
           <div className="leading-tight">
             <div className="title font-medium text-fg">{incident.title}</div>
-            <div className="text-[11px] text-fg-muted">{incident.typeLabel}</div>
+            <div className="mt-0.5 text-xs text-fg-muted">{incident.typeLabel}</div>
           </div>
         </Link>
       </td>
-      <td className="py-4 pr-6">
-        <span
-          className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium"
-          style={{
-            color: sev.color,
-            borderColor: `color-mix(in oklab, ${sev.color} 28%, transparent)`,
-            background: `color-mix(in oklab, ${sev.color} 10%, transparent)`,
-          }}
-        >
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: sev.color }} />
-          {sev.label}
-        </span>
+      <td className={TD}>
+        <StatusPill color={sev.color} label={sev.label} />
       </td>
-      <td className="py-4 pr-6">
+      <td className={TD}>
         <div className="leading-tight">
           <div className="text-fg">{incident.location}</div>
-          <div className="font-mono text-[11px] text-fg-muted">
+          <div className="mt-0.5 font-mono text-[11px] text-fg-subtle">
             {incident.coords.lat.toFixed(4)}, {incident.coords.lng.toFixed(4)}
           </div>
         </div>
       </td>
-      <td className="py-4 pr-6">
+      <td className={TD}>
         <div className="flex items-center gap-2.5">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-info text-[10px] font-semibold text-white">
             {initials}
           </span>
-          <span className="text-fg">{incident.reporter}</span>
+          <span className="whitespace-nowrap text-fg">{incident.reporter}</span>
+          {incident.reporterPro && <ProBadge />}
         </div>
       </td>
-      <td className="py-4 pr-6 leading-tight">
+      <td className={`${TD} whitespace-nowrap leading-tight`}>
         <div className="text-fg">{incident.reportedDate}</div>
-        <div className="text-[11px] text-fg-muted">{incident.reportedAt}</div>
+        <div className="mt-0.5 text-xs text-fg-muted">{incident.reportedAt}</div>
       </td>
-      <td className="py-4 pr-6">
-        <button
-          type="button"
-          className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors"
-          style={{
-            color: status.color,
-            borderColor: `color-mix(in oklab, ${status.color} 28%, transparent)`,
-            background: `color-mix(in oklab, ${status.color} 10%, transparent)`,
-          }}
-        >
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: status.color }} />
-          {status.label}
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
+      <td className={TD}>
+        <StatusPill color={status.color} label={status.label} />
       </td>
-      <td className="px-6 py-4 text-right">
+      <td className={`${TD} text-right`}>
         <IncidentRowActions id={incident.id} status={incident.status} />
       </td>
     </tr>
   );
 }
 
-function SearchIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
 function TrashIcon() {
   return (
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>

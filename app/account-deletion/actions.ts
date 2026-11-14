@@ -27,7 +27,7 @@ export async function submitDeletionRequest(input: {
     return { error: "That phone number doesn't look right." };
   }
   if (!acknowledge) {
-    return { error: "Please acknowledge that this action is permanent." };
+    return { error: "Please confirm you understand what happens to your account." };
   }
 
   const reason = combineReason(input.reason, reasonOther);

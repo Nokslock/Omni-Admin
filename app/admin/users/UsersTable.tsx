@@ -1,5 +1,6 @@
 "use client";
 
+import { ProBadge } from "../_components/ProBadge";
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -17,6 +18,7 @@ import { BroadcastModal } from "./BroadcastModal";
 import { setUserStatus, deleteUser } from "./actions";
 import { UserActivityPanel } from "./UserActivityPanel";
 import { ConfirmDialog } from "../_components/ConfirmDialog";
+import { EmptyState, GUTTER, PageHeader, Panel, SearchField, StatGrid, StatTile, StatusPill, TD, TH, TR, btnSm } from "../_components/ui";
 
 const statusOptions = [
   { value: "all", label: "All" },
@@ -59,17 +61,21 @@ export function UsersTable({
   users,
   currentEmail,
   currentRole,
+  initialRole,
 }: {
   users: User[];
   currentEmail: string | null;
   currentRole: string | null;
+  initialRole?: string;
 }) {
   // Pre-fill from global search (?q=…), e.g. when jumping to a specific reporter.
   const [query, setQuery] = useState(useSearchParams().get("q") ?? "");
   const [status, setStatus] = useState("all");
-  const [role, setRole] = useState("all");
+  const [role, setRole] = useState(
+    roleOptions.some((o) => o.value === initialRole) ? initialRole! : "all",
+  );
   const [reliability, setReliability] = useState("any");
-  const [joined, setJoined] = useState("7d");
+  const [joined, setJoined] = useState(initialRole ? "any" : "7d");
   const [sort, setSort] = useState<SortKey>("joined");
   // Capture "now" once per mount so the filter stays pure across re-renders.
   const [nowMs] = useState(() => Date.now());
@@ -108,7 +114,7 @@ export function UsersTable({
     return list;
   }, [users, query, status, role, reliability, joined, sort, nowMs]);
 
-  const stats = useMemo<{ label: string; value: string; sub?: string }[]>(() => {
+  const stats = useMemo<{ label: string; value: string; sub?: string; color?: string }[]>(() => {
     const total = users.length;
     const admins = users.filter((u) => u.role === "admin").length;
     const moderators = users.filter((u) => u.role === "moderator").length;
@@ -118,67 +124,43 @@ export function UsersTable({
       : 0;
     const pct = (n: number) => (total ? `${Math.round((n / total) * 100)}%` : "0%");
     return [
-      { label: "Total reporters", value: total.toLocaleString() },
-      { label: "Admins", value: admins.toLocaleString(), sub: pct(admins) },
-      { label: "Moderators", value: moderators.toLocaleString(), sub: pct(moderators) },
-      { label: "Suspended", value: suspended.toLocaleString(), sub: pct(suspended) },
-      { label: "Avg reliability", value: `${avgReliability}%` },
+      { label: "Total reporters", value: total.toLocaleString(), color: "var(--info)" },
+      { label: "Admins", value: admins.toLocaleString(), sub: pct(admins), color: roleMeta.admin.color },
+      { label: "Moderators", value: moderators.toLocaleString(), sub: pct(moderators), color: roleMeta.moderator.color },
+      { label: "Suspended", value: suspended.toLocaleString(), sub: pct(suspended), color: "var(--danger)" },
+      { label: "Avg reliability", value: `${avgReliability}%`, color: "var(--ok)" },
     ];
   }, [users]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      {/* Page header */}
-      <div className="border-b border-border bg-bg px-6 pb-5 pt-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <nav className="mb-3 flex items-center gap-1.5 text-xs text-fg-muted">
-              <span>Admin</span>
-              <span className="text-fg-subtle">›</span>
-              <span className="text-fg">Users</span>
-            </nav>
-            <h1 className="text-3xl font-semibold tracking-tight">User Directory</h1>
-            <p className="mt-1 text-sm text-fg-muted">
-              Mobile reporters · <span className="font-semibold text-fg">{filtered.length}</span> of {users.length} shown
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      <PageHeader
+        title="Users"
+        description={
+          <>
+            Everyone with a Kasala account. Showing{" "}
+            <span className="font-semibold text-fg">{filtered.length}</span> of {users.length}.
+          </>
+        }
+        actions={
+          <>
             <BroadcastModal />
             {currentRole === "admin" && <AddAdminModal />}
-          </div>
-        </div>
-
-        {/* Stat cards */}
-        <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
+          </>
+        }
+      >
+        <StatGrid cols={5}>
           {stats.map((s) => (
-            <div key={s.label} className="rounded-xl border border-border bg-bg-card px-5 py-4">
-              <div className="text-xs text-fg-muted">{s.label}</div>
-              <div className="mt-2.5 flex items-baseline gap-2">
-                <span className="text-2xl font-semibold tracking-tight">{s.value}</span>
-                {s.sub && (
-                  <span className="font-mono text-[11px] text-fg-muted">{s.sub} of total</span>
-                )}
-              </div>
-            </div>
+            <StatTile key={s.label} label={s.label} value={s.value} sub={s.sub && `${s.sub} of total`} color={s.color} />
           ))}
-        </div>
-      </div>
+        </StatGrid>
+      </PageHeader>
 
+      <div className={`flex min-h-0 flex-1 flex-col pb-6 ${GUTTER}`}>
+      <Panel className="flex min-h-[440px] flex-1 flex-col overflow-hidden">
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 border-b border-border bg-bg px-6 py-4">
-        <div className="relative w-full max-w-xs">
-          <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-fg-subtle">
-            <SearchIcon />
-          </span>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search name, email…"
-            className="h-10 w-full rounded-lg border border-border bg-bg-card pl-9 pr-3 text-sm text-fg placeholder:text-fg-subtle focus:border-fg-muted focus:outline-none focus:ring-1 focus:ring-fg-muted/30"
-          />
-        </div>
-        <span className="hidden h-6 w-px bg-border md:block" aria-hidden />
+      <div className="flex flex-wrap items-center gap-2.5 border-b border-border px-4 py-3">
+        <SearchField value={query} onChange={setQuery} placeholder="Search name, email, phone…" />
         <FilterDropdown label="Status" value={status} options={statusOptions} onChange={setStatus} />
         <FilterDropdown label="Role" value={role} options={roleOptions} onChange={setRole} />
         <FilterDropdown label="Reliability" value={reliability} options={reliabilityOptions} onChange={setReliability} />
@@ -194,23 +176,26 @@ export function UsersTable({
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto">
-        <table className="w-full text-sm">
-          <thead className="sticky top-0 z-10 bg-bg">
-            <tr className="text-left text-[10px] uppercase tracking-wider text-fg-subtle">
-              <th className="border-b border-border px-6 py-3 font-medium">User</th>
-              <th className="border-b border-border py-3 font-medium">Phone</th>
-              <th className="border-b border-border py-3 font-medium">Joined</th>
-              <th className="border-b border-border py-3 font-medium">Reports · Reliability</th>
-              <th className="border-b border-border py-3 font-medium">Status</th>
-              <th className="border-b border-border px-6 py-3 text-right font-medium">Actions</th>
+      <div className="min-h-0 flex-1 overflow-auto">
+        <table className="w-full min-w-[920px] text-sm">
+          <thead className="sticky top-0 z-10">
+            <tr>
+              <th className={TH}>User</th>
+              <th className={TH}>Phone</th>
+              <th className={TH}>Joined</th>
+              <th className={TH}>Reports · Reliability</th>
+              <th className={TH}>Status</th>
+              <th className={`${TH} text-right`}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-16 text-center text-sm text-fg-muted">
-                  No users match these filters.
+                <td colSpan={6}>
+                  <EmptyState
+                    title="No users match"
+                    hint={joined !== "any" ? "The Joined filter is on. Set it to Anytime to see older accounts." : "Try a different search or filter."}
+                  />
                 </td>
               </tr>
             ) : (
@@ -228,19 +213,10 @@ export function UsersTable({
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t border-border bg-bg px-6 py-3 text-xs text-fg-muted">
-        <span>{filtered.length} of {users.length} users</span>
-        <div className="flex items-center gap-3">
-          <button aria-label="Previous page" className="inline-flex h-7 w-7 items-center justify-center rounded border border-border text-fg-muted hover:text-fg disabled:opacity-40" disabled>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="15 18 9 12 15 6" /></svg>
-          </button>
-          <span className="font-mono">
-            <span className="text-fg">1</span> <span className="text-fg-subtle">/</span> 1
-          </span>
-          <button aria-label="Next page" className="inline-flex h-7 w-7 items-center justify-center rounded border border-border text-fg-muted hover:text-fg disabled:opacity-40" disabled>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="9 18 15 12 9 6" /></svg>
-          </button>
-        </div>
+      <div className="border-t border-border px-5 py-3 text-xs text-fg-muted">
+        <span className="font-semibold text-fg">{filtered.length}</span> of {users.length} users
+      </div>
+      </Panel>
       </div>
     </div>
   );
@@ -251,6 +227,7 @@ function UserRow({ user, isSelf, viewerRole }: { user: User; isSelf: boolean; vi
   const [pending, setPending] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmSuspend, setConfirmSuspend] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const meta = userStatusMeta[user.status];
   const role = roleMeta[user.role];
@@ -262,11 +239,17 @@ function UserRow({ user, isSelf, viewerRole }: { user: User; isSelf: boolean; vi
   const canChangeStatus = !isSelf && !(viewerRole === "moderator" && isPrivilegedTarget);
 
   async function toggleStatus() {
+    setConfirmSuspend(false);
     setPending(true);
     const res = await setUserStatus(user.id, isSuspended ? "clear" : "suspended");
     setPending(false);
     if ("ok" in res) {
-      toast(isSuspended ? `${user.name} reinstated.` : `${user.name} suspended.`, "success");
+      toast(
+        isSuspended
+          ? `${user.name} reinstated. They can sign in again.`
+          : `${user.name} suspended and signed out.`,
+        "success",
+      );
       router.refresh();
     } else {
       toast(res.error, "error");
@@ -278,7 +261,10 @@ function UserRow({ user, isSelf, viewerRole }: { user: User; isSelf: boolean; vi
     const res = await deleteUser(user.id);
     if ("ok" in res) {
       setConfirmDelete(false);
-      toast(`${user.name}'s account has been deleted.`, "success");
+      toast(
+        `${user.name}'s account is deactivated and will be erased in 30 days.`,
+        "success",
+      );
       router.refresh();
     } else {
       setDeleting(false);
@@ -288,11 +274,11 @@ function UserRow({ user, isSelf, viewerRole }: { user: User; isSelf: boolean; vi
   }
 
   return (
-    <tr className="border-b border-border transition-colors hover:bg-bg-elev/40">
-      <td className="px-6 py-4">
+    <tr className={TR}>
+      <td className={TD}>
         <div className="flex items-center gap-3">
           <span
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
             style={{ background: user.avatarColor }}
           >
             {initials}
@@ -300,8 +286,9 @@ function UserRow({ user, isSelf, viewerRole }: { user: User; isSelf: boolean; vi
           <div className="leading-tight">
             <div className="flex items-center gap-1.5">
               <span className="font-medium text-fg">{user.name}</span>
+              {user.pro && <ProBadge />}
               <span
-                className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
                 style={{
                   color: role.color,
                   borderColor: `color-mix(in oklab, ${role.color} 28%, transparent)`,
@@ -312,19 +299,19 @@ function UserRow({ user, isSelf, viewerRole }: { user: User; isSelf: boolean; vi
                 {role.label}
               </span>
             </div>
-            <div className="text-[11px] text-fg-muted">{user.email}</div>
+            <div className="mt-0.5 text-xs text-fg-muted">{user.email}</div>
           </div>
         </div>
       </td>
-      <td className="py-4 pr-6 tabular-nums text-fg">
+      <td className={`${TD} whitespace-nowrap tabular-nums text-fg`}>
         {user.phone ? (
           <a href={`tel:${user.phone}`} className="hover:underline">{user.phone}</a>
         ) : (
           <span className="text-fg-subtle">—</span>
         )}
       </td>
-      <td className="py-4 pr-6 text-fg">{user.joined}</td>
-      <td className="py-4 pr-6">
+      <td className={`${TD} whitespace-nowrap text-fg-muted`}>{user.joined}</td>
+      <td className={TD}>
         <div className="flex items-center gap-3">
           <span className="w-8 text-right font-medium tabular-nums text-fg">{user.reports}</span>
           <div className="relative h-1.5 w-32 overflow-hidden rounded-full bg-bg-elev">
@@ -336,24 +323,14 @@ function UserRow({ user, isSelf, viewerRole }: { user: User; isSelf: boolean; vi
           <span className="w-10 tabular-nums text-fg-muted">{user.reliability}%</span>
         </div>
       </td>
-      <td className="py-4 pr-6">
-        <span
-          className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium"
-          style={{
-            color: meta.color,
-            borderColor: `color-mix(in oklab, ${meta.color} 28%, transparent)`,
-            background: `color-mix(in oklab, ${meta.color} 10%, transparent)`,
-          }}
-        >
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color }} />
-          {meta.label}
-        </span>
+      <td className={TD}>
+        <StatusPill color={meta.color} label={meta.label} />
       </td>
-      <td className="px-6 py-4 text-right">
+      <td className={`${TD} text-right`}>
         <div className="inline-flex items-center gap-2">
           <button
             onClick={() => setActivityOpen(true)}
-            className="inline-flex h-8 items-center rounded-md border border-border px-3 text-xs font-medium text-fg hover:border-border-strong transition-colors"
+            className={btnSm.ghost}
           >
             View activity
           </button>
@@ -362,13 +339,9 @@ function UserRow({ user, isSelf, viewerRole }: { user: User; isSelf: boolean; vi
           )}
           {canChangeStatus && (
             <button
-              onClick={toggleStatus}
+              onClick={() => (isSuspended ? toggleStatus() : setConfirmSuspend(true))}
               disabled={pending}
-              className={`inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium transition-colors disabled:opacity-50 ${
-                isSuspended
-                  ? "border-ok/40 text-ok hover:bg-ok/10"
-                  : "border-danger/40 text-danger hover:bg-danger/10"
-              }`}
+              className={isSuspended ? btnSm.ok : btnSm.danger}
             >
               {pending ? "…" : isSuspended ? "Reinstate" : "Suspend"}
             </button>
@@ -378,7 +351,7 @@ function UserRow({ user, isSelf, viewerRole }: { user: User; isSelf: boolean; vi
               onClick={() => setConfirmDelete(true)}
               aria-label={`Delete ${user.name}`}
               title="Delete user"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-fg-muted hover:border-danger/40 hover:text-danger transition-colors"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-fg-muted transition-colors hover:border-danger/40 hover:bg-danger/10 hover:text-danger"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <polyline points="3 6 5 6 21 6" />
@@ -388,9 +361,19 @@ function UserRow({ user, isSelf, viewerRole }: { user: User; isSelf: boolean; vi
           )}
         </div>
         <ConfirmDialog
+          open={confirmSuspend}
+          title={`Suspend ${user.name}?`}
+          message={`They're signed out everywhere, stop getting alerts, and can't sign in again until you reinstate them. The app tells them to contact support.`}
+          confirmLabel="Suspend"
+          destructive
+          busy={pending}
+          onConfirm={toggleStatus}
+          onCancel={() => setConfirmSuspend(false)}
+        />
+        <ConfirmDialog
           open={confirmDelete}
           title={`Delete ${user.name}?`}
-          message={`This permanently removes ${user.name} (${user.email})${isPrivilegedTarget ? ", including their portal login" : ""}. This can't be undone.`}
+          message={`${user.name} (${user.email}) is deactivated now: signed out everywhere${isPrivilegedTarget ? ", including the portal" : ""}, with no alerts. They can restore it by signing in within 30 days; after that it's erased automatically. You can also restore it from Deletions.`}
           confirmLabel="Delete user"
           destructive
           busy={deleting}
@@ -399,14 +382,5 @@ function UserRow({ user, isSelf, viewerRole }: { user: User; isSelf: boolean; vi
         />
       </td>
     </tr>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
   );
 }

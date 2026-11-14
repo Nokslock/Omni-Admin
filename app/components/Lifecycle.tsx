@@ -9,17 +9,17 @@ const steps = [
   {
     n: "02",
     title: "Reports via Kasala app",
-    body: "One-tap report — type, photo, location auto-attached.",
+    body: "One-tap report — type and location attach themselves; a photo is optional.",
   },
   {
     n: "03",
-    title: "Verified & visualized",
-    body: "Trusted moderators triage the report; the live map updates instantly.",
+    title: "Confirmed by neighbours",
+    body: "Three people nearby confirm it (Pro reporters are verified instantly) and the live map updates.",
   },
   {
     n: "04",
     title: "Community alerted",
-    body: "Verified incidents push to everyone in radius within seconds.",
+    body: "Everyone inside the radius gets a push within seconds — and a weekly digest of their area.",
   },
 ];
 

@@ -62,6 +62,8 @@ export function Hero() {
               <TrustItem label="Privacy-first" />
               <span className="text-fg-subtle">·</span>
               <TrustItem label="iOS & Android" />
+              <span className="text-fg-subtle">·</span>
+              <TrustItem label="5 languages" />
             </div>
           </Reveal>
         </div>

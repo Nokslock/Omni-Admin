@@ -6,10 +6,12 @@ import {
   missingStatusMeta,
   type MissingRequest,
   type MissingStatus,
+  type Sighting,
 } from "../_lib/missing";
 import { setMissingStatus, setMissingAudience } from "./actions";
 import { toast } from "../_components/toast";
 import { COUNTRIES, WORLDWIDE, countryLabel } from "@/app/lib/countries";
+import { EmptyState, GUTTER, PageHeader, Segmented, StatGrid, StatTile, StatusPill, btn } from "../_components/ui";
 
 type Tab = MissingStatus | "all";
 
@@ -31,8 +33,16 @@ function relTime(iso: string): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-export function MissingList({ requests }: { requests: MissingRequest[] }) {
-  const [tab, setTab] = useState<Tab>("pending");
+export function MissingList({
+  requests,
+  initialTab,
+}: {
+  requests: MissingRequest[];
+  initialTab?: string;
+}) {
+  const [tab, setTab] = useState<Tab>(
+    tabs.find((t) => t.id === initialTab)?.id ?? "pending",
+  );
 
   const counts = useMemo(() => {
     const c = { pending: 0, approved: 0, rejected: 0, resolved: 0 };
@@ -47,87 +57,56 @@ export function MissingList({ requests }: { requests: MissingRequest[] }) {
 
   const total = requests.length;
   const pct = (n: number) => (total ? `${Math.round((n / total) * 100)}%` : "0%");
-  const stats: { label: string; value: number; sub?: string }[] = [
-    { label: "Total requests", value: total },
-    { label: "Pending review", value: counts.pending, sub: pct(counts.pending) },
-    { label: "Approved", value: counts.approved, sub: pct(counts.approved) },
-    { label: "Resolved", value: counts.resolved, sub: pct(counts.resolved) },
+  const stats: { label: string; value: number; sub?: string; color?: string; tab: Tab }[] = [
+    { label: "Total requests", value: total, color: "var(--info)", tab: "all" },
+    { label: "Pending review", value: counts.pending, sub: pct(counts.pending), color: missingStatusMeta.pending.color, tab: "pending" },
+    { label: "Approved", value: counts.approved, sub: pct(counts.approved), color: missingStatusMeta.approved.color, tab: "approved" },
+    { label: "Resolved", value: counts.resolved, sub: pct(counts.resolved), color: missingStatusMeta.resolved.color, tab: "resolved" },
   ];
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      {/* Page header */}
-      <div className="border-b border-border bg-bg px-6 pb-5 pt-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <nav className="mb-3 flex items-center gap-1.5 text-xs text-fg-muted">
-              <span>Admin</span>
-              <span className="text-fg-subtle">›</span>
-              <span className="text-fg">Missing persons</span>
-            </nav>
-            <h1 className="text-3xl font-semibold tracking-tight">Missing-person requests</h1>
-            <p className="mt-1 text-sm text-fg-muted">
-              Review and approve requests submitted from the mobile app ·{" "}
-              <span className="font-semibold text-fg">{filtered.length}</span> shown
-            </p>
-          </div>
-        </div>
-
-        {/* Stat cards */}
-        <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      <PageHeader
+        title="Missing persons"
+        description="Requests sent from the mobile app. Approve one to broadcast it; mark it resolved once the person is found."
+      >
+        <StatGrid>
           {stats.map((s) => (
-            <div key={s.label} className="rounded-xl border border-border bg-bg-card px-5 py-4">
-              <div className="text-xs text-fg-muted">{s.label}</div>
-              <div className="mt-2.5 flex items-baseline gap-2">
-                <span className="text-2xl font-semibold tracking-tight">{s.value.toLocaleString()}</span>
-                {s.sub && (
-                  <span className="font-mono text-[11px] text-fg-muted">{s.sub} of total</span>
-                )}
-              </div>
-            </div>
+            <StatTile
+              key={s.label}
+              label={s.label}
+              value={s.value.toLocaleString()}
+              sub={s.sub && `${s.sub} of total`}
+              color={s.color}
+              active={tab === s.tab}
+              onClick={() => setTab(s.tab)}
+            />
           ))}
-        </div>
-      </div>
+        </StatGrid>
+      </PageHeader>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap items-center gap-1 border-b border-border bg-bg px-6">
-        {tabs.map((t) => {
-          const count =
-            t.id === "all"
-              ? requests.length
-              : counts[t.id as MissingStatus] ?? 0;
-          const active = tab === t.id;
-          return (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`inline-flex h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium transition-colors ${
-                active
-                  ? "border-fg text-fg"
-                  : "border-transparent text-fg-muted hover:text-fg"
-              }`}
-            >
-              {t.label}
-              <span
-                className={`rounded px-1.5 text-[10px] font-mono ${
-                  active ? "bg-bg-elev text-fg" : "bg-bg-elev text-fg-muted"
-                }`}
-              >
-                {count}
-              </span>
-            </button>
-          );
-        })}
+      <div className={`pb-5 ${GUTTER}`}>
+        <Segmented
+          label="Status"
+          value={tab}
+          onChange={setTab}
+          items={tabs.map((t) => ({
+            id: t.id,
+            label: t.label,
+            count: t.id === "all" ? requests.length : (counts[t.id as MissingStatus] ?? 0),
+          }))}
+        />
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto px-6 py-6">
+      <div className={`flex-1 pb-8 ${GUTTER}`}>
         {filtered.length === 0 ? (
-          <p className="py-16 text-center text-sm text-fg-muted">
-            No {tab === "all" ? "" : tab} requests.
-          </p>
+          <EmptyState
+            title={tab === "pending" ? "Nothing waiting for review" : `No ${tab === "all" ? "" : `${tab} `}requests`}
+            hint="Requests sent from the mobile app land here."
+          />
         ) : (
-          <ul className="mx-auto max-w-5xl space-y-3">
+          <ul className="max-w-6xl space-y-4">
             {filtered.map((r) => (
               <RequestCard key={r.id} request={r} />
             ))}
@@ -160,17 +139,17 @@ function RequestCard({ request: r }: { request: MissingRequest }) {
   }
 
   return (
-    <li className="overflow-hidden rounded-xl border border-border bg-bg-card">
-      <div className="flex flex-col gap-4 p-5 sm:flex-row">
+    <li className="overflow-hidden rounded-2xl border border-border bg-bg-card">
+      <div className="flex flex-col gap-5 p-5 sm:flex-row">
         {r.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={r.imageUrl}
             alt={r.title}
-            className="h-32 w-32 shrink-0 rounded-lg border border-border object-cover"
+            className="h-40 w-40 shrink-0 rounded-xl border border-border object-cover"
           />
         ) : (
-          <div className="flex h-32 w-32 shrink-0 items-center justify-center rounded-lg border border-border bg-bg-elev text-[10px] uppercase tracking-wider text-fg-subtle">
+          <div className="flex h-40 w-40 shrink-0 items-center justify-center rounded-xl border border-dashed border-border-strong bg-bg-elev text-[11px] uppercase tracking-wider text-fg-subtle">
             No photo
           </div>
         )}
@@ -178,8 +157,24 @@ function RequestCard({ request: r }: { request: MissingRequest }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <h3 className="truncate text-base font-semibold text-fg">{r.title}</h3>
-              <p className="text-[11px] text-fg-muted">
+              <div className="mb-1 flex items-center gap-2">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                    r.requestType === "notice"
+                      ? "bg-info/10 text-info"
+                      : "bg-danger/10 text-danger"
+                  }`}
+                >
+                  {r.requestType === "notice" ? "Community notice" : "Missing person"}
+                </span>
+                {r.sightings.length > 0 && (
+                  <span className="rounded-full bg-warn/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warn">
+                    {r.sightings.length} {r.sightings.length === 1 ? "sighting" : "sightings"}
+                  </span>
+                )}
+              </div>
+              <h3 className="truncate text-lg font-semibold tracking-tight text-fg">{r.title}</h3>
+              <p className="mt-0.5 text-xs text-fg-muted">
                 Submitted {relTime(r.createdAt)} ·{" "}
                 {r.submitterName ?? "Unknown user"}
                 {r.submitterEmail ? ` · ${r.submitterEmail}` : ""}
@@ -187,7 +182,7 @@ function RequestCard({ request: r }: { request: MissingRequest }) {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {r.originCountry && (
-                <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-bg-elev px-2 py-1 text-[11px] font-medium text-fg-muted">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-bg-elev px-2.5 py-1 text-xs font-medium text-fg-muted">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                     <circle cx="12" cy="10" r="3" />
@@ -195,24 +190,25 @@ function RequestCard({ request: r }: { request: MissingRequest }) {
                   From {countryLabel(r.originCountry)}
                 </span>
               )}
-              <span
-                className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium"
-                style={{
-                  color: meta.color,
-                  borderColor: `color-mix(in oklab, ${meta.color} 28%, transparent)`,
-                  background: `color-mix(in oklab, ${meta.color} 10%, transparent)`,
-                }}
-              >
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color }} />
-                {meta.label}
-              </span>
+              <StatusPill color={meta.color} label={meta.label} />
             </div>
           </div>
 
-          <p className="mt-3 whitespace-pre-wrap text-sm text-fg">{r.message}</p>
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-fg">{r.message}</p>
 
-          <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2 text-xs sm:grid-cols-2">
-            <Pair label="Contact" value={r.contactInfo} mono />
+          <dl className="mt-4 grid grid-cols-1 gap-x-8 gap-y-2.5 rounded-xl border border-border bg-bg-elev/40 px-4 py-3.5 text-[13px] sm:grid-cols-2">
+            {r.contactHidden ? (
+              <Pair
+                label="Contact"
+                value={`${r.privatePhone ?? "—"} (hidden from the public)`}
+                mono
+              />
+            ) : (
+              <Pair label="Contact" value={r.contactInfo || "—"} mono />
+            )}
+            {r.age != null && <Pair label="Age" value={String(r.age)} />}
+            {r.sex && <Pair label="Sex" value={r.sex === "female" ? "Female" : "Male"} />}
+            {r.clothing && <Pair label="Last wearing" value={r.clothing} />}
             {r.lastSeenPlace && <Pair label="Last seen at" value={r.lastSeenPlace} />}
             {r.lastSeenAt && <Pair label="Last seen on" value={new Date(r.lastSeenAt).toLocaleString()} />}
             {r.lastSeenLat != null && r.lastSeenLng != null && (
@@ -227,7 +223,9 @@ function RequestCard({ request: r }: { request: MissingRequest }) {
             {r.adminNotes && <Pair label="Admin notes" value={r.adminNotes} />}
           </dl>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-bg-elev/40 px-3 py-2.5">
+          {r.sightings.length > 0 && <Sightings items={r.sightings} />}
+
+          <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-bg-elev/40 px-4 py-2.5">
             <label className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-fg-muted">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <circle cx="12" cy="12" r="10" />
@@ -240,7 +238,7 @@ function RequestCard({ request: r }: { request: MissingRequest }) {
               value={r.audienceCountry}
               disabled={busy}
               onChange={(e) => changeAudience(e.target.value)}
-              className="h-8 rounded-md border border-border bg-bg-card px-2 text-xs text-fg focus:border-fg-muted focus:outline-none focus:ring-1 focus:ring-fg-muted/30 disabled:opacity-50"
+              className="h-9 rounded-lg border border-border bg-bg-card px-2.5 text-[13px] text-fg focus:border-fg-muted focus:outline-none focus:ring-1 focus:ring-fg-muted/30 disabled:opacity-50"
             >
               <option value={WORLDWIDE}>🌍 Worldwide</option>
               {COUNTRIES.map((c) => (
@@ -249,41 +247,41 @@ function RequestCard({ request: r }: { request: MissingRequest }) {
                 </option>
               ))}
             </select>
-            <span className="text-[11px] text-fg-muted">
+            <span className="text-xs text-fg-muted">
               {r.audienceCountry === WORLDWIDE
                 ? "Visible everywhere"
                 : `Only visible in ${countryLabel(r.audienceCountry)}`}
             </span>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2">
+          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
             <button
               onClick={() => change("approved")}
               disabled={busy || r.status === "approved"}
-              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-ok/40 bg-ok/10 px-3 text-xs font-semibold text-ok hover:bg-ok/15 transition-colors disabled:opacity-40"
+              className={btn.ok}
             >
               Approve
             </button>
             <button
               onClick={() => change("rejected")}
               disabled={busy || r.status === "rejected"}
-              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-danger/40 bg-danger/10 px-3 text-xs font-semibold text-danger hover:bg-danger/15 transition-colors disabled:opacity-40"
+              className={btn.danger}
             >
               Reject
             </button>
             <button
               onClick={() => change("resolved")}
               disabled={busy || r.status === "resolved"}
-              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-info/40 bg-info/10 px-3 text-xs font-semibold text-info hover:bg-info/15 transition-colors disabled:opacity-40"
+              className={btn.info}
             >
-              Mark Resolved
+              Mark resolved
             </button>
             {r.imageUrl && (
               <a
                 href={r.imageUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-auto inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-bg-card px-3 text-xs font-medium text-fg-muted hover:text-fg hover:border-border-strong transition-colors"
+                className={`${btn.ghost} ml-auto`}
               >
                 Open photo
               </a>
@@ -301,5 +299,43 @@ function Pair({ label, value, mono = false }: { label: string; value: string; mo
       <dt className="shrink-0 text-fg-subtle">{label}</dt>
       <dd className={`min-w-0 break-words text-fg ${mono ? "font-mono" : ""}`}>{value}</dd>
     </div>
+  );
+}
+
+/** "I've seen them" reports from the public. Only staff can read these. */
+function Sightings({ items }: { items: Sighting[] }) {
+  return (
+    <details className="mt-3 rounded-xl border border-warn/30 bg-warn/5 px-4 py-3" open>
+      <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-warn">
+        Sightings from the public ({items.length})
+      </summary>
+      <ul className="mt-3 space-y-2.5">
+        {items.map((s) => (
+          <li key={s.id} className="rounded-lg border border-border bg-bg-card px-3 py-2.5 text-xs">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="font-medium text-fg">
+                {s.byName ?? "Former member"}
+                {s.byEmail && <span className="font-normal text-fg-muted"> · {s.byEmail}</span>}
+                {s.byPhone && (
+                  <span className="font-mono font-normal text-fg-muted"> · {s.byPhone}</span>
+                )}
+              </span>
+              <span className="text-fg-subtle">{relTime(s.createdAt)}</span>
+            </div>
+            {s.note && <p className="mt-1.5 whitespace-pre-wrap text-sm text-fg">{s.note}</p>}
+            {s.lat != null && s.lng != null && (
+              <a
+                href={`https://www.google.com/maps?q=${s.lat},${s.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1.5 inline-block font-mono text-fg-muted hover:text-fg hover:underline"
+              >
+                {s.lat.toFixed(4)}, {s.lng.toFixed(4)} · open map
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }

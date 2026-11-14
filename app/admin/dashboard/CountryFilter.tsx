@@ -11,9 +11,12 @@ import { COUNTRIES, WORLDWIDE, countryLabel } from "@/app/lib/countries";
 export function CountryFilter({
   value,
   onChange,
+  count,
 }: {
   value: string;
   onChange: (code: string) => void;
+  /** Incidents in the current selection, shown beside the name. */
+  count?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -57,8 +60,8 @@ export function CountryFilter({
   return (
     <div ref={ref} className="relative">
       <div
-        className={`flex h-8 w-full items-center rounded-md border bg-bg-elev/50 pr-1 text-xs transition-colors ${
-          isWorldwide ? "border-border" : "border-info/40"
+        className={`flex h-11 w-full items-center rounded-xl border bg-bg-card/90 pr-1.5 text-sm shadow-lg shadow-black/20 backdrop-blur transition-colors ${
+          isWorldwide ? "border-border-strong" : "border-info/40"
         }`}
       >
         <button
@@ -66,12 +69,15 @@ export function CountryFilter({
           onClick={() => setOpen((v) => !v)}
           aria-haspopup="listbox"
           aria-expanded={open}
-          className="flex h-full flex-1 items-center gap-1.5 truncate pl-2.5 text-left font-medium text-fg"
+          className="flex h-full flex-1 items-center gap-2.5 truncate pl-3.5 text-left font-medium text-fg"
         >
           <GlobeIcon />
           <span className="truncate">
             {isWorldwide ? "Worldwide" : countryLabel(value)}
           </span>
+          {count !== undefined && (
+            <span className="ml-auto pr-1 font-mono text-xs text-fg-muted">{count}</span>
+          )}
         </button>
         {!isWorldwide && (
           <button
@@ -174,7 +180,7 @@ function Row({
 
 function GlobeIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-fg-muted" aria-hidden>
       <circle cx="12" cy="12" r="10" />
       <line x1="2" y1="12" x2="22" y2="12" />
       <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />

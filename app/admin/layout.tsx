@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { getCurrentAdmin } from "./_lib/admin";
+import { getNavCounts } from "./_lib/nav-counts.data";
 import { AdminProvider } from "./_components/AdminProvider";
+import { AdminShell } from "./_components/AdminShell";
 
 // The admin dashboard is behind auth and renders dynamic operational data —
 // it has no SEO value and should never appear in search results. Setting
@@ -24,5 +26,13 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const admin = await getCurrentAdmin();
-  return <AdminProvider admin={admin}>{children}</AdminProvider>;
+  // Signed-out visitors only ever see the login page — skip the badge queries.
+  const counts = admin
+    ? await getNavCounts()
+    : { unverified: 0, deletions: 0, reportedComments: 0, pendingAds: 0, pendingPayouts: 0 };
+  return (
+    <AdminProvider admin={admin}>
+      <AdminShell counts={counts}>{children}</AdminShell>
+    </AdminProvider>
+  );
 }

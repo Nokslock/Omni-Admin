@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { AdminNav } from "../_components/AdminNav";
 import { getCurrentAdmin } from "../_lib/admin";
 import { roleMeta } from "../_lib/users";
 import type { UserRole } from "../_lib/users";
+import { PageHeader, GUTTER } from "../_components/ui";
 import { ChangePasswordModal } from "./ChangePasswordModal";
 
 export const metadata: Metadata = {
@@ -15,21 +15,15 @@ export default async function ProfilePage() {
   const role = admin ? roleMeta[admin.role as UserRole] : undefined;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-fg">
-      <AdminNav />
-      <main className="flex-1 px-6 py-8">
-        <div className="mx-auto w-full max-w-2xl">
-          <nav className="mb-3 flex items-center gap-1.5 text-xs text-fg-muted">
-            <span>Admin</span>
-            <span className="text-fg-subtle">›</span>
-            <span className="text-fg">Profile</span>
-          </nav>
-          <h1 className="text-3xl font-semibold tracking-tight">Profile</h1>
-          <p className="mt-1 text-sm text-fg-muted">Your Kasala admin account details.</p>
-
-          <div className="mt-6 rounded-2xl border border-border bg-bg-card p-6">
-            <div className="flex items-center gap-4">
-              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-info text-xl font-semibold text-white">
+    <div className="flex min-h-full flex-col bg-bg text-fg">
+      <PageHeader title="Profile" description="Your Kasala admin account." />
+      <main className={`flex-1 pb-8 ${GUTTER}`}>
+        <div className="w-full max-w-2xl">
+          <div className="overflow-hidden rounded-2xl border border-border bg-bg-card">
+            <div className="glow-soft h-20 border-b border-border" aria-hidden />
+            <div className="-mt-9 px-6 pb-6">
+            <div className="flex flex-wrap items-end gap-4">
+              <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-danger text-2xl font-semibold text-white ring-4 ring-bg-card">
                 {admin?.initials || "—"}
               </span>
               <div>
@@ -38,7 +32,7 @@ export default async function ProfilePage() {
               </div>
               {role && (
                 <span
-                  className="ml-auto inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-semibold uppercase tracking-wide"
+                  className="mb-1 ml-auto inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide"
                   style={{
                     color: role.color,
                     borderColor: `color-mix(in oklab, ${role.color} 28%, transparent)`,
@@ -64,6 +58,7 @@ export default async function ProfilePage() {
               </div>
               <ChangePasswordModal />
             </div>
+            </div>
           </div>
         </div>
       </main>
@@ -74,7 +69,7 @@ export default async function ProfilePage() {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-bg-card px-4 py-3.5">
-      <dt className="text-[11px] uppercase tracking-wider text-fg-subtle">{label}</dt>
+      <dt className="text-[11px] font-medium uppercase tracking-wider text-fg-subtle">{label}</dt>
       <dd className="mt-1 text-sm text-fg">{value}</dd>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function ConfirmDialog({
   open,
@@ -10,6 +10,7 @@ export function ConfirmDialog({
   cancelLabel = "Cancel",
   destructive = false,
   busy = false,
+  requireText,
   onConfirm,
   onCancel,
 }: {
@@ -20,9 +21,24 @@ export function ConfirmDialog({
   cancelLabel?: string;
   destructive?: boolean;
   busy?: boolean;
+  /**
+   * For actions that can't be undone: the confirm button stays disabled until
+   * this exact text (case-insensitive) is typed.
+   */
+  requireText?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const [typed, setTyped] = useState("");
+  const [wasOpen, setWasOpen] = useState(open);
+  // Start empty every time the dialog opens.
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setTyped("");
+  }
+  const matches =
+    !requireText || typed.trim().toLowerCase() === requireText.trim().toLowerCase();
+
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
@@ -43,7 +59,23 @@ export function ConfirmDialog({
     >
       <div className="w-full max-w-sm rounded-2xl border border-border bg-bg-card p-5 shadow-2xl shadow-black/40">
         <h2 className="text-base font-semibold tracking-tight">{title}</h2>
-        <p className="mt-1.5 text-sm text-fg-muted">{message}</p>
+        <p className="mt-1.5 whitespace-pre-line text-sm text-fg-muted">{message}</p>
+        {requireText && (
+          <label className="mt-4 block">
+            <span className="text-xs text-fg-muted">
+              Type <span className="font-semibold text-fg">{requireText}</span> to confirm
+            </span>
+            <input
+              autoFocus
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && matches && !busy) onConfirm();
+              }}
+              className="mt-1.5 h-10 w-full rounded-lg border border-border bg-bg-elev px-3 text-sm text-fg focus:border-fg-muted focus:outline-none focus:ring-1 focus:ring-fg-muted/30"
+            />
+          </label>
+        )}
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
@@ -56,7 +88,7 @@ export function ConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
-            disabled={busy}
+            disabled={busy || !matches}
             className={`inline-flex h-9 items-center rounded-md px-4 text-sm font-semibold transition-colors disabled:opacity-60 ${
               destructive
                 ? "bg-danger text-white hover:bg-danger/90"

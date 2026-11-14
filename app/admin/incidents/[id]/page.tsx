@@ -2,13 +2,25 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
-import { AdminNav } from "../../_components/AdminNav";
-import { statusMeta, typeColor, severityMeta } from "../../_lib/incidents";
-import { getIncidentById, getIncidents } from "../../_lib/incidents.data";
+import {
+  statusMeta,
+  typeColor,
+  severityMeta,
+  verificationSource,
+} from "../../_lib/incidents";
+import {
+  getIncidentById,
+  getIncidents,
+  getReporterAccount,
+} from "../../_lib/incidents.data";
 import { getIncidentFeedback } from "../../_lib/feedback.data";
+import { getIncidentComments } from "../../_lib/moderation.data";
+import { CommentCard } from "../../moderation/CommentCard";
 import { TypeIcon } from "../../_lib/icons";
 import { MiniMap } from "./MiniMap";
+import { ProBadge } from "../../_components/ProBadge";
 import { IncidentActions } from "./IncidentActions";
+import { ReportPhoto, RestoreInstantButton } from "./ReportMedia";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -51,9 +63,11 @@ export default async function IncidentDetailPage({ params }: RouteParams) {
     .join("")
     .toUpperCase();
 
-  const [nearbyAll, feedback] = await Promise.all([
+  const [nearbyAll, feedback, account, comments] = await Promise.all([
     getIncidents(),
     getIncidentFeedback(incident.id),
+    incident.reporterId ? getReporterAccount(incident.reporterId) : null,
+    getIncidentComments(incident.id),
   ]);
   const nearby = nearbyAll
     .filter((i) => i.id !== incident.id)
@@ -65,26 +79,15 @@ export default async function IncidentDetailPage({ params }: RouteParams) {
   const flagCount = feedback.filter((f) => f.kind === "flag").length;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-fg">
-      <AdminNav />
+    <div className="flex min-h-full flex-col bg-bg text-fg">
 
       {/* Sticky page header */}
-      <div className="sticky top-16 z-40 border-b border-border bg-bg-card/95 backdrop-blur">
-        <div className="px-6 pt-5">
-          <nav className="flex items-center gap-1.5 text-xs text-fg-muted">
-            <Link href="/admin/dashboard" className="hover:text-fg">Admin</Link>
-            <span className="text-fg-subtle">›</span>
-            <Link href="/admin/incidents" className="hover:text-fg">Incidents</Link>
-            <span className="text-fg-subtle">›</span>
-            <span className="font-mono text-fg">{incident.id}</span>
-          </nav>
-        </div>
-
-        <div className="flex flex-wrap items-start justify-between gap-4 px-6 pb-5 pt-3">
+      <div className="sticky top-0 z-40 border-b border-border bg-bg-card/95 backdrop-blur">
+        <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-5 sm:px-6 lg:px-8">
           <div className="flex items-start gap-4">
             <Link
               href="/admin/incidents"
-              className="mt-1 inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-fg-muted hover:text-fg hover:border-border-strong transition-colors"
+              className="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border text-fg-muted transition-colors hover:border-border-strong hover:bg-bg-elev hover:text-fg"
               aria-label="Back to incidents"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -93,7 +96,7 @@ export default async function IncidentDetailPage({ params }: RouteParams) {
             </Link>
 
             <span
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
               style={{ background: `color-mix(in oklab, ${color} 16%, transparent)`, color }}
             >
               <TypeIcon type={incident.type} size={22} />
@@ -106,6 +109,7 @@ export default async function IncidentDetailPage({ params }: RouteParams) {
                 <span className="font-mono text-fg-muted">{incident.id}</span>
                 <Pill color={status.color} label={status.label} />
                 <Pill color={sev.color} label={sev.label} />
+                {incident.proVerified && <Pill color="#e0a526" label="Pro · instant" />}
               </div>
               <h1 className="mt-1.5 text-2xl font-semibold leading-tight tracking-tight">
                 {incident.title}
@@ -116,30 +120,69 @@ export default async function IncidentDetailPage({ params }: RouteParams) {
             </div>
           </div>
 
-          <IncidentActions id={incident.id} status={incident.status} severity={incident.severity} />
+          <IncidentActions
+            id={incident.id}
+            status={incident.status}
+            severity={incident.severity}
+            proVerified={incident.proVerified}
+          />
         </div>
       </div>
 
       {/* Body */}
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-6">
-        <div className="grid gap-6 lg:grid-cols-3">
+      <main className="w-full max-w-7xl flex-1 px-5 py-6 sm:px-6 lg:px-8">
+        <div className="grid gap-5 lg:grid-cols-3">
           {/* Main column */}
           <div className="space-y-6 lg:col-span-2">
             {/* Situation summary */}
-            <section className="rounded-xl border border-border bg-bg-card p-5">
+            <section className="rounded-2xl border border-border bg-bg-card p-5">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold tracking-tight">Situation summary</h2>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-fg-subtle">
+                <span className="font-mono text-[11px] font-medium uppercase tracking-wider text-fg-subtle">
                   Severity · {sev.label}
                 </span>
               </div>
               <p className="mt-3 text-[15px] leading-relaxed text-fg">
                 {incident.description}
               </p>
+
+              <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ok" />
+                  <span>{verificationSource(incident, confirmCount)}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span
+                    className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
+                      incident.attested ? "bg-ok" : "bg-fg-subtle"
+                    }`}
+                  />
+                  <span className={incident.attested ? "" : "text-fg-muted"}>
+                    {incident.attested
+                      ? "The reporter confirmed it was happening in their area and accepted responsibility for the report."
+                      : "The reporter didn't confirm it was happening in their area (older app version)."}
+                  </span>
+                </div>
+              </div>
+
+              {incident.note && (
+                <div className="mt-4 rounded-xl border border-border bg-bg-elev/40 p-3.5">
+                  <div className="text-[11px] font-medium uppercase tracking-wider text-fg-subtle">
+                    Reporter&rsquo;s note
+                  </div>
+                  <p className="mt-1 whitespace-pre-line text-sm text-fg">{incident.note}</p>
+                </div>
+              )}
+
+              {incident.photoUrl && (
+                <div className="mt-4">
+                  <ReportPhoto incidentId={incident.id} url={incident.photoUrl} />
+                </div>
+              )}
             </section>
 
             {/* Community feedback */}
-            <section className="rounded-xl border border-border bg-bg-card p-5">
+            <section className="rounded-2xl border border-border bg-bg-card p-5">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold tracking-tight">
                   Community feedback
@@ -170,7 +213,7 @@ export default async function IncidentDetailPage({ params }: RouteParams) {
                   {feedback.map((f) => (
                     <li
                       key={f.id}
-                      className="flex items-start gap-3 rounded-lg border border-border bg-bg-elev/40 p-3"
+                      className="flex items-start gap-3 rounded-xl border border-border bg-bg-elev/40 p-3.5"
                     >
                       <span
                         className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
@@ -216,8 +259,27 @@ export default async function IncidentDetailPage({ params }: RouteParams) {
               )}
             </section>
 
+            {/* Comments */}
+            <section className="rounded-2xl border border-border bg-bg-card p-5">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold tracking-tight">Comments</h2>
+                <span className="text-xs text-fg-muted">
+                  {comments.length} · including hidden ones
+                </span>
+              </div>
+              {comments.length === 0 ? (
+                <p className="mt-4 text-sm text-fg-muted">No comments.</p>
+              ) : (
+                <ul className="mt-4 space-y-2">
+                  {comments.map((c) => (
+                    <CommentCard key={c.id} comment={c} showIncident={false} />
+                  ))}
+                </ul>
+              )}
+            </section>
+
             {/* Location */}
-            <section className="overflow-hidden rounded-xl border border-border bg-bg-card">
+            <section className="overflow-hidden rounded-2xl border border-border bg-bg-card">
               <div className="border-b border-border px-5 py-4">
                 <h2 className="text-sm font-semibold tracking-tight">Location</h2>
               </div>
@@ -238,19 +300,72 @@ export default async function IncidentDetailPage({ params }: RouteParams) {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <section className="rounded-xl border border-border bg-bg-card">
+            <section className="rounded-2xl border border-border bg-bg-card">
               <div className="border-b border-border px-5 py-4">
                 <h2 className="text-sm font-semibold tracking-tight">Reporter</h2>
               </div>
               <div className="flex items-center gap-3 px-5 py-4">
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-info text-sm font-semibold text-white">
-                  {reporterInitials || "?"}
-                </span>
-                <div className="text-sm font-semibold">{incident.reporter}</div>
+                {account?.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={account.avatarUrl}
+                    alt=""
+                    className="h-11 w-11 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-info text-sm font-semibold text-white">
+                    {reporterInitials || "?"}
+                  </span>
+                )}
+                <div className="min-w-0 leading-tight">
+                  <div className="flex items-center gap-1.5 text-sm font-semibold">
+                    {account?.name ?? incident.reporter}
+                    {account?.isPro && <ProBadge />}
+                  </div>
+                  {account && account.name !== incident.reporter && (
+                    <div className="text-[11px] text-fg-muted">
+                      Shown publicly as {incident.reporter}
+                    </div>
+                  )}
+                </div>
               </div>
+              {account ? (
+                <div className="space-y-3 border-t border-border px-5 py-4 text-sm">
+                  <Field label="Email" value={account.email ?? "—"} />
+                  <Field label="Phone" value={account.phone ?? "Not given"} mono={!!account.phone} />
+                  {(account.status === "suspended" || account.deactivated) && (
+                    <div className="rounded-md bg-danger/10 px-3 py-2 text-xs text-danger">
+                      {account.status === "suspended"
+                        ? "This account is suspended."
+                        : "This account is deactivated and waiting to be erased."}
+                    </div>
+                  )}
+                  {(account.isPro || account.strikes > 0 || account.instantOffAt) && (
+                    <div>
+                      <div className="text-[11px] font-medium uppercase tracking-wider text-fg-subtle">
+                        Instant verification
+                      </div>
+                      <div className="mt-0.5">
+                        {account.instantOffAt
+                          ? `Switched off ${new Date(account.instantOffAt).toLocaleDateString()} after 3 false alarms`
+                          : `On · ${account.strikes} of 3 false alarms`}
+                      </div>
+                      {account.instantOffAt && (
+                        <RestoreInstantButton userId={account.id} incidentId={incident.id} />
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="border-t border-border px-5 py-4 text-xs text-fg-muted">
+                  {incident.reporterId
+                    ? "The reporter's account no longer exists."
+                    : "Filed without an account (or the account was erased)."}
+                </p>
+              )}
             </section>
 
-            <section className="rounded-xl border border-border bg-bg-card">
+            <section className="rounded-2xl border border-border bg-bg-card">
               <div className="border-b border-border px-5 py-4">
                 <h2 className="text-sm font-semibold tracking-tight">Nearby reports</h2>
               </div>
@@ -310,7 +425,7 @@ function relTime(iso: string): string {
 function Pill({ color, label }: { color: string; label: string }) {
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-medium"
+      className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium"
       style={{
         color,
         borderColor: `color-mix(in oklab, ${color} 28%, transparent)`,
@@ -326,7 +441,7 @@ function Pill({ color, label }: { color: string; label: string }) {
 function Field({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wider text-fg-subtle">{label}</div>
+      <div className="text-[11px] font-medium uppercase tracking-wider text-fg-subtle">{label}</div>
       <div className={`mt-0.5 text-sm text-fg ${mono ? "font-mono" : ""}`}>{value}</div>
     </div>
   );

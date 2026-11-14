@@ -33,8 +33,9 @@ export default function AccountDeletionPage() {
           </h1>
           <p className="mt-3 text-base leading-relaxed text-fg-muted">
             We respect your right to leave Kasala at any time. Submit the form
-            below and we&rsquo;ll permanently delete your account and the data
-            we hold about you.
+            below and we&rsquo;ll deactivate your account. You then have 30
+            days to change your mind by signing back in; after that it&rsquo;s
+            permanently deleted.
           </p>
         </header>
 
@@ -45,10 +46,15 @@ export default function AccountDeletionPage() {
               What gets deleted
             </h2>
             <ul className="mt-4 ml-5 list-disc space-y-1.5 text-sm leading-relaxed text-fg">
-              <li>Your profile (name, email, phone number)</li>
-              <li>Saved alert preferences and radius</li>
-              <li>Devices linked to your account</li>
-              <li>Personal identifiers tied to your reports</li>
+              <li>Your profile (name, email, phone number) and photo</li>
+              <li>Saved places, family membership and shared location</li>
+              <li>Alert preferences and devices linked to your account</li>
+              <li>Your comments, likes and feedback on reports</li>
+              <li>
+                Any Kasala Coins left in your wallet (withdraw coins you received
+                before you delete)
+              </li>
+              <li>Your name and phone number on the reports you filed</li>
             </ul>
           </div>
 
@@ -59,9 +65,14 @@ export default function AccountDeletionPage() {
             </h2>
             <ul className="mt-4 ml-5 list-disc space-y-1.5 text-sm leading-relaxed text-fg">
               <li>
-                Anonymised incident records (the safety map relies on them)
+                Your reports, without your name (the safety map relies on them)
               </li>
-              <li>Records we&rsquo;re legally required to keep</li>
+              <li>
+                A limited record (your name, contact details and the reports you
+                filed) for 12 months after deletion, so we can answer lawful
+                requests from authorities
+              </li>
+              <li>Payment and payout records we&rsquo;re legally required to keep</li>
               <li>Aggregated, non-identifying analytics</li>
             </ul>
           </div>
@@ -70,8 +81,8 @@ export default function AccountDeletionPage() {
         <section className="rounded-2xl border border-border bg-bg-card p-6 sm:p-8">
           <h2 className="text-lg font-semibold tracking-tight">Submit a request</h2>
           <p className="mt-1.5 text-sm text-fg-muted">
-            Fill this in with the email you used to sign up. We&rsquo;ll confirm
-            once your account is gone.
+            Fill this in with the email you used to sign up. You can also do this
+            yourself in the app, under Profile &rarr; Delete account.
           </p>
           <div className="mt-7">
             <RequestForm />

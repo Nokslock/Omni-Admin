@@ -6,8 +6,8 @@ const features = [
     accent: "#2563eb",
     tag: "AUTO-GPS",
     title: "Instant Reporting",
-    body: "Report fires, crashes, armed threats, and medical emergencies in one tap — your location attaches itself, so there's nothing to type when seconds matter.",
-    points: ["One-tap categories", "GPS auto-pin", "Photo optional"],
+    body: "Report fires, crashes, armed threats, and medical emergencies in one tap — your location attaches itself, so there's nothing to type when seconds matter. Snap a photo from the scene if it's safe.",
+    points: ["16 incident types", "GPS auto-pin", "Photo from the scene"],
     icon: <PinIcon />,
   },
   {
@@ -15,8 +15,8 @@ const features = [
     accent: "#ef4444",
     tag: "REAL-TIME PUSH",
     title: "Alerts That Reach You",
-    body: "The moment a verified incident lands inside your radius, you get a push — even with the app closed. Tune your range from 500m to 50km.",
-    points: ["Background alerts", "Custom radius", "Critical wake-screen"],
+    body: "The moment an incident lands inside your radius, you get a push — even with the app closed. Pick your range from 500 m to 20 km, or up to 60 km with Pro, and set quiet hours so only what matters wakes you.",
+    points: ["Background alerts", "Custom radius", "Quiet hours"],
     icon: <BellIcon />,
   },
   {
@@ -24,8 +24,8 @@ const features = [
     accent: "#16a34a",
     tag: "COMMUNITY VERIFIED",
     title: "Verified, Not Noisy",
-    body: "Every report is cross-checked by nearby reporters and moderators. Confirmations raise trust, false flags pull it down — so your feed stays signal, not noise.",
-    points: ["Confirm / flag", "Trust scoring", "Moderator triage"],
+    body: "Three people nearby confirm a report before it's marked verified. Every reporter confirms what they saw, false alarms are tracked, and moderators handle the rest — so your feed stays signal, not noise.",
+    points: ["3 confirmations", "False-alarm tracking", "Moderator triage"],
     icon: <ShieldIcon />,
   },
 ];

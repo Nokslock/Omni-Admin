@@ -222,18 +222,14 @@ export async function deleteUser(userId: string): Promise<DeleteUserResult> {
     return { error: "You can't delete your own account." };
   }
 
-  // Delete the public profile row first so FK constraints don't block the
-  // auth account deletion below.
-  const { error: deleteError } = await supabase.from("users").delete().eq("id", userId);
-  if (deleteError) return { error: `Failed to delete user: ${deleteError.message}` };
-
-  // Remove the linked auth account (if any). Tolerate "not found" so a
-  // half-deleted record can still be cleaned up.
-  if (target.auth_id) {
-    const { error: authError } = await supabase.auth.admin.deleteUser(target.auth_id);
-    if (authError && !/not.*found/i.test(authError.message)) {
-      return { error: `Failed to delete auth account: ${authError.message}` };
-    }
+  // Deactivate, exactly like "Delete account" in the app: signed out, no
+  // alerts, 30 days to restore, then the nightly purge archives a limited
+  // legal record and erases the rest. Never erased on the spot.
+  const { error: deactivateError } = await supabase.rpc("deactivate_account", {
+    p_user_id: userId,
+  });
+  if (deactivateError) {
+    return { error: `Failed to deactivate user: ${deactivateError.message}` };
   }
 
   revalidatePath("/admin/users");
@@ -277,10 +273,13 @@ export async function setUserStatus(
     return { error: "Moderators cannot modify admin or moderator accounts." };
   }
 
-  const { error } = await supabase
-    .from("users")
-    .update({ status })
-    .eq("id", userId);
+  // Suspending is a real ban: the login is refused ("contact support" in the
+  // app), every session is signed out and push alerts stop. Reinstating lifts
+  // the ban; they sign in again as normal.
+  const { error } = await supabase.rpc("set_account_suspension", {
+    p_user_id: userId,
+    p_suspended: status === "suspended",
+  });
 
   if (error) return { error: `Failed to update status: ${error.message}` };
 

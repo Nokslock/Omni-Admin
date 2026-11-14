@@ -239,3 +239,56 @@ export async function getIncidentsByReporter(
     };
   });
 }
+
+/**
+ * Removes the photo attached to a report: clears it from the incident and
+ * deletes the file. For photos that break the rules (faces, gore, abuse).
+ */
+export async function removeIncidentPhoto(id: string): Promise<IncidentActionResult> {
+  const supabase = createAdminClient();
+  const { data: inc } = await supabase
+    .from("incidents")
+    .select("photo_url")
+    .eq("id", id)
+    .maybeSingle();
+  if (!inc?.photo_url) return { error: "This report has no photo." };
+
+  const { error } = await supabase
+    .from("incidents")
+    .update({ photo_url: null })
+    .eq("id", id);
+  if (error) return { error: `Failed to remove the photo: ${error.message}` };
+
+  // Best effort: the incident no longer points at the file either way.
+  const marker = "/incident-photos/";
+  const at = inc.photo_url.indexOf(marker);
+  if (at >= 0) {
+    const path = decodeURIComponent(inc.photo_url.slice(at + marker.length).split("?")[0]);
+    await supabase.storage.from("incident-photos").remove([path]);
+  }
+
+  revalidatePath(`/admin/incidents/${id}`);
+  return { ok: true };
+}
+
+/**
+ * Turns instant verification back on for a Pro reporter after it was
+ * switched off by 3 false alarms, and starts their count again.
+ */
+export async function restoreInstantVerification(
+  userId: string,
+  incidentId: string,
+): Promise<IncidentActionResult> {
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("users")
+    .update({
+      instant_verify_off_at: null,
+      instant_verify_reset_at: new Date().toISOString(),
+    })
+    .eq("id", userId);
+  if (error) return { error: `Failed to restore: ${error.message}` };
+
+  revalidatePath(`/admin/incidents/${incidentId}`);
+  return { ok: true };
+}

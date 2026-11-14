@@ -13,7 +13,7 @@ import { useState } from "react";
  * breaks while you're still gathering screenshots.
  */
 
-type ScreenKey = "report" | "map" | "alerts" | "settings";
+type ScreenKey = "report" | "map" | "alerts" | "digest" | "family" | "settings";
 
 type Screen = {
   key: ScreenKey;
@@ -33,7 +33,7 @@ export function AppDemo() {
       key: "report",
       step: "01",
       title: "Report in one tap",
-      blurb: "Pick what's happening — your GPS attaches automatically. No typing, no forms.",
+      blurb: "Pick what's happening, confirm you can see it, and send. Your location attaches itself; add a photo if it's safe.",
       icon: <PlusIcon />,
       image: "/screens/report.png",
       render: () => <ReportScreen />,
@@ -42,7 +42,7 @@ export function AppDemo() {
       key: "map",
       step: "02",
       title: "Watch your area live",
-      blurb: "A real-time map of verified incidents around you, anywhere in the world.",
+      blurb: "A live map of incidents around you or any saved place, with how close each one is.",
       icon: <MapIcon />,
       image: "/screens/map.png",
       render: () => <MapScreen />,
@@ -51,16 +51,34 @@ export function AppDemo() {
       key: "alerts",
       step: "03",
       title: "Get alerted instantly",
-      blurb: "Push notifications the moment a verified incident lands inside your radius.",
+      blurb: "A push the moment something happens inside your radius, and a timeline of everything nearby — confirm, like and comment.",
       icon: <BellIcon />,
       image: "/screens/alerts.png",
       render: () => <AlertsScreen />,
     },
     {
-      key: "settings",
+      key: "digest",
       step: "04",
+      title: "See your week",
+      blurb: "Your area's digest: how many reports, what kinds, which days and which streets — for the past week or month.",
+      icon: <ChartIcon />,
+      image: "/screens/digest.png",
+      render: () => <DigestMock />,
+    },
+    {
+      key: "family",
+      step: "05",
+      title: "Look after your people",
+      blurb: "Share your location with family, and follow home, work or school with their own alerts.",
+      icon: <HomeIcon />,
+      image: "/screens/family.png",
+      render: () => <FamilyMock />,
+    },
+    {
+      key: "settings",
+      step: "06",
       title: "Tune it to you",
-      blurb: "Set your alert radius, sounds, and permissions. You're always in control.",
+      blurb: "Radius, quiet hours, muted types, the weekly digest and language. You're always in control.",
       icon: <SlidersIcon />,
       image: "/screens/settings.png",
       render: () => <SettingsScreen />,
@@ -123,7 +141,7 @@ export function AppDemo() {
       {/* Phone preview */}
       <div className="order-1 flex justify-center lg:order-2">
         <PhoneFrame>
-          <ScreenSlot image={current.image} alt={current.title}>
+          <ScreenSlot key={current.image} image={current.image} alt={current.title}>
             {current.render()}
           </ScreenSlot>
         </PhoneFrame>
@@ -533,3 +551,97 @@ function TargetIcon() { return <svg width="14" height="14" viewBox="0 0 24 24" f
 function SpeakerIcon() { return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>; }
 function PaletteIcon() { return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H16c3.3 0 6-2.7 6-6 0-4.4-4.5-8-10-8z"/></svg>; }
 function PinIcon() { return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>; }
+
+/* ─────────────────────────── Digest & family (mock-ups) ─────────────────── */
+
+function DigestMock() {
+  const days = [1, 3, 0, 2, 5, 1, 2];
+  return (
+    <div className="flex h-full flex-col bg-[#0f1117] text-white">
+      <StatusBar />
+      <div className="px-5 pt-5">
+        <div className="text-lg font-bold">Digest</div>
+        <div className="text-[11px] text-white/50">Around you · 5 km</div>
+        <div className="mt-3 grid grid-cols-2 rounded-xl bg-white/5 p-1 text-center text-[11px] font-semibold">
+          <span className="rounded-lg bg-white/10 py-1.5">Past week</span>
+          <span className="py-1.5 text-white/40">Past month</span>
+        </div>
+        <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+          <div className="flex items-end gap-2">
+            <span className="text-4xl font-extrabold leading-none">14</span>
+            <span className="pb-1 text-[11px] text-white/60">reports in the past week</span>
+          </div>
+          <span className="mt-2 inline-block rounded-full bg-[#22c55e]/15 px-2 py-0.5 text-[10px] font-bold text-[#22c55e]">
+            ↘ 3 fewer than the week before
+          </span>
+        </div>
+        <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+          <div className="flex h-20 items-end gap-1.5">
+            {days.map((d, i) => (
+              <div
+                key={i}
+                className="flex-1 rounded-md"
+                style={{ height: `${10 + d * 14}px`, background: d === 5 ? "#e8504a" : "rgba(232,80,74,0.45)" }}
+              />
+            ))}
+          </div>
+          <div className="mt-2 text-[10px] text-white/50">Busiest day: Fri</div>
+        </div>
+        <div className="mt-4 space-y-2 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-[11px]">
+          {[["Road crash", 6, "#f59e0b"], ["Power outage", 4, "#eab308"], ["Fire", 2, "#ef4444"]].map(([t, n, c]) => (
+            <div key={t as string}>
+              <div className="flex justify-between"><span>{t}</span><b>{n}</b></div>
+              <div className="mt-1 h-1.5 rounded-full bg-white/10">
+                <div className="h-1.5 rounded-full" style={{ width: `${((n as number) / 6) * 100}%`, background: c as string }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FamilyMock() {
+  const people = [
+    ["Mum", "Home · 2 min ago", "#22c55e"],
+    ["Tobi", "School · 10 min ago", "#38bdf8"],
+    ["Dad", "Lekki · 1 h ago", "#f59e0b"],
+  ];
+  return (
+    <div className="flex h-full flex-col bg-[#0f1117] text-white">
+      <StatusBar />
+      <div className="px-5 pt-5">
+        <div className="text-lg font-bold">Family &amp; places</div>
+        <div className="mt-4 space-y-2.5">
+          {people.map(([n, s, c]) => (
+            <div key={n} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold" style={{ background: `${c}33`, color: c }}>
+                {n[0]}
+              </span>
+              <div>
+                <div className="text-[13px] font-semibold">{n}</div>
+                <div className="text-[10px] text-white/50">{s}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 text-[10px] font-bold uppercase tracking-widest text-white/40">Places</div>
+        <div className="mt-2 space-y-2.5">
+          {[["Home", "2 km · alerts on"], ["Work", "5 km · alerts on"]].map(([n, s]) => (
+            <div key={n} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+              <div>
+                <div className="text-[13px] font-semibold">{n}</div>
+                <div className="text-[10px] text-white/50">{s}</div>
+              </div>
+              <span className="h-4 w-7 rounded-full bg-[#e8504a]" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChartIcon() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>; }
+function HomeIcon() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/></svg>; }

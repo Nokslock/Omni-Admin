@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   },
 };
 
+const SUPPORT = "support@kasalaalert.com";
+
 export default function PrivacyPage() {
   return (
     <>
@@ -26,31 +28,42 @@ export default function PrivacyPage() {
             <Link href="/" className="hover:text-fg">← Back to home</Link>
           </nav>
           <h1 className="text-4xl font-semibold tracking-tight">Privacy Policy</h1>
-          <p className="mt-2 text-sm text-fg-muted">Effective Date: June 2026 · Last Updated: June 2026</p>
+          <p className="mt-2 text-sm text-fg-muted">
+            Last updated: 14 November 2026 · Effective immediately for new users, and from 14
+            December 2026 for existing users
+          </p>
         </header>
 
         <article className="space-y-10 text-[15px] leading-relaxed text-fg">
           <p>
             This Privacy Policy explains how Kasala Alert (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or
             &ldquo;us&rdquo;) collects, uses, shares, and protects your personal information when
-            you use the Kasala Alert mobile application and related services (collectively, the
-            &ldquo;App&rdquo; or &ldquo;Service&rdquo;).
+            you use the Kasala Alert mobile application, this website and related services
+            (collectively, the &ldquo;App&rdquo; or &ldquo;Service&rdquo;). It should be read with
+            our <Link href="/terms" className="underline hover:text-fg-muted">Terms of Use</Link>.
           </p>
-          <p>
-            By using the App, you acknowledge that you have read and understood this Privacy Policy.
-            If you do not agree, please discontinue use of the App.
-          </p>
+
+          <div className="rounded-lg border border-border bg-bg-card px-4 py-4 text-sm">
+            <p className="font-semibold">In short</p>
+            <Bullets items={[
+              "We use your location to show and send you alerts about what's happening nearby",
+              "Reports you file show your display name and photo, unless you signed up as an anonymous reporter. Your phone number and email are never shown to other users",
+              "We never sell your data, and advertisers never receive it",
+              "Payments go through Apple or Google. We never see your card details",
+              "You can download your data or delete your account in the App at any time",
+            ]} />
+          </div>
 
           <Section title="1. Who We Are and How to Contact Us">
             <p>
-              Kasala Alert is a community safety platform that enables users to report dangers and
-              receive alerts about incidents in their neighbourhood. We are the data controller for
-              personal information collected through the App.
+              Kasala Alert is a community safety platform that lets people report dangers and
+              receive alerts about incidents near them. We are the data controller for personal
+              information collected through the App.
             </p>
             <InfoTable
               rows={[
                 { label: "Company", value: "Kasala Alert" },
-                { label: "Email", value: <a href="mailto:support@kasalaalert.com" className="hover:underline">support@kasalaalert.com</a> },
+                { label: "Email", value: <Mail /> },
                 { label: "Primary Jurisdiction", value: "Nigeria" },
                 { label: "Account Deletion", value: <Link href="/account-deletion" className="hover:underline">kasalaalert.com/account-deletion</Link> },
               ]}
@@ -58,275 +71,257 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="2. Information We Collect">
-            <SubHeading>2.1 Information You Provide</SubHeading>
+            <SubHeading>2.1 Your account</SubHeading>
             <Bullets items={[
-              "Full name",
-              "Email address",
-              "Incident reports, descriptions, photos, or other content you submit",
+              "Display name, or an anonymous reporter name if you choose one",
+              "Email address and password (the password is stored only in hashed form by our authentication provider)",
+              "Phone number",
+              "Profile photo, if you add one",
+              "Your referral code, and who referred you, if anyone",
             ]} />
 
-            <SubHeading>2.2 Location Information</SubHeading>
+            <SubHeading>2.2 What you submit</SubHeading>
+            <Bullets items={[
+              "Incident reports: type, location, address, time, photo, note (Kasala Pro), and the confirmation you give that the incident is real",
+              "Confirmations, likes, comments, and the comments you report",
+              "Missing-person requests, including the person's name, age, sex, description, photo, last-seen place, and your contact number (which you can keep private)",
+              "Sightings you report, and your location with them if you choose to include it",
+              "Ad requests: business name, logo or banner, ad text, link, and the business's contact phone and email",
+              "Messages you send to support",
+            ]} />
+
+            <SubHeading>2.3 Location</SubHeading>
             <p>With your permission, we collect:</p>
             <Bullets items={[
-              "Precise GPS location (while using the App or, if you consent, in the background)",
-              "Approximate location",
-            ]} />
-            <p>Location data is used to:</p>
-            <Bullets items={[
-              "Display neighbourhood incidents relevant to your area",
-              "Send localised safety alerts",
-              "Improve the accuracy of incident mapping",
+              "Precise location while you use the App, and in the background if you allow it, so alerts keep working when the App is closed",
+              "Your country, worked out from your location or device settings, to show broadcasts meant for your country",
+              "Saved places you add (such as home or work) and the alert radius around them",
+              "If you join a family group and turn sharing on, your latest location, shared with that group",
             ]} />
             <p>
-              You may withdraw location permission at any time via your device settings. Withdrawal
-              may limit App functionality.
+              You can withdraw location permission at any time in your device settings; the App
+              will then do less.
             </p>
 
-            <SubHeading>2.3 Automatically Collected Information</SubHeading>
+            <SubHeading>2.4 Your devices and settings</SubHeading>
             <Bullets items={[
-              "Device identifiers (device type, operating system, unique device ID)",
-              "App usage data (features used, pages viewed, timestamps)",
-              "Crash reports and diagnostic data",
+              "Device name, platform (iOS or Android), an app-generated device identifier, and which device is your location device",
+              "Push notification token",
+              "Your alert settings: radius, muted incident types, minimum severity, sound, quiet hours, hidden-details mode, weekly digest, language, distance unit and time zone",
+              "Crash and diagnostic information from your device's operating system, where you allow it",
             ]} />
 
-            <SubHeading>2.4 Information from Third Parties</SubHeading>
-            <p>
-              If you sign in via a third-party service (e.g., Google, Apple), we receive basic
-              profile information such as name and email address as permitted by that service and
-              your privacy settings.
-            </p>
+            <SubHeading>2.5 Purchases, coins and payouts</SubHeading>
+            <Bullets items={[
+              "Kasala Pro: your plan, whether you're in a free trial, and when it renews or ends",
+              "Coin purchases: the product, store and transaction reference. Apple or Google handle payment; we never receive your card details",
+              "Your coin balances and history: purchases, gifts sent and received, withdrawals and refunds",
+              "For withdrawals: your bank name, account number and account name, the payouts we make, and any identity documents you send us to verify that the account is yours",
+            ]} />
           </Section>
 
           <Section title="3. How We Use Your Information">
-            <p>We use personal information to:</p>
             <Bullets items={[
-              "Create and manage your account",
-              "Provide and improve the App, including incident reporting and safety alerts",
-              "Display and share incidents relevant to your location with the community",
-              "Send you push notifications and alerts (you can opt out in settings)",
-              "Communicate with you about the Service, including support and updates",
-              "Detect, investigate, and prevent fraud, abuse, and security incidents",
-              "Analyse usage trends to improve performance and features",
-              "Comply with applicable laws and legal processes",
-              "Enforce our Terms of Use and other agreements",
+              "Create and run your account, and keep it secure (including the two-device limit)",
+              "Show incidents near you, on the map, in Alerts and in the digest, and send push alerts and the weekly digest",
+              "Verify reports, prevent false reports, and switch off instant verification where reports turn out to be false",
+              "Run community features: comments, likes, gifts, family sharing, saved places and missing-person broadcasts",
+              "Process Kasala Pro, coin purchases, gifts and withdrawals, and prevent payment fraud and money laundering",
+              "Review ad requests, contact advertisers, and show ads to users without Pro. Ads are chosen by your country only, never by your profile or behaviour",
+              "Moderate content, investigate reports of abuse, and suspend accounts that break our Terms",
+              "Answer support requests and tell you about important changes",
+              "Understand how the App is used so we can improve it",
+              "Meet legal obligations, including tax and financial record-keeping, and respond to lawful requests",
+            ]} />
+
+            <SubHeading>Legal bases (EU/UK users)</SubHeading>
+            <Bullets items={[
+              "Contract — to provide the App, Pro, coins and payouts you ask for",
+              "Consent — precise and background location, push notifications, and family location sharing. You can withdraw it at any time",
+              "Legitimate interests — keeping the App safe and reliable, preventing fraud and abuse, and showing non-personalised ads",
+              "Legal obligation — financial records, identity checks for payouts, and lawful requests",
             ]} />
           </Section>
 
           <Section title="4. How We Share Your Information">
-            <p>We do not sell your personal information to third parties.</p>
-            <p>We may share information in the following circumstances:</p>
+            <p className="font-medium">We do not sell your personal information.</p>
 
-            <SubHeading>4.1 With Other Users</SubHeading>
+            <SubHeading>4.1 With other users</SubHeading>
+            <Bullets items={[
+              "Incident reports are visible to everyone in the App, with their location, address, photo and time. Your display name and profile photo appear on reports and comments you post; if you signed up as an anonymous reporter, only your reporter name is shown",
+              "Your phone number, email and exact location are never shown on your reports",
+              "When you gift coins, the person receiving them is not told who sent them",
+              "Family members see your location only while you share it with them",
+              "Approved missing-person broadcasts are public in the App. Sightings and private contact numbers are seen only by our team",
+            ]} />
+
+            <SubHeading>4.2 With service providers</SubHeading>
             <p>
-              Incident reports, including associated location data, may be visible to other App
-              users as necessary to provide the community alert service. We recommend you do not
-              include personal details about yourself or others in incident reports beyond what is
-              necessary.
+              We use providers who process data on our behalf, under contracts that stop them using
+              it for their own purposes:
+            </p>
+            <InfoTable
+              rows={[
+                { label: "Supabase", value: "Database, sign-in, file storage and server functions" },
+                { label: "Google Firebase", value: "Delivering push notifications" },
+                { label: "Google Maps Platform", value: "Maps and place search" },
+                { label: "RevenueCat", value: "Managing Kasala Pro subscriptions and coin purchases" },
+                { label: "Apple and Google", value: "App distribution, payments, and turning locations into street names on your device" },
+                { label: "Banks / payment partners", value: "Making coin withdrawals" },
+              ]}
+            />
+
+            <SubHeading>4.3 Advertisers</SubHeading>
+            <p>
+              Advertisers do not receive any information about you. If you advertise with us, your
+              business details are used to review and run your ad; your contact details are never
+              shown in the ad.
             </p>
 
-            <SubHeading>4.2 With Service Providers</SubHeading>
+            <SubHeading>4.4 For legal reasons and safety</SubHeading>
             <p>
-              We share data with third-party vendors who assist with hosting, cloud infrastructure,
-              push notifications, analytics, authentication, and customer support. These providers
-              process data on our behalf under data processing agreements and are not permitted to
-              use it for their own purposes.
+              We may disclose information to the police, regulators or courts where the law
+              requires it, or where we believe it is needed to protect someone&rsquo;s life,
+              safety or rights — for example, to help find a missing person.
             </p>
 
-            <SubHeading>4.3 For Legal Compliance and Safety</SubHeading>
+            <SubHeading>4.5 Business transfers</SubHeading>
             <p>
-              We may disclose information to law enforcement, regulators, or other authorities
-              where required by law, court order, or to protect the safety, rights, or property of
-              users or the public.
-            </p>
-
-            <SubHeading>4.4 Business Transfers</SubHeading>
-            <p>
-              In the event of a merger, acquisition, asset sale, or restructuring, your information
-              may be transferred. We will provide notice before your personal data becomes subject
-              to a different privacy policy.
-            </p>
-
-            <SubHeading>4.5 With Your Consent</SubHeading>
-            <p>
-              We may share your information for other purposes with your explicit consent.
+              If we are involved in a merger, acquisition or sale of assets, your information may
+              be transferred. We will tell you before it becomes subject to a different privacy
+              policy.
             </p>
           </Section>
 
-          <Section title="5. Your Privacy Rights">
-            <SubHeading>5.1 Rights Under GDPR and UK GDPR (EU and UK Users)</SubHeading>
-            <p>If you are located in the EU or UK, you have the following rights:</p>
+          <Section title="5. Data Retention">
             <Bullets items={[
-              "Right of access — obtain a copy of your personal data",
-              "Right to rectification — correct inaccurate or incomplete data",
-              "Right to erasure ('right to be forgotten') — request deletion of your data in certain circumstances",
-              "Right to restriction — ask us to limit how we process your data",
-              "Right to data portability — receive your data in a structured, machine-readable format",
-              "Right to object — object to processing based on legitimate interests or for direct marketing",
-              "Right to withdraw consent — where processing is based on consent, you may withdraw it at any time without affecting prior processing",
-              "Right to lodge a complaint — you have the right to complain to your local supervisory authority (e.g., the ICO in the UK, or your national data protection authority in the EU)",
-            ]} />
-
-            <SubHeading>5.2 Rights Under CCPA/CPRA (California Users)</SubHeading>
-            <p>If you are a California resident, you have the right to:</p>
-            <Bullets items={[
-              "Know what personal information we collect, use, disclose, and sell",
-              "Delete your personal information (subject to certain exceptions)",
-              "Correct inaccurate personal information",
-              "Opt out of the sale or sharing of personal information — we do not sell your data",
-              "Non-discrimination for exercising your privacy rights",
-            ]} />
-            <p>
-              To submit a CCPA request, contact us at{" "}
-              <a href="mailto:support@kasalaalert.com" className="hover:underline">support@kasalaalert.com</a>.
-              {" "}We will respond within 72 hours.
-            </p>
-
-            <SubHeading>5.3 Rights Under the Nigeria NDPR</SubHeading>
-            <p>
-              Under the Nigeria Data Protection Regulation (NDPR), you have the right to access,
-              and request deletion of your personal data. You may also object to the processing of
-              your data where it is not necessary for legitimate purposes.
-            </p>
-
-            <SubHeading>5.4 How to Exercise Your Rights</SubHeading>
-            <p>
-              To exercise any of these rights, contact us at{" "}
-              <a href="mailto:support@kasalaalert.com" className="hover:underline">support@kasalaalert.com</a>.
-              {" "}We will acknowledge your request within 72 hours and respond substantively within
-              30 days (or as required by applicable law). We may ask you to verify your identity
-              before processing your request.
-            </p>
-          </Section>
-
-          <Section title="6. Location Data — Special Notice">
-            <p>
-              Because Kasala Alert is fundamentally a location-based service, location data is
-              central to how the App works. We treat location data with particular care:
-            </p>
-            <Bullets items={[
-              "Precise location is only collected with your explicit permission",
-              "You can revoke location access at any time via your device settings",
-              "Location data is not sold or shared with advertisers",
-              "Incident location is shared with other users to power community alerts, but your identity is not automatically disclosed alongside it",
-              "EU/UK users: collection of precise location data is based on your consent. You may withdraw consent at any time.",
+              "Account data: while your account is open",
+              "Deleting your account: it is deactivated straight away (signed out everywhere, alerts stopped, location sharing ended) and permanently erased after 30 days, unless you restore it by signing back in",
+              "After erasure: your profile, photo, devices, family links, saved places, comments, likes and confirmations are deleted. Incident reports you filed stay on the map without your name or phone number",
+              "We keep a limited record of an erased account (name, email, phone and account dates) for 12 months, to deal with fraud, disputes and lawful requests, then delete it",
+              "Coin, purchase and payout records are kept, unlinked from your profile, for as long as tax and anti-money-laundering law requires",
+              "Location: we keep only your latest position for alerts and family sharing, not a history",
+              "Push tokens are removed when you sign out or remove a device",
+              "Data under a legal hold may be kept longer",
             ]} />
           </Section>
 
-          <Section title="7. Data Retention">
-            <p>
-              We retain your personal data for as long as your account is active or as necessary to
-              provide the Service. Specifically:
-            </p>
+          <Section title="6. Your Rights and Choices">
+            <SubHeading>6.1 In the App</SubHeading>
             <Bullets items={[
-              "Account data: retained for the duration of your account.",
-              "Incident reports: retained as long as they remain relevant to community safety, and reviewed periodically for deletion.",
-              "Location data: processed in near-real-time and not retained beyond what is necessary for alert delivery.",
-              "Legal holds: data subject to litigation, regulatory investigation, or legal obligation may be retained longer.",
+              "Download a copy of your data (Settings → Download my data)",
+              "Edit your name, phone number and photo",
+              "Turn off notifications, the weekly digest, sounds, or hide alert details",
+              "Stop sharing your location with family, or remove a device",
+              "Block other users",
+              "Delete your account (Settings → Delete account)",
             ]} />
+
+            <SubHeading>6.2 Nigeria (NDPA 2023)</SubHeading>
             <p>
-              You may request deletion of your account and associated data at any time (see
-              Section 5).
+              Under the Nigeria Data Protection Act 2023, you have the right to be informed, to
+              access, correct and delete your data, to restrict or object to processing, to data
+              portability, and to withdraw consent. You may complain to the Nigeria Data Protection
+              Commission.
             </p>
+
+            <SubHeading>6.3 EU and UK (GDPR / UK GDPR)</SubHeading>
+            <Bullets items={[
+              "Access, rectification, erasure, restriction and data portability",
+              "Object to processing based on legitimate interests",
+              "Withdraw consent at any time, without affecting earlier processing",
+              "Complain to your data protection authority (for example, the ICO in the UK)",
+            ]} />
+
+            <SubHeading>6.4 California (CCPA/CPRA)</SubHeading>
+            <Bullets items={[
+              "Know what personal information we collect, use and disclose",
+              "Delete and correct your personal information",
+              "Opt out of sale or sharing — we do not sell or share personal information for advertising",
+              "Not be discriminated against for using these rights",
+            ]} />
+
+            <SubHeading>6.5 How to ask</SubHeading>
+            <p>
+              Email <Mail />. We acknowledge requests within 72 hours and respond within 30 days
+              (or as the law requires). We may ask you to confirm your identity first.
+            </p>
+          </Section>
+
+          <Section title="7. Location Data — Special Notice">
+            <Bullets items={[
+              "Precise location is only collected with your permission, and you can turn it off at any time",
+              "Only your location device shares your location; a second signed-in device does not",
+              "Location is never sold, and never shared with advertisers",
+              "A report is pinned where you are when you send it, and that spot is visible to everyone — keep this in mind before reporting from your home",
+              "Family location sharing is off until you turn it on, and you can stop at any time",
+            ]} />
           </Section>
 
           <Section title="8. Data Security">
-            <p>
-              We implement industry-standard technical and organisational measures to protect your
-              personal data, including:
-            </p>
             <Bullets items={[
-              "Encryption of data in transit (TLS/HTTPS)",
-              "Encryption of sensitive data at rest",
-              "Access controls limiting staff access to personal data on a need-to-know basis",
-              "Regular security assessments and monitoring",
+              "Encryption in transit (TLS/HTTPS) and at rest",
+              "Row-level access rules so each account can read only what it's allowed to",
+              "Staff access limited to what their role needs, with suspended staff locked out",
+              "Bank details and private contact numbers kept in tables only our payout and moderation teams can read",
             ]} />
             <p>
-              Despite these measures, no method of electronic transmission or storage is completely
-              secure. We cannot guarantee absolute security. In the event of a data breach that
-              poses a risk to your rights, we will notify you and relevant authorities as required
-              by applicable law (including within 72 hours under GDPR/UK GDPR).
+              No system is completely secure. If a breach puts your rights at risk, we will tell
+              you and the relevant authorities as the law requires (within 72 hours where GDPR,
+              UK GDPR or the NDPA apply).
             </p>
           </Section>
 
-          <Section title="9. International Users">
+          <Section title="9. International Transfers">
             <p>
-              Kasala Alert is based in Nigeria. If you access the App from the EU, UK, US, or
-              other jurisdictions, your data may be transferred to and processed in Nigeria where
-              our service providers operate.
+              We are based in Nigeria, and our service providers may process data in other
+              countries, including the United States and the EU. Where the law requires it, we use
+              safeguards such as standard contractual clauses for these transfers.
             </p>
           </Section>
 
           <Section title="10. Children's Privacy">
             <p>
-              The App is not intended for children under the age of 18 (or 16 in the EU/UK where
-              required by applicable law). We do not knowingly collect personal information from
-              children.
-            </p>
-            <p>
-              If we learn that we have collected personal information from a child below the
-              applicable age threshold without verified parental consent, we will promptly delete
-              it. If you believe a child has provided us with personal information, please contact
-              us at{" "}
-              <a href="mailto:support@kasalaalert.com" className="hover:underline">support@kasalaalert.com</a>.
+              The App is not intended for anyone under 18. We do not knowingly collect personal
+              information from children. Missing-person broadcasts may include details of a missing
+              child, submitted by a parent or guardian for the child&rsquo;s safety; these are
+              reviewed by our moderators and taken off the public feed once the case is closed. If you believe a child
+              has given us their information, contact <Mail />.
             </p>
           </Section>
 
-          <Section title="11. Cookies and Tracking Technologies">
+          <Section title="11. Cookies and This Website">
             <p>
-              The App may use cookies, local storage, and similar technologies to maintain
-              sessions, remember preferences, and collect usage analytics.
-            </p>
-            <p>
-              EU/UK users have the right to refuse non-essential cookies. Where required by law
-              (e.g., the EU ePrivacy Directive / UK PECR), we will obtain your consent before
-              placing non-essential tracking technologies.
+              The App uses local storage on your device to keep you signed in and remember your
+              settings. This website uses only the cookies it needs to work (such as keeping staff
+              signed in to the admin area), and does not use advertising cookies.
             </p>
           </Section>
 
-          <Section title="12. Third-Party Services">
+          <Section title="12. Third-Party Links">
             <p>
-              The App may integrate with third-party services for hosting, analytics,
-              notifications, maps, and authentication. These third parties have their own privacy
-              policies and we encourage you to review them. We are not responsible for the privacy
-              practices of third-party services.
+              Ads and some content link to other websites. Their owners have their own privacy
+              policies, and we are not responsible for them.
             </p>
           </Section>
 
           <Section title="13. Changes to This Privacy Policy">
             <p>
-              We may update this Privacy Policy from time to time to reflect changes in the law,
-              our practices, or the features of the App. Where changes are material, we will
-              provide prominent notice within the App and/or by email at least 30 days before the
-              changes take effect.
-            </p>
-            <p>
-              Continued use of the App after the effective date of any changes constitutes
-              acceptance of the updated Policy.
+              We may update this Privacy Policy as the law, our practices or the App change. For
+              material changes, we will give at least 30 days&rsquo; notice in the App and/or by
+              email before they take effect.
             </p>
           </Section>
 
-          <Section title="14. Complaints and Supervisory Authorities">
+          <Section title="14. Contact Us">
             <p>
-              If you have concerns about how we handle your personal data that we have not resolved
-              to your satisfaction, you have the right to lodge a complaint with the appropriate
-              authorities.
-            </p>
-            <p>
-              We encourage you to contact us first at{" "}
-              <a href="mailto:support@kasalaalert.com" className="hover:underline">support@kasalaalert.com</a>
-              {" "}so we can attempt to resolve your concern directly.
-            </p>
-          </Section>
-
-          <Section title="15. Contact Us">
-            <p>
-              If you have questions, requests, or concerns about this Privacy Policy or the
-              handling of your personal data, please contact:
+              If you have questions, requests, or concerns about this Privacy Policy or how we
+              handle your personal data, contact:
             </p>
             <InfoTable
               rows={[
                 { label: "Company", value: "Kasala Alert" },
-                { label: "Email", value: <a href="mailto:support@kasalaalert.com" className="hover:underline">support@kasalaalert.com</a> },
+                { label: "Email", value: <Mail /> },
                 { label: "Response time", value: "Within 30 days (72 hours to acknowledge)" },
               ]}
             />
@@ -335,6 +330,14 @@ export default function PrivacyPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+function Mail() {
+  return (
+    <a href={`mailto:${SUPPORT}`} className="hover:underline">
+      {SUPPORT}
+    </a>
   );
 }
 
