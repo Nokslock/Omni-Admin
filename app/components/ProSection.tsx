@@ -4,7 +4,7 @@ const free = [
   "Alerts within up to 20 km",
   "Report with a photo from the scene",
   "Live map, Alerts feed and weekly digest",
-  "Comments, likes and coin gifts",
+  "Comments, likes and gifts",
   "Missing-person broadcasts",
 ];
 
@@ -14,6 +14,7 @@ const pro = [
   "Family location sharing",
   "Notes on your reports",
   "Instant verification for your reports",
+  "Withdraw earnings from gifts you receive",
   "Gold Pro badge",
   "No ads",
 ];

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   formatMoney,
   payoutStatusMeta,
+  type GiftCut,
   type Payout,
   type PayoutOverview,
   type PayoutStatus,
@@ -118,11 +119,12 @@ export function PayoutsList({
         title="Payouts"
         description={
           <>
-            When someone cashes out coins they earned from tips, the request lands here. Send
-            the bank transfer yourself, then mark it paid with the transfer reference.
-            Rejecting a request returns the coins to their wallet. One coin is worth{" "}
+            When a Kasala Pro member cashes out the earnings (points) they got from gifts, the
+            request lands here. Send the bank transfer yourself, then mark it paid with the
+            transfer reference. Rejecting a request returns the points to their earnings. One
+            point is worth{" "}
             <span className="font-semibold text-fg">{money(o.coinValue)}</span>; the smallest
-            cash-out is {o.minWithdrawal} coins.
+            cash-out is {o.minWithdrawal} points.
           </>
         }
       >
@@ -145,13 +147,13 @@ export function PayoutsList({
           <StatTile
             label={`On hold (${o.holdDays} days)`}
             value={heldCoins.toLocaleString()}
-            sub={`coins · up to ${money(heldCoins * o.coinValue)}`}
+            sub={`points · up to ${money(heldCoins * o.coinValue)}`}
             color="var(--info)"
           />
           <StatTile
             label="Earned, not cashed out"
             value={o.earnedOutstanding.toLocaleString()}
-            sub={`coins · ${money(o.earnedOutstanding * o.coinValue)}`}
+            sub={`points · ${money(o.earnedOutstanding * o.coinValue)}`}
           />
         </StatGrid>
       </PageHeader>
@@ -163,6 +165,8 @@ export function PayoutsList({
             reject them.
           </p>
         )}
+
+        <GiftCutPanel gifts={o.gifts} money={money} coinValue={o.coinValue} />
 
         <Panel className="flex min-h-[380px] flex-col overflow-hidden">
           <div className="flex flex-wrap items-center gap-2.5 border-b border-border px-4 py-3">
@@ -196,7 +200,7 @@ export function PayoutsList({
                 }
                 hint={
                   o.payouts.length === 0
-                    ? "When someone cashes out their coins in the app, the request shows up here."
+                    ? "When someone cashes out their earnings in the app, the request shows up here."
                     : "Try another tab or search."
                 }
               />
@@ -236,7 +240,7 @@ export function PayoutsList({
                             {formatMoney(p.amount, p.currency)}
                           </div>
                           <div className="mt-0.5 text-xs tabular-nums text-fg-muted">
-                            {p.coins.toLocaleString()} coins × {formatMoney(p.coinValue, p.currency)}
+                            {p.coins.toLocaleString()} points × {formatMoney(p.coinValue, p.currency)}
                           </div>
                         </td>
                         <td className={TD}>
@@ -349,12 +353,12 @@ function Schedule({ overview: o, nowMs }: { overview: PayoutOverview; nowMs: num
     <Panel className="overflow-hidden">
       <PanelHeader
         title="Coming out of hold"
-        hint={`Tips are held for ${o.holdDays} days before they can be cashed out`}
+        hint={`Earnings from gifts are held for ${o.holdDays} days before they can be cashed out`}
       />
       {o.schedule.length === 0 ? (
         <EmptyState
           title="Nothing on hold"
-          hint={`No tips were received in the last ${o.holdDays} days, so no new coins are about to become cash-out-able.`}
+          hint={`No gifts were received in the last ${o.holdDays} days, so no new earnings are about to become cash-out-able.`}
         />
       ) : (
         <>
@@ -380,7 +384,7 @@ function Schedule({ overview: o, nowMs }: { overview: PayoutOverview; nowMs: num
                       {formatMoney(d.coins * o.coinValue, o.currency)}
                     </div>
                     <div className="text-xs tabular-nums text-fg-muted">
-                      {d.coins.toLocaleString()} coins · {d.people} {d.people === 1 ? "person" : "people"}
+                      {d.coins.toLocaleString()} points · {d.people} {d.people === 1 ? "person" : "people"}
                     </div>
                   </div>
                 </li>
@@ -388,8 +392,8 @@ function Schedule({ overview: o, nowMs }: { overview: PayoutOverview; nowMs: num
             })}
           </ul>
           <p className="border-t border-border px-5 py-3 text-xs text-fg-muted">
-            These are upper limits: people can spend earned coins in the app instead of
-            cashing them out, and nothing is paid until they send a request.
+            These are upper limits: earnings can only be cashed out with Kasala Pro, and
+            nothing is paid until someone sends a request.
           </p>
         </>
       )}
@@ -432,7 +436,7 @@ function DecisionDialog({
     toast(
       pay
         ? `Marked ${formatMoney(p.amount, p.currency)} to ${p.accountName} as paid.`
-        : `Request rejected. ${p.coins.toLocaleString()} coins went back to ${p.userName}.`,
+        : `Request rejected. ${p.coins.toLocaleString()} points went back to ${p.userName}.`,
       "success",
     );
     onDone();
@@ -455,7 +459,7 @@ function DecisionDialog({
         <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">
           {pay
             ? "Only do this after the bank transfer has gone through. This records the payment; it doesn't send any money, and it can't be undone here."
-            : `${p.coins.toLocaleString()} coins go straight back to ${p.userName}'s wallet. This can't be undone here.`}
+            : `${p.coins.toLocaleString()} points go straight back to ${p.userName}'s earnings. This can't be undone here.`}
         </p>
 
         <dl className="mt-4 space-y-2 rounded-xl border border-border bg-bg-elev/50 px-4 py-3.5 text-sm">
@@ -525,3 +529,142 @@ function Line({ label, value, mono, strong }: { label: string; value: string; mo
     </div>
   );
 }
+
+/**
+ * Gifts and Kasala's cut. The sender pays the gift's price in coins; the
+ * reporter gets their share (60%) as earnings, in points, and Kasala keeps the
+ * rest.
+ */
+function GiftCutPanel({
+  gifts,
+  money,
+  coinValue,
+}: {
+  gifts: GiftCut;
+  money: (n: number) => string;
+  coinValue: number;
+}) {
+  const [range, setRange] = useState<"last30" | "allTime">("last30");
+  const w = gifts[range];
+  const keptShare = 100 - gifts.sharePercent;
+  const since = gifts.cutSince
+    ? new Date(gifts.cutSince).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+    : null;
+
+  return (
+    <Panel className="overflow-hidden">
+      <PanelHeader
+        title="Gifts and Kasala's cut"
+        hint={
+          <>
+            Reporters get {gifts.sharePercent}% of every gift, Kasala keeps {keptShare}%.
+            {since ? ` Gifts before ${since} paid reporters in full.` : ""}
+          </>
+        }
+        right={
+          <Segmented
+            label="Period"
+            value={range}
+            onChange={setRange}
+            items={[
+              { id: "last30", label: "Last 30 days" },
+              { id: "allTime", label: "All time" },
+            ]}
+          />
+        }
+      />
+      <div className="grid grid-cols-2 gap-px bg-border lg:grid-cols-4">
+        <CutFigure
+          label="Gifts sent"
+          value={w.sent.toLocaleString()}
+          sub={`coins · ${w.gifts.toLocaleString()} ${w.gifts === 1 ? "gift" : "gifts"}`}
+        />
+        <CutFigure
+          label={`To reporters (${gifts.sharePercent}%)`}
+          value={w.toReporters.toLocaleString()}
+          sub={`points · up to ${money(w.toReporters * coinValue)} if cashed out`}
+          color="var(--info)"
+        />
+        <CutFigure
+          label={`Kasala kept (${keptShare}%)`}
+          value={w.kept.toLocaleString()}
+          sub={`coins · ${money(w.kept * coinValue)} at today's coin value`}
+          color="var(--ok)"
+          strong
+        />
+        <CutFigure
+          label="Share of gifts kept"
+          value={w.sent > 0 ? `${Math.round((w.kept / w.sent) * 100)}%` : "—"}
+          sub={
+            w.sent > 0
+              ? "rounding down small gifts nudges this above the set share"
+              : "no gifts in this period"
+          }
+        />
+      </div>
+      <CutBar sent={w.sent} kept={w.kept} />
+      {w.byGift.length > 0 && (
+        <div className="flex flex-wrap gap-2 border-t border-border px-5 py-3.5">
+          {w.byGift.map((g) => (
+            <span
+              key={g.id}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-bg-elev px-3 py-1 text-sm"
+            >
+              <span aria-hidden>{g.emoji}</span>
+              <span className="text-fg">{g.name}</span>
+              <span className="tabular-nums text-fg-muted">×{g.count.toLocaleString()}</span>
+            </span>
+          ))}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+function CutFigure({
+  label,
+  value,
+  sub,
+  color,
+  strong,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+  color?: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-1 bg-bg-card px-5 py-4">
+      <span className="flex items-center gap-2 text-[13px] text-fg-muted">
+        <span
+          className="h-2 w-2 shrink-0 rounded-full"
+          style={{ background: color ?? "var(--fg-subtle)" }}
+          aria-hidden
+        />
+        {label}
+      </span>
+      <span className={`text-2xl tabular-nums ${strong ? "font-bold" : "font-semibold"}`}>{value}</span>
+      <span className="text-xs text-fg-muted">{sub}</span>
+    </div>
+  );
+}
+
+/** One bar split into the reporters' part and Kasala's part. */
+function CutBar({ sent, kept }: { sent: number; kept: number }) {
+  if (sent <= 0) return null;
+  const keptPct = (kept / sent) * 100;
+  return (
+    <div className="border-t border-border px-5 py-3.5">
+      <div
+        className="flex h-2.5 overflow-hidden rounded-full bg-bg-elev"
+        role="img"
+        aria-label={`${Math.round(100 - keptPct)}% to reporters, ${Math.round(keptPct)}% kept by Kasala`}
+      >
+        <div style={{ width: `${100 - keptPct}%`, background: "var(--info)" }} />
+        <div style={{ width: `${keptPct}%`, background: "var(--ok)" }} />
+      </div>
+    </div>
+  );
+}
+

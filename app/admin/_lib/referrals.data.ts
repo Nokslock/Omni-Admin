@@ -55,6 +55,8 @@ export type ReferralOverview = {
   weekly: { weekStart: string; count: number }[];
   activeRate: number;
   proRate: number;
+  /** Referral coins paid out: 1 per sign-up, 1 per paid Pro month. */
+  coins: { signup: number; proMonth: number; last30: number; payingNow: number };
 };
 
 const DAY = 86_400_000;
@@ -65,7 +67,7 @@ export async function getReferralOverview(): Promise<ReferralOverview> {
   const supabase = createAdminClient();
   const since30 = new Date(Date.now() - 30 * DAY).toISOString();
 
-  const [{ data: referredRows }, { count: totalUsers }, { count: signups30 }] =
+  const [{ data: referredRows }, { count: totalUsers }, { count: signups30 }, { data: rewardRows }] =
     await Promise.all([
       supabase
         .from("users")
@@ -77,6 +79,7 @@ export async function getReferralOverview(): Promise<ReferralOverview> {
         .from("users")
         .select("id", { count: "exact", head: true })
         .gte("created_at", since30),
+      supabase.from("referral_rewards").select("referred_id, kind, coins, created_at").limit(50000),
     ]);
   const referred = (referredRows ?? []) as UserRow[];
 
@@ -158,7 +161,20 @@ export async function getReferralOverview(): Promise<ReferralOverview> {
 
   const last30 = recent.filter((r) => within(r.joinedAt, 30)).length;
   const total = recent.length;
+  const coins = { signup: 0, proMonth: 0, last30: 0, payingNow: 0 };
+  const paying = new Set<string>();
+  for (const r of rewardRows ?? []) {
+    const n = Number(r.coins);
+    if (r.kind === "signup") coins.signup += n;
+    else coins.proMonth += n;
+    if (within(r.created_at as string, 30)) coins.last30 += n;
+    // A monthly coin in the last ~month means they're still on paid Pro.
+    if (r.kind === "pro_month" && within(r.created_at as string, 31)) paying.add(r.referred_id as string);
+  }
+  coins.payingNow = paying.size;
+
   return {
+    coins,
     totalUsers: totalUsers ?? 0,
     totalReferred: total,
     last7: recent.filter((r) => within(r.joinedAt, 7)).length,

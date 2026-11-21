@@ -28,7 +28,7 @@ const items = [
   },
   {
     title: "Kasala Coins",
-    body: "Thank the people whose reports kept you safe with a gift of coins. Coins people gift you can be withdrawn to your bank account.",
+    body: "Thank the people whose reports kept you safe with a gift, from a 🌺 Flower to a 👑 Crown, bought with Kasala Coins. Gifts you receive add earnings, which Kasala Pro members can withdraw to their bank account.",
     accent: "#e0a526",
     icon: <CoinIcon />,
   },

@@ -33,9 +33,9 @@ export default async function ReferralsPage() {
     <div className="flex h-full flex-col overflow-y-auto bg-bg text-fg">
       <PageHeader
         title="Referrals"
-        description="Everyone gets a referral code in the app. When someone signs up with it, they count here. “Active” means they have sent at least one report."
+        description="Everyone gets a referral code in the app. When someone signs up with it, they count here, and whoever invited them gets 1 Kasala Coin, plus 1 coin every month the person is on paid Kasala Pro (it stops if they cancel). “Active” means they have sent at least one report."
       >
-        <StatGrid>
+        <StatGrid cols={3}>
           <StatTile label="Joined through a referral" value={o.totalReferred.toLocaleString()}
             sub={`of ${o.totalUsers} accounts`} color="var(--danger)" />
           <StatTile label="Last 7 days" value={o.last7.toLocaleString()} color="var(--info)" />
@@ -43,6 +43,13 @@ export default async function ReferralsPage() {
             sub={`${pct(o.share30)} of ${o.signups30} sign-ups`} color="var(--info)" />
           <StatTile label="Referred people who are active"
             value={pct(o.activeRate)} sub={`${pct(o.proRate)} have Pro`} color="var(--ok)" />
+          <StatTile label="Referral coins paid"
+            value={(o.coins.signup + o.coins.proMonth).toLocaleString()}
+            sub={`${o.coins.signup} for sign-ups · ${o.coins.proMonth} for Pro months · ${o.coins.last30} in 30 days`}
+            color="var(--warn)" />
+          <StatTile label="Earning a monthly coin"
+            value={o.coins.payingNow.toLocaleString()}
+            sub="referred people on paid Pro" color="var(--warn)" />
         </StatGrid>
       </PageHeader>
 

@@ -51,8 +51,8 @@ export default function AccountDeletionPage() {
               <li>Alert preferences and devices linked to your account</li>
               <li>Your comments, likes and feedback on reports</li>
               <li>
-                Any Kasala Coins left in your wallet (withdraw coins you received
-                before you delete)
+                Any Kasala Coins and earnings left in your wallet (withdraw your
+                earnings before you delete)
               </li>
               <li>Your name and phone number on the reports you filed</li>
             </ul>

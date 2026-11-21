@@ -312,9 +312,9 @@ function RecipientCard({ r }: { r: Recipient }) {
       <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
         <div className="rounded-xl border border-border bg-bg-elev/50 px-4 py-3">
           <dt className="text-xs text-fg-muted">Kasala Coins</dt>
-          <dd className="mt-1 text-xl font-semibold tabular-nums">{r.coins.total}</dd>
+          <dd className="mt-1 text-xl font-semibold tabular-nums">{r.coins.bought}</dd>
           <dd className="text-xs text-fg-subtle">
-            {r.coins.bought} bought or gifted · {r.coins.earned} received
+            + {r.coins.earned} {r.coins.earned === 1 ? "point" : "points"} of earnings from gifts
           </dd>
         </div>
         <div className="rounded-xl border border-border bg-bg-elev/50 px-4 py-3">

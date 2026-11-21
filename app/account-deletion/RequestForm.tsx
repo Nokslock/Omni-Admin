@@ -156,7 +156,7 @@ export function RequestForm() {
         <span className="leading-relaxed">
           I understand my account will be deactivated, then{" "}
           <span className="font-semibold">permanently deleted after 30 days</span>,
-          and that my profile, saved places and any Kasala Coins will be removed.
+          and that my profile, saved places and any Kasala Coins and earnings will be removed.
         </span>
       </label>
 

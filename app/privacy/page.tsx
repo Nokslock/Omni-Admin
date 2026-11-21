@@ -29,7 +29,7 @@ export default function PrivacyPage() {
           </nav>
           <h1 className="text-4xl font-semibold tracking-tight">Privacy Policy</h1>
           <p className="mt-2 text-sm text-fg-muted">
-            Last updated: 14 November 2026 · Effective immediately for new users, and from 14
+            Last updated: 21 November 2026 · Effective immediately for new users, and from 21
             December 2026 for existing users
           </p>
         </header>
@@ -111,11 +111,11 @@ export default function PrivacyPage() {
               "Crash and diagnostic information from your device's operating system, where you allow it",
             ]} />
 
-            <SubHeading>2.5 Purchases, coins and payouts</SubHeading>
+            <SubHeading>2.5 Purchases, coins, gifts and payouts</SubHeading>
             <Bullets items={[
               "Kasala Pro: your plan, whether you're in a free trial, and when it renews or ends",
               "Coin purchases: the product, store and transaction reference. Apple or Google handle payment; we never receive your card details",
-              "Your coin balances and history: purchases, gifts sent and received, withdrawals and refunds",
+              "Your coin and earnings balances and history: purchases, the gifts you send and receive (which gift, for which report, and when), earnings, withdrawals and refunds",
               "For withdrawals: your bank name, account number and account name, the payouts we make, and any identity documents you send us to verify that the account is yours",
             ]} />
           </Section>
@@ -125,8 +125,8 @@ export default function PrivacyPage() {
               "Create and run your account, and keep it secure (including the two-device limit)",
               "Show incidents near you, on the map, in Alerts and in the digest, and send push alerts and the weekly digest",
               "Verify reports, prevent false reports, and switch off instant verification where reports turn out to be false",
-              "Run community features: comments, likes, gifts, family sharing, saved places and missing-person broadcasts",
-              "Process Kasala Pro, coin purchases, gifts and withdrawals, and prevent payment fraud and money laundering",
+              "Run community features: comments, likes, gifts, family sharing, saved places and missing-person broadcasts. When you receive a gift, we tell you which gift it was",
+              "Process Kasala Pro, coin purchases, gifts, earnings and withdrawals, and prevent payment fraud and money laundering",
               "Review ad requests, contact advertisers, and show ads to users without Pro. Ads are chosen by your country only, never by your profile or behaviour",
               "Moderate content, investigate reports of abuse, and suspend accounts that break our Terms",
               "Answer support requests and tell you about important changes",
@@ -136,7 +136,7 @@ export default function PrivacyPage() {
 
             <SubHeading>Legal bases (EU/UK users)</SubHeading>
             <Bullets items={[
-              "Contract — to provide the App, Pro, coins and payouts you ask for",
+              "Contract — to provide the App, Pro, coins, gifts and payouts you ask for",
               "Consent — precise and background location, push notifications, and family location sharing. You can withdraw it at any time",
               "Legitimate interests — keeping the App safe and reliable, preventing fraud and abuse, and showing non-personalised ads",
               "Legal obligation — financial records, identity checks for payouts, and lawful requests",
@@ -150,7 +150,7 @@ export default function PrivacyPage() {
             <Bullets items={[
               "Incident reports are visible to everyone in the App, with their location, address, photo and time. Your display name and profile photo appear on reports and comments you post; if you signed up as an anonymous reporter, only your reporter name is shown",
               "Your phone number, email and exact location are never shown on your reports",
-              "When you gift coins, the person receiving them is not told who sent them",
+              "When you send a gift, the person receiving it is told which gift it was, but not who sent it",
               "Family members see your location only while you share it with them",
               "Approved missing-person broadcasts are public in the App. Sightings and private contact numbers are seen only by our team",
             ]} />
@@ -167,7 +167,7 @@ export default function PrivacyPage() {
                 { label: "Google Maps Platform", value: "Maps and place search" },
                 { label: "RevenueCat", value: "Managing Kasala Pro subscriptions and coin purchases" },
                 { label: "Apple and Google", value: "App distribution, payments, and turning locations into street names on your device" },
-                { label: "Banks / payment partners", value: "Making coin withdrawals" },
+                { label: "Banks / payment partners", value: "Paying out withdrawals of earnings" },
               ]}
             />
 
@@ -199,7 +199,7 @@ export default function PrivacyPage() {
               "Deleting your account: it is deactivated straight away (signed out everywhere, alerts stopped, location sharing ended) and permanently erased after 30 days, unless you restore it by signing back in",
               "After erasure: your profile, photo, devices, family links, saved places, comments, likes and confirmations are deleted. Incident reports you filed stay on the map without your name or phone number",
               "We keep a limited record of an erased account (name, email, phone and account dates) for 12 months, to deal with fraud, disputes and lawful requests, then delete it",
-              "Coin, purchase and payout records are kept, unlinked from your profile, for as long as tax and anti-money-laundering law requires",
+              "Coin, gift, earnings, purchase and payout records are kept, unlinked from your profile, for as long as tax and anti-money-laundering law requires",
               "Location: we keep only your latest position for alerts and family sharing, not a history",
               "Push tokens are removed when you sign out or remove a device",
               "Data under a legal hold may be kept longer",

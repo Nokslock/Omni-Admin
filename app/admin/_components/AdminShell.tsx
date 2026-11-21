@@ -87,7 +87,16 @@ const SECTIONS: NavSection[] = [
     label: "Growth",
     groups: [
       { id: "referrals", label: "Referrals", href: "/admin/referrals", icon: <ReferralsIcon /> },
-      { id: "gifts", label: "Gifts", href: "/admin/gifts", icon: <GiftIcon /> },
+      {
+        id: "gifts",
+        label: "Gifts",
+        href: "/admin/gifts",
+        icon: <GiftIcon />,
+        children: [
+          { label: "Give coins & Pro", href: "/admin/gifts" },
+          { label: "Gift list", href: "/admin/gift-list" },
+        ],
+      },
       {
         id: "payouts",
         label: "Payouts",
@@ -108,6 +117,7 @@ function crumbsFor(pathname: string): [string, string] {
   if (pathname.startsWith("/admin/ads")) return ["Ads & Broadcasts", "Ads"];
   if (pathname.startsWith("/admin/broadcasts")) return ["Ads & Broadcasts", "Broadcasts"];
   if (pathname.startsWith("/admin/profile")) return ["Account", "Settings"];
+  if (pathname.startsWith("/admin/gift-list")) return ["Gifts", "Gift list"];
   for (const section of SECTIONS) {
     for (const g of section.groups) {
       if (pathname.startsWith(g.href)) return [section.label, g.label];

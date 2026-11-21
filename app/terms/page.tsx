@@ -6,13 +6,13 @@ import { Footer } from "../components/Footer";
 export const metadata: Metadata = {
   title: "Terms of Use",
   description:
-    "The terms that govern your use of Kasala Alert, including Kasala Pro, Kasala Coins, advertising and community features.",
+    "The terms that govern your use of Kasala Alert, including Kasala Pro, Kasala Coins and gifts, advertising and community features.",
   alternates: { canonical: "/terms" },
   openGraph: {
     url: "/terms",
     title: "Terms of Use — Kasala",
     description:
-      "The terms that govern your use of Kasala Alert, including Kasala Pro, Kasala Coins, advertising and community features.",
+      "The terms that govern your use of Kasala Alert, including Kasala Pro, Kasala Coins and gifts, advertising and community features.",
   },
 };
 
@@ -29,7 +29,7 @@ export default function TermsPage() {
           </nav>
           <h1 className="text-4xl font-semibold tracking-tight">Terms of Use</h1>
           <p className="mt-2 text-sm text-fg-muted">
-            Last updated: 14 November 2026 · Effective immediately for new users, and from 14
+            Last updated: 21 November 2026 · Effective immediately for new users, and from 21
             December 2026 for existing users
           </p>
         </header>
@@ -46,7 +46,7 @@ export default function TermsPage() {
             <p className="font-semibold">What&rsquo;s new in this version</p>
             <Bullets items={[
               "Kasala Pro, a paid subscription (section 8)",
-              "Kasala Coins: buying, gifting and withdrawing (section 9)",
+              "Kasala Coins, gifts and earnings: coins buy gifts, gifts you receive become earnings, and earnings can be withdrawn with Kasala Pro (section 9)",
               "The confirmation you give on every report, and instant verification for Pro members (sections 7.3–7.4)",
               "Comments, likes and reporting comments (section 5)",
               "Missing-person broadcasts and sightings (section 10)",
@@ -74,7 +74,7 @@ export default function TermsPage() {
               "See incidents on a live map and in the Alerts feed, and confirm, like or comment on them",
               "Request and follow missing-person broadcasts, and report sightings",
               "Share your location with family members you invite, and follow saved places",
-              "Subscribe to Kasala Pro, and buy, gift and withdraw Kasala Coins",
+              "Subscribe to Kasala Pro, buy Kasala Coins, send gifts, and withdraw earnings from gifts you receive",
               "Advertise a business in the Alerts feed",
             ]} />
             <p>
@@ -128,8 +128,8 @@ export default function TermsPage() {
             </p>
             <p>
               Each person may hold one account. Creating extra accounts to get around a
-              suspension, to confirm your own reports, to earn referrals, or to move Kasala Coins
-              between accounts is not allowed.
+              suspension, to confirm your own reports, to earn referrals, or to move coins, gifts or
+              earnings between accounts is not allowed.
             </p>
           </Section>
 
@@ -187,7 +187,7 @@ export default function TermsPage() {
               "Post content that is unlawful, defamatory, hateful, abusive, obscene, or discriminatory",
               "Share personal information about others without their consent (including names, addresses, phone numbers or photographs)",
               "Impersonate any person or organisation, or misrepresent your connection to them",
-              "Use Kasala Coins, gifts or referrals for fraud, money laundering, or to move value between accounts you control",
+              "Use Kasala Coins, gifts, earnings or referrals for fraud, money laundering, or to move value between accounts you control",
               "Advertise anything unlawful, misleading, or listed as not allowed in section 12",
               "Track or monitor another person through family location sharing without their knowledge and agreement",
               "Attempt to gain unauthorised access to, interfere with, or disrupt the App or its servers",
@@ -196,7 +196,7 @@ export default function TermsPage() {
             ]} />
             <p>
               Breaking these rules can lead to content removal, loss of features (such as instant
-              verification), withholding of Kasala Coins (section 9.5), account suspension or
+              verification), withholding of coins or earnings (section 9.6), account suspension or
               termination, and, where appropriate, referral to law enforcement.
             </p>
           </Section>
@@ -253,7 +253,8 @@ export default function TermsPage() {
             <p>
               Kasala Pro is an optional paid subscription. It currently includes a wider alert
               radius than the free 20 km, saved places, family location sharing, notes on your
-              reports, instant verification, a gold Pro badge and no ads. We may change
+              reports, instant verification, withdrawing earnings from gifts you receive
+              (section 9.5), a gold Pro badge and no ads. We may change
               what Pro includes; if we take away something important, we will tell you in advance
               and you may cancel.
             </p>
@@ -274,62 +275,77 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="9. Kasala Coins">
-            <SubHeading>9.1 What coins are</SubHeading>
+          <Section title="9. Kasala Coins, Gifts and Earnings">
+            <SubHeading>9.1 What coins, gifts and earnings are</SubHeading>
             <p>
-              Kasala Coins let you thank people for verified reports. Coins are a licence to use
-              a feature of the App. They are not money, a bank deposit, e-money or an investment,
-              and they have no value outside the App except as set out in section 9.4.
+              Kasala Coins let you buy gifts, such as a 🌺 Flower or a 🛡️ Shield, to thank people
+              for verified reports. Coins are spent on gifts; they are never sent to another
+              person. When you receive a gift, part of its value is added to your earnings, a
+              separate balance counted in points. Coins, gifts and earnings are a licence to use
+              features of the App. They are not money, a bank deposit, e-money or an investment,
+              and they have no value outside the App except as set out in section 9.5.
             </p>
 
             <SubHeading>9.2 Buying coins</SubHeading>
             <Bullets items={[
               "You buy coin packs through the Apple App Store or Google Play",
-              "Bought coins can only be gifted inside the App. They cannot be withdrawn or exchanged for cash",
+              "Coins can only be spent on gifts inside the App. They cannot be withdrawn, exchanged for cash, or sent to other people",
               "Purchases are final except where Apple, Google or the law give you a refund. If a purchase is refunded, we take those coins back, even if your balance goes below zero",
             ]} />
 
-            <SubHeading>9.3 Gifting coins</SubHeading>
+            <SubHeading>9.3 Sending gifts</SubHeading>
             <Bullets items={[
-              "You can gift coins to the person who filed a verified report. The person who receives them is told they got a gift, but not who sent it",
-              "When you gift, your bought coins are used first, then coins you received",
+              "You can send a gift to the person who filed a verified report. Each gift has a price in coins, shown before you send it. We set the gifts and their prices and may add, change or remove gifts",
+              "Sending a gift spends your coins. The person who receives it is told which gift they got, but not who sent it",
               "A gift can't be undone once it's sent",
-              "You can't gift coins to your own reports, or to or from accounts you control",
+              "You can't send gifts to your own reports, or to or from accounts you control",
             ]} />
 
-            <SubHeading>9.4 Withdrawing coins you received</SubHeading>
+            <SubHeading>9.4 Earnings from gifts you receive</SubHeading>
+            <Bullets items={[
+              "When you receive a gift, 60% of its price is added to your earnings as points, rounded down to a whole point (for example, a 10-coin gift adds 6 points). Kasala keeps the rest to run the service",
+              "Earnings can only be withdrawn under section 9.5. They can't be spent on gifts, turned into coins, or sent to other people",
+            ]} />
+
+            <SubHeading>9.5 Withdrawing earnings</SubHeading>
             <p>
-              Coins other people gift you can be withdrawn to a bank account in your own name,
+              Kasala Pro members can withdraw their earnings to a bank account in their own name,
               subject to these conditions:
             </p>
             <Bullets items={[
-              "Coins must be held for a waiting period (currently 14 days) before they can be withdrawn",
-              "There is a minimum withdrawal (currently 20 coins)",
-              "We pay out at the coin value we set, in the currency we set (currently Nigerian naira). While a value is marked as an estimate in the App, the amount you receive may differ; you'll see the final amount before we pay",
+              "Withdrawing needs an active Kasala Pro subscription. Earnings stay in your account if your Pro ends, and you can withdraw them once you have Pro again",
+              "Earnings must be held for a waiting period (currently 14 days) before they can be withdrawn",
+              "There is a minimum withdrawal (currently 20 points)",
+              "We pay out at the point value we set, in the currency we set (currently Nigerian naira). While a value is marked as an estimate in the App, the amount you receive may differ; you'll see the final amount before we pay",
               "Before your first payout, we check that the bank account name matches you, and we may ask for proof of identity",
-              "Payouts are made by hand and may take several working days. We may turn down or delay a withdrawal we reasonably suspect is fraudulent or unlawful; if we turn it down, the coins go back to your balance unless section 9.5 applies",
+              "Payouts are made by hand and may take several working days. We may turn down or delay a withdrawal we reasonably suspect is fraudulent or unlawful; if we turn it down, the points go back to your earnings unless section 9.6 applies",
               "You are responsible for any tax due on what you receive",
             ]} />
 
-            <SubHeading>9.5 When we can withhold or remove coins</SubHeading>
+            <SubHeading>9.6 When we can withhold or remove coins or earnings</SubHeading>
             <p>
-              We may freeze, reverse or remove coins that were obtained through fraud, chargebacks,
-              mistakes, multiple accounts or other breaches of these Terms, and coins in an account
-              we close for a serious breach. If we close your account for any other reason, we will
-              give you a reasonable chance to withdraw coins you received.
+              We may freeze, reverse or remove coins or earnings that were obtained through fraud,
+              chargebacks, mistakes, multiple accounts or other breaches of these Terms, and those
+              in an account we close for a serious breach. If we close your account for any other
+              reason, we will give you a reasonable chance to withdraw your earnings.
             </p>
 
-            <SubHeading>9.6 Coins given by Kasala</SubHeading>
+            <SubHeading>9.7 Coins given by Kasala</SubHeading>
             <p>
-              Coins we give you (for example, as a thank-you for referring people) work like
-              bought coins: they can be gifted but not withdrawn.
+              Coins we give you work like bought coins: they can be spent on gifts but not
+              withdrawn. This includes referral coins: when someone joins with your referral code
+              you get 1 coin, and you get 1 more for each month they are on paid Kasala Pro. Free
+              trials don&rsquo;t count, and the monthly coins stop when they cancel. Referral coins
+              aren&rsquo;t paid for accounts you control or create to collect them, and we can remove
+              coins collected that way.
             </p>
 
-            <SubHeading>9.7 Changes</SubHeading>
+            <SubHeading>9.8 Changes</SubHeading>
             <p>
-              We may change the coin value, waiting period, minimum withdrawal or other coin
-              rules. We will tell you in the App at least 30 days before a change that reduces
-              what your existing coins are worth.
+              We may change the gifts and their prices, the share of a gift added to earnings, the
+              point value, the waiting period, the minimum withdrawal or other rules in this
+              section. We will tell you in the App at least 30 days before a change that reduces
+              what your existing earnings are worth.
             </p>
           </Section>
 
@@ -449,8 +465,8 @@ export default function TermsPage() {
                 kasalaalert.com/account-deletion
               </Link>
               . Your account is deactivated straight away and permanently erased 30 days later;
-              signing back in before then lets you restore it. Before deleting, withdraw any coins
-              you can — coins left in an erased account are lost, and any Pro subscription must be
+              signing back in before then lets you restore it. Before deleting, withdraw any earnings
+              you can — coins and earnings left in an erased account are lost, and any Pro subscription must be
               cancelled separately with Apple or Google. What we keep after deletion is described
               in our Privacy Policy.
             </p>
@@ -488,7 +504,7 @@ export default function TermsPage() {
               To the maximum extent permitted by applicable law, our total liability to you for
               all claims arising under these Terms shall not exceed the greater of: (a) the amount
               you paid us in the 12 months before the claim, plus the value of any withdrawable
-              coins in your account, or (b) ₦1,000.
+              earnings in your account, or (b) ₦1,000.
             </p>
             <p>
               Nothing in these Terms limits liability that cannot be limited by law, such as for

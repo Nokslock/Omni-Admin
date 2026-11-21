@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/app/lib/supabase/server";
-import type { HoldDay, Payout, PayoutOverview, PayoutStatus } from "./payouts";
+import type { GiftWindow, HoldDay, Payout, PayoutOverview, PayoutStatus } from "./payouts";
 
 type Row = {
   id: string;
@@ -23,7 +23,7 @@ const DAY_MS = 86_400_000;
 export async function getPayoutOverview(): Promise<PayoutOverview> {
   const supabase = createAdminClient();
 
-  const [{ data: rows, error }, { data: settings }, { data: wallets }] = await Promise.all([
+  const [{ data: rows, error }, { data: settings }, { data: wallets }, { data: gifts }] = await Promise.all([
     supabase
       .from("token_withdrawals")
       .select(
@@ -31,8 +31,19 @@ export async function getPayoutOverview(): Promise<PayoutOverview> {
       )
       .order("created_at", { ascending: false })
       .limit(500),
-    supabase.from("wallet_settings").select("currency, coin_value, min_withdrawal, hold_days").maybeSingle(),
+    supabase
+      .from("wallet_settings")
+      .select("currency, coin_value, min_withdrawal, hold_days, gift_share_percent")
+      .maybeSingle(),
     supabase.from("token_wallets").select("earned_balance").gt("earned_balance", 0),
+    // Every member-to-member gift, from the sender's side: what they paid and
+    // what Kasala kept. The reporter got the difference.
+    supabase
+      .from("token_ledger")
+      .select("delta, platform_fee, created_at, gift_id")
+      .eq("kind", "tip_sent")
+      .order("created_at", { ascending: true })
+      .limit(20000),
   ]);
   if (error) throw new Error(`Failed to load payouts: ${error.message}`);
 
@@ -99,8 +110,55 @@ export async function getPayoutOverview(): Promise<PayoutOverview> {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, d]) => ({ date, coins: d.coins, people: d.people.size }));
 
+  // Gift names and emoji, for the per-gift counts.
+  const { data: giftTypes } = await supabase.from("gift_types").select("id, emoji, names");
+  const giftInfo = new Map(
+    (giftTypes ?? []).map((g) => [
+      g.id as string,
+      { emoji: g.emoji as string, name: ((g.names as Record<string, string>)?.en ?? g.id) as string },
+    ]),
+  );
+  const counts = { last30: new Map<string, number>(), allTime: new Map<string, number>() };
+
+  const emptyWindow = (): GiftWindow => ({ gifts: 0, sent: 0, toReporters: 0, kept: 0, byGift: [] });
+  const last30 = emptyWindow();
+  const allTime = emptyWindow();
+  const since30 = Date.now() - 30 * DAY_MS;
+  let cutSince: string | null = null;
+  for (const g of gifts ?? []) {
+    const sent = -Number(g.delta);
+    const kept = Number(g.platform_fee ?? 0);
+    if (kept > 0 && !cutSince) cutSince = g.created_at as string;
+    const recent = Date.parse(g.created_at as string) >= since30;
+    for (const w of recent ? [allTime, last30] : [allTime]) {
+      w.gifts += 1;
+      w.sent += sent;
+      w.kept += kept;
+      w.toReporters += sent - kept;
+    }
+    // Gifts sent before the gift list existed have no gift_id.
+    const id = (g.gift_id as string | null) ?? null;
+    if (id) {
+      for (const m of recent ? [counts.allTime, counts.last30] : [counts.allTime]) {
+        m.set(id, (m.get(id) ?? 0) + 1);
+      }
+    }
+  }
+  const toList = (m: Map<string, number>) =>
+    [...m.entries()]
+      .map(([id, count]) => ({ id, count, ...(giftInfo.get(id) ?? { emoji: "🎁", name: id }) }))
+      .sort((a, b) => b.count - a.count);
+  last30.byGift = toList(counts.last30);
+  allTime.byGift = toList(counts.allTime);
+
   return {
     payouts,
+    gifts: {
+      sharePercent: Number(settings?.gift_share_percent ?? 60),
+      last30,
+      allTime,
+      cutSince,
+    },
     currency: settings?.currency ?? "NGN",
     coinValue: Number(settings?.coin_value ?? 0),
     minWithdrawal: Number(settings?.min_withdrawal ?? 0),
